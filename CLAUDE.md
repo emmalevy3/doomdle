@@ -1,0 +1,59 @@
+# Doomdle
+
+A daily Wordle-style Magic: The Gathering puzzle. The player sees a game state (hand, board, mana, life, library/graveyard, an open-information opponent) and must build a Doomsday pile that wins this turn. This repo is the Rust rules engine and solver that validates submitted piles. It will later compile to WebAssembly for a static web page.
+
+## Commands
+- Build: `cargo build`
+- Run: `cargo run`
+- Test all: `cargo test`
+- Single test: `cargo test <test_name_substring>` (add `-- --exact` to match a full path like `module::tests::name`)
+- Lint: `cargo clippy --all-targets -- -D warnings`
+- Format: `cargo fmt` (check only: `cargo fmt --check`)
+
+Before saying a task is done, run fmt, clippy and test and make sure all three pass. Report the test results in your summary.
+
+## Environment
+Development happens inside the dev container in `.devcontainer/` (image `mcr.microsoft.com/devcontainers/rust:1`, with Node and Claude Code installed). Only the project folder is mounted; Claude Code config persists in a Docker volume at `/home/vscode/.claude`.
+
+## Project state
+Rust crate, edition 2024, no dependencies yet. Logic should live in a library crate (`src/lib.rs` and modules) so it can later compile to WebAssembly; `src/main.rs` stays a thin CLI for running puzzles locally. Update this section as structure emerges.
+
+## Rules source of truth
+- `CARDS.md` defines every card in the pool and exactly how it behaves *in this engine*. Read it before touching any card logic.
+- Never add a card that isn't in `CARDS.md`. Never change `CARDS.md` yourself; propose the change and I'll make it.
+- If a card interaction isn't covered by `CARDS.md` or the scope below, stop and ask. Do not guess Magic rules.
+
+## Scope
+- The puzzle starts as Doomsday resolves: the player chooses 5 cards from library + graveyard and orders them.
+- One turn only, no combat, no opponent turn.
+- The opponent can respond (counterspells, Stifle, etc.) but never acts proactively. See "Decisions" in `CARDS.md` for the exact rules.
+- Mana is tracked as simple per-color counts (plus colorless), not a general mana system.
+
+## Architecture
+- `Card` is an enum with one variant per card. All card-specific behavior lives in one module (`src/cards.rs`) as `match` arms.
+- `State` is a plain data struct deriving `Clone, Debug, PartialEq, Eq, Hash`. It covers both players.
+- The engine has a real stack and priority from the start, even while the opponent always passes. Spells and triggers go on the stack; both players get priority before the top item resolves. Do not resolve spells immediately as a shortcut.
+- `apply(&State, Action) -> State` is pure: it returns a new state and never mutates its input.
+- `legal_actions(&State) -> Vec<Action>` is the only place that decides what's legal, for whichever player has priority or a choice.
+- The solver is an AND/OR depth-first search: at your decision points it needs one winning action; at the opponent's it needs every action to still lose for them. It returns your winning strategy if one exists. Memoize visited states.
+- No `unwrap()`/`expect()` outside tests; return `Result`/`Option`.
+- Keep dependencies minimal. Ask before adding a crate.
+
+## Implementation order
+Work one stage at a time; each stage ends with passing tests.
+1. Core: `State`, stack and priority (opponent always passes), the AND/OR solver, Doomsday's pile choice, Thassa's Oracle, the blue cantrips, LED, Lotus, Petal, Moxen, Dark Ritual, basics and original duals.
+2. Costs and library order: cycling, life payments, fetchlands, the unordered-library rule, surveil lands, the other win conditions.
+3. Graveyard: Unearth, Yawgmoth's Will, Flow State, Cabal Ritual, Frantic Search.
+4. Opponent responses: turn on opponent priority, then Counterspell and Force of Will first, then Daze, Spell Pierce, Stifle and the rest.
+5. Opponent's board: the static hate permanents.
+6. Everything else in `CARDS.md`.
+
+## Testing
+- Every card gets unit tests for each behavior listed in `CARDS.md`, including its costs (mana and life).
+- Solver tests live in `tests/` and come in pairs: a known-winning pile that must be found, and a near-miss (a mana short, a life short, too little devotion, wrong order) that must fail.
+- Once opponent responses exist, add pairs where a pile wins against a passive opponent but loses to the opponent's hand, and a pile that plays around it.
+- Never weaken or delete a failing test to make it pass. Tell me instead.
+
+## Working with me
+- I'm learning Rust. In your summary, briefly explain any Rust feature or idiom I might not know (ownership/borrowing choices, trait derives, pattern matching tricks).
+- Keep changes scoped to the task. Mention anything else you noticed instead of fixing it unasked.

@@ -1,0 +1,33 @@
+{
+  // Rust dev container with Claude Code. Only this project folder is visible inside.
+  "name": "Doomdle",
+  "image": "mcr.microsoft.com/devcontainers/rust:1",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+
+  // Keep Claude Code's login and settings in a Docker volume so they survive rebuilds.
+  // This volume lives inside Docker, not in your Windows user folder.
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+  ],
+
+  "remoteUser": "vscode",
+
+  // Docker creates the volume owned by root; hand it to the vscode user so Claude Code can save its login.
+  // Then update Claude Code, since the feature's install is cached in the image layer.
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && sudo env \"PATH=$PATH\" npm install -g @anthropic-ai/claude-code@latest",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer"
+      ]
+    },
+    "jetbrains": {
+      "plugins": ["com.anthropic.code.plugin"]
+    }
+  }
+}

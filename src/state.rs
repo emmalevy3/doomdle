@@ -1,0 +1,517 @@
+//! Game state: zones, the stack, priority and the puzzle definition.
+
+use std::fmt;
+
+use crate::cards::{Card, TriggerKind};
+use crate::engine::{Action, EngineError, apply};
+use crate::mana::ManaPool;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Player {
+    You,
+    Opponent,
+}
+
+impl Player {
+    pub fn other(self) -> Player {
+        match self {
+            Player::You => Player::Opponent,
+            Player::Opponent => Player::You,
+        }
+    }
+}
+
+/// A card on the battlefield. Which player controls it is given by which
+/// battlefield it sits on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Permanent {
+    pub card: Card,
+    pub tapped: bool,
+    pub summoning_sick: bool,
+}
+
+impl Permanent {
+    pub fn untapped(card: Card) -> Permanent {
+        Permanent {
+            card,
+            tapped: false,
+            summoning_sick: false,
+        }
+    }
+
+    pub fn tapped(card: Card) -> Permanent {
+        Permanent {
+            card,
+            tapped: true,
+            summoning_sick: false,
+        }
+    }
+}
+
+/// Something waiting to resolve. The top of the stack is the last element.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum StackItem {
+    Spell {
+        card: Card,
+        controller: Player,
+    },
+    Trigger {
+        source: Card,
+        kind: TriggerKind,
+        controller: Player,
+    },
+}
+
+/// Which decision a paused resolution is waiting on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum ChoiceKind {
+    /// Brainstorm has drawn three; pick two cards from hand to put back.
+    BrainstormPutBack,
+    /// Ponder: reorder the top (up to) three cards.
+    PonderOrder,
+    /// Preordain: scry 2.
+    PreordainScry,
+    /// Consider: surveil 1.
+    ConsiderSurveil,
+}
+
+/// A resolution that stopped for a player decision. Nobody gets priority
+/// until the decision is made; `card` is the spell being resolved and goes to
+/// the graveyard once the choice is applied.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PendingChoice {
+    pub player: Player,
+    pub card: Card,
+    pub kind: ChoiceKind,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum LossReason {
+    /// Both players passed on an empty stack: the turn ends without a win.
+    TurnEnded,
+    DrewFromEmptyLibrary,
+    LifeZero,
+    /// A step depended on the order of a library that is no longer known
+    /// (CARDS.md, "Shuffles").
+    LibraryUnordered,
+}
+
+/// The game result from your point of view.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Outcome {
+    Win,
+    Loss(LossReason),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Phase {
+    /// Doomsday is resolving: choose and order the pile.
+    ChoosingPile,
+    /// Your precombat main phase.
+    Main,
+}
+
+/// Everything one player owns or has done this turn.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct PlayerState {
+    pub life: i16,
+    /// Kept sorted (a multiset).
+    pub hand: Vec<Card>,
+    /// Index 0 is the top. In a `Puzzle` this is the unordered set of cards
+    /// the pile may be built from.
+    pub library: Vec<Card>,
+    /// False after a shuffle or random placement; see CARDS.md "Shuffles".
+    pub library_ordered: bool,
+    /// Kept sorted.
+    pub graveyard: Vec<Card>,
+    /// Kept sorted.
+    pub exile: Vec<Card>,
+    /// Kept sorted.
+    pub battlefield: Vec<Permanent>,
+    pub mana_pool: ManaPool,
+    /// Spells cast this turn, including Doomsday (the storm count).
+    pub spells_cast_this_turn: u8,
+    /// Cards drawn this turn, including the draw step.
+    pub cards_drawn_this_turn: u8,
+    pub land_drop_available: bool,
+}
+
+impl Default for PlayerState {
+    fn default() -> PlayerState {
+        PlayerState {
+            life: 20,
+            hand: Vec::new(),
+            library: Vec::new(),
+            library_ordered: true,
+            graveyard: Vec::new(),
+            exile: Vec::new(),
+            battlefield: Vec::new(),
+            mana_pool: ManaPool::EMPTY,
+            spells_cast_this_turn: 0,
+            cards_drawn_this_turn: 0,
+            land_drop_available: true,
+        }
+    }
+}
+
+impl PlayerState {
+    /// Whether an effect may look at or draw the top `n` cards. An unordered
+    /// library is still fine when the effect covers all of it.
+    pub fn can_see_top(&self, n: usize) -> bool {
+        self.library_ordered || n >= self.library.len()
+    }
+
+    /// Devotion to blue: {U} pips in the mana costs of permanents controlled.
+    pub fn blue_devotion(&self) -> u8 {
+        self.battlefield
+            .iter()
+            .map(|p| p.card.blue_devotion())
+            .sum()
+    }
+
+    /// Removes one copy of `card` from hand.
+    pub(crate) fn remove_from_hand(&mut self, card: Card) -> Option<Card> {
+        let pos = self.hand.iter().position(|&c| c == card)?;
+        Some(self.hand.remove(pos))
+    }
+
+    fn normalize(&mut self) {
+        self.hand.sort();
+        self.graveyard.sort();
+        self.exile.sort();
+        self.battlefield.sort();
+    }
+}
+
+/// A puzzle as Doomsday resolves. Doomsday itself is on the stack, so it is
+/// not listed in any zone; the engine puts it in the graveyard when the pile
+/// is chosen. `you.library` holds the candidate cards in no particular order,
+/// and `you.life` is the total *before* Doomsday's life loss.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Puzzle {
+    pub you: PlayerState,
+    pub opponent: PlayerState,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct State {
+    pub phase: Phase,
+    pub priority: Player,
+    /// True when the previous action was the other player passing, so a pass
+    /// now resolves the top of the stack (or ends the turn).
+    pub passed_in_succession: bool,
+    pub stack: Vec<StackItem>,
+    pub pending: Option<PendingChoice>,
+    pub you: PlayerState,
+    pub opponent: PlayerState,
+    pub outcome: Option<Outcome>,
+}
+
+impl State {
+    /// The state as Doomsday resolves, before the pile is chosen.
+    pub fn new(puzzle: Puzzle) -> State {
+        let mut state = State {
+            phase: Phase::ChoosingPile,
+            priority: Player::You,
+            passed_in_succession: false,
+            stack: Vec::new(),
+            pending: None,
+            you: puzzle.you,
+            opponent: puzzle.opponent,
+            outcome: None,
+        };
+        state.normalize();
+        state
+    }
+
+    /// The state right after Doomsday resolves with the given pile (top first).
+    pub fn with_pile(puzzle: Puzzle, pile: &[Card]) -> Result<State, EngineError> {
+        apply(&State::new(puzzle), &Action::ChoosePile(pile.to_vec()))
+    }
+
+    pub fn player(&self, player: Player) -> &PlayerState {
+        match player {
+            Player::You => &self.you,
+            Player::Opponent => &self.opponent,
+        }
+    }
+
+    pub fn player_mut(&mut self, player: Player) -> &mut PlayerState {
+        match player {
+            Player::You => &mut self.you,
+            Player::Opponent => &mut self.opponent,
+        }
+    }
+
+    /// Who has to decide next, or `None` once the game is over.
+    pub fn actor(&self) -> Option<Player> {
+        if self.outcome.is_some() {
+            return None;
+        }
+        if let Some(pending) = &self.pending {
+            return Some(pending.player);
+        }
+        match self.phase {
+            Phase::ChoosingPile => Some(Player::You),
+            Phase::Main => Some(self.priority),
+        }
+    }
+
+    /// Records a loss unless the game already has an outcome ("you win the
+    /// game" effects are immediate and beat a later state-based loss).
+    pub(crate) fn lose(&mut self, reason: LossReason) {
+        if self.outcome.is_none() {
+            self.outcome = Some(Outcome::Loss(reason));
+        }
+    }
+
+    /// One draw instruction of `n` cards. Drawing from an empty library loses
+    /// (replacement effects such as Laboratory Maniac will hook in here).
+    pub(crate) fn draw(&mut self, player: Player, n: usize) {
+        if self.outcome.is_some() {
+            return;
+        }
+        if !self.player(player).can_see_top(n) {
+            self.lose(LossReason::LibraryUnordered);
+            return;
+        }
+        for _ in 0..n {
+            let ps = self.player_mut(player);
+            if ps.library.is_empty() {
+                self.lose(LossReason::DrewFromEmptyLibrary);
+                return;
+            }
+            let card = ps.library.remove(0);
+            ps.hand.push(card);
+            ps.cards_drawn_this_turn += 1;
+        }
+    }
+
+    /// State-based checks, run after every action.
+    pub(crate) fn check_state_based(&mut self) {
+        if self.you.life <= 0 {
+            self.lose(LossReason::LifeZero);
+        }
+    }
+
+    /// Canonical form so equivalent states compare and hash equal.
+    pub(crate) fn normalize(&mut self) {
+        self.you.normalize();
+        self.opponent.normalize();
+    }
+}
+
+fn list_cards(cards: &[Card]) -> String {
+    if cards.is_empty() {
+        return "-".to_string();
+    }
+    cards
+        .iter()
+        .map(|c| c.name())
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+impl fmt::Display for Permanent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.card.name())?;
+        if self.tapped {
+            f.write_str(" (tapped)")?;
+        }
+        if self.summoning_sick {
+            f.write_str(" (summoning sick)")?;
+        }
+        Ok(())
+    }
+}
+
+impl fmt::Display for StackItem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            StackItem::Spell { card, controller } => write!(f, "{card} ({controller:?})"),
+            StackItem::Trigger {
+                source, controller, ..
+            } => write!(f, "{source} trigger ({controller:?})"),
+        }
+    }
+}
+
+impl fmt::Display for Outcome {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Outcome::Win => f.write_str("you win"),
+            Outcome::Loss(LossReason::TurnEnded) => f.write_str("the turn ends without a win"),
+            Outcome::Loss(LossReason::DrewFromEmptyLibrary) => {
+                f.write_str("you drew from an empty library")
+            }
+            Outcome::Loss(LossReason::LifeZero) => f.write_str("your life total hit 0"),
+            Outcome::Loss(LossReason::LibraryUnordered) => {
+                f.write_str("the line depended on the order of a shuffled library")
+            }
+        }
+    }
+}
+
+impl fmt::Display for PlayerState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "  life {}, mana pool {}", self.life, self.mana_pool)?;
+        writeln!(f, "  hand: {}", list_cards(&self.hand))?;
+        let battlefield = if self.battlefield.is_empty() {
+            "-".to_string()
+        } else {
+            self.battlefield
+                .iter()
+                .map(|p| p.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        writeln!(f, "  battlefield: {battlefield}")?;
+        let order = if self.library_ordered {
+            "top first"
+        } else {
+            "order unknown"
+        };
+        writeln!(f, "  library ({order}): {}", list_cards(&self.library))?;
+        write!(f, "  graveyard: {}", list_cards(&self.graveyard))
+    }
+}
+
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.phase {
+            Phase::ChoosingPile => writeln!(f, "Doomsday is resolving: choose the pile")?,
+            Phase::Main => {
+                if let Some(outcome) = self.outcome {
+                    writeln!(f, "Game over: {outcome}")?;
+                } else if let Some(pending) = &self.pending {
+                    writeln!(f, "{:?} must decide for {}", pending.player, pending.card)?;
+                } else {
+                    writeln!(f, "{:?} has priority", self.priority)?;
+                }
+            }
+        }
+        if self.stack.is_empty() {
+            writeln!(f, "Stack: empty")?;
+        } else {
+            let items: Vec<String> = self.stack.iter().rev().map(|i| i.to_string()).collect();
+            writeln!(f, "Stack (top first): {}", items.join(", "))?;
+        }
+        writeln!(f, "You:")?;
+        writeln!(f, "{}", self.you)?;
+        writeln!(f, "Opponent:")?;
+        write!(f, "{}", self.opponent)
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod test_support {
+    use super::*;
+
+    /// A main-phase state with you holding priority and an empty stack.
+    pub(crate) fn main_phase(you: PlayerState) -> State {
+        let mut state = State {
+            phase: Phase::Main,
+            priority: Player::You,
+            passed_in_succession: false,
+            stack: Vec::new(),
+            pending: None,
+            you,
+            opponent: PlayerState::default(),
+            outcome: None,
+        };
+        state.normalize();
+        state
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::test_support::main_phase;
+    use super::*;
+
+    #[test]
+    fn draw_moves_top_card_and_counts() {
+        let mut state = main_phase(PlayerState {
+            library: vec![Card::Brainstorm, Card::Island],
+            ..PlayerState::default()
+        });
+        state.draw(Player::You, 1);
+        assert_eq!(state.you.hand, vec![Card::Brainstorm]);
+        assert_eq!(state.you.library, vec![Card::Island]);
+        assert_eq!(state.you.cards_drawn_this_turn, 1);
+        assert_eq!(state.outcome, None);
+    }
+
+    #[test]
+    fn draw_from_empty_library_loses() {
+        let mut state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        state.draw(Player::You, 2);
+        assert_eq!(
+            state.outcome,
+            Some(Outcome::Loss(LossReason::DrewFromEmptyLibrary))
+        );
+    }
+
+    #[test]
+    fn draw_from_unordered_library_fails_unless_it_takes_everything() {
+        let mut state = main_phase(PlayerState {
+            library: vec![Card::Island, Card::Swamp],
+            library_ordered: false,
+            ..PlayerState::default()
+        });
+        let mut partial = state.clone();
+        partial.draw(Player::You, 1);
+        assert_eq!(
+            partial.outcome,
+            Some(Outcome::Loss(LossReason::LibraryUnordered))
+        );
+        state.draw(Player::You, 2);
+        assert_eq!(state.outcome, None);
+        assert_eq!(state.you.hand, vec![Card::Island, Card::Swamp]);
+    }
+
+    #[test]
+    fn win_is_not_overwritten_by_a_later_loss() {
+        let mut state = main_phase(PlayerState::default());
+        state.outcome = Some(Outcome::Win);
+        state.lose(LossReason::LifeZero);
+        assert_eq!(state.outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn devotion_counts_blue_pips_on_your_permanents() {
+        let state = main_phase(PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::ThassasOracle),
+                Permanent::untapped(Card::MoxSapphire),
+                Permanent::untapped(Card::Island),
+            ],
+            ..PlayerState::default()
+        });
+        assert_eq!(state.you.blue_devotion(), 2);
+    }
+
+    #[test]
+    fn normalize_makes_zone_order_irrelevant() {
+        let a = main_phase(PlayerState {
+            hand: vec![Card::Island, Card::Brainstorm],
+            battlefield: vec![
+                Permanent::untapped(Card::Swamp),
+                Permanent::tapped(Card::Island),
+            ],
+            ..PlayerState::default()
+        });
+        let b = main_phase(PlayerState {
+            hand: vec![Card::Brainstorm, Card::Island],
+            battlefield: vec![
+                Permanent::tapped(Card::Island),
+                Permanent::untapped(Card::Swamp),
+            ],
+            ..PlayerState::default()
+        });
+        assert_eq!(a, b);
+    }
+}
