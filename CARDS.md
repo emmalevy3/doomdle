@@ -33,10 +33,10 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Creature toughness and damage** (Bowmasters pings, e.g. on Lab Man)
 
 ### Decisions
-1. **Shuffles (decided).** Ponder never shuffles. After any other shuffle (fetchlands, casting Edge of Autumn) or random bottom-of-library placement (Thundertrap Trainer), the library is marked unordered, and any later step that depends on library order counts as a failure. Order-independent lines, such as drawing the last card or Oracle with enough devotion, still work.
+1. **Shuffles (decided).** Ponder never shuffles. After any other shuffle (fetchlands, casting Edge of Autumn) or random bottom-of-library placement (Thundertrap Trainer), the library is marked unordered, and any later step that depends on library order counts as a failure. Order-independent lines, such as drawing the last card or Oracle with enough devotion, still work. An effect that covers the whole remaining library (drawing every card left, Ponder on three or fewer cards, scry or surveil that sees all of it) also still works, and because it places every card it makes the library ordered again.
 2. **Opponent interaction (decided).** The opponent responds but never acts proactively: whenever they get priority, they either pass or cast an instant or alternative-cost spell from their open hand (Force of Will, Daze, Stifle, etc.), and they make the choices on their own effects (Bowmasters' target, Daze's returned Island). A pile is valid only if there's a line that wins *against every opponent response*: an AND/OR search where any one of your choices may win, but every opponent choice must still lose. "Unless its controller pays" (Daze, Spell Pierce, Miscalculation, Flusterstorm) is your choice and a branch. Keep puzzles small: at most 3 cards in the opponent's hand and 3 opponent mana sources.
 3. **Board state at puzzle start.** Wizard's Rockets is only useful if it starts on the battlefield. Doctor Doom needs to start on the battlefield or get haste from Lightning Greaves or Skateboard. Cavern of Souls needs its creature type set in the puzzle file if it starts in play.
-4. **Turn history at puzzle start.** The puzzle file sets how many spells you've cast this turn (Doomsday counts) and how many cards you've drawn this turn (including the draw step). Archon of Emeria, Narset, Tamiyo, Flusterstorm, and Mindbreak Trap all depend on these.
+4. **Turn history at puzzle start.** The puzzle file sets how many spells you've cast this turn *before* Doomsday (the engine adds Doomsday itself when the pile is chosen) and how many cards you've drawn this turn (including the draw step). Archon of Emeria, Narset, Tamiyo, Flusterstorm, and Mindbreak Trap all depend on these.
 5. **Puzzle start point (decided).** The puzzle starts with Doomsday resolving: the player picks 5 cards from library + graveyard and orders them. Doomsday has already been cast and paid for, and it can no longer be countered.
 6. **Duplicates (decided).** A puzzle may contain more than one copy of a card (real lists play 2 Oracles). Zones hold `Card` values, so copies are just repeated entries.
 7. **Edge of Autumn (decided).** Both modes are modeled: cycling, and casting it to fetch a basic out of the pile.
@@ -50,7 +50,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {U}{U} — Creature — Merfolk Wizard
 - **Effect:** When this creature enters, look at the top X cards of your library, where X is your devotion to blue. Put up to one of them on top of your library and the rest on the bottom of your library in a random order. If X is greater than or equal to the number of cards in your library, you win the game.
 - **Gotchas:** Devotion is counted when the trigger *resolves*, and Oracle counts itself (2). In this pool, Jace adds 3, Riddler 2, Teferi 1, Lab Man 1, Tamiyo (front face) 1, and Thundertrap Trainer 1, plus 1 for its token copy. Removing a blue permanent in response lowers X (Swords, Pyroblast, Snuff Out). Moving cards to the bottom doesn't change the library size. An empty library always wins. The *trigger* can be countered by Stifle or Consign to Memory; Cavern only protects the creature spell, not its trigger.
-- **Simplifications:** none; the bottom order is irrelevant because the check is size only.
+- **Simplifications:** if the trigger doesn't win, the engine marks the library unordered (the rest go to the bottom in a random order) and skips the "put up to one of them on top" choice, since the scrambled library can't be exploited afterwards anyway.
 
 ### Jace, Wielder of Mysteries
 - **Cost / type:** {1}{U}{U}{U} — Legendary Planeswalker — Jace (starting loyalty 4)
@@ -94,7 +94,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {B}{B}{B} — Sorcery
 - **Effect:** Search your library and graveyard for five cards and exile the rest. Put the chosen cards on top of your library in any order. You lose half your life, rounded up.
 - **Gotchas:** You must choose exactly five if five or more are available; with fewer, all of them go into the library. The graveyard is exiled too, except for chosen cards. Life loss rounds *up*: 20 → 10, 7 → 3. Doomsday itself goes to the graveyard *after* resolving, so the post-Doomsday graveyard starts with one sorcery in it. That counts for Flow State and Cabal Ritual's threshold. Under an opponent's Leyline of the Void it's exiled instead.
-- **Simplifications:** the puzzle starts as this resolves (see CLAUDE.md).
+- **Simplifications:** the puzzle starts as this resolves (see CLAUDE.md). The puzzle's life total is the one *before* Doomsday's life loss; the engine applies the halving when the pile is chosen.
 
 ---
 

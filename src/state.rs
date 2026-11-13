@@ -129,7 +129,9 @@ pub struct PlayerState {
     /// Kept sorted.
     pub battlefield: Vec<Permanent>,
     pub mana_pool: ManaPool,
-    /// Spells cast this turn, including Doomsday (the storm count).
+    /// Spells cast this turn (the storm count). In a `Puzzle` this is the
+    /// count *before* Doomsday; the engine adds Doomsday itself when the pile
+    /// is chosen.
     pub spells_cast_this_turn: u8,
     /// Cards drawn this turn, including the draw step.
     pub cards_drawn_this_turn: u8,

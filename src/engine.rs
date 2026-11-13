@@ -260,6 +260,9 @@ fn choose_pile(state: &mut State, pile: &[Card]) -> Result<(), EngineError> {
     you.exile.extend(rest);
     you.graveyard = vec![Card::Doomsday];
     you.life -= (you.life.max(0) + 1) / 2;
+    // Doomsday itself was cast this turn; the puzzle only lists the spells
+    // cast before it.
+    you.spells_cast_this_turn += 1;
 
     state.phase = Phase::Main;
     state.priority = Player::You;
@@ -895,8 +898,20 @@ mod tests {
         assert_eq!(state.you.graveyard, vec![Card::Doomsday]);
         assert_eq!(state.you.exile, vec![Card::Ponder]);
         assert_eq!(state.you.life, 10);
+        assert_eq!(
+            state.you.spells_cast_this_turn, 1,
+            "Doomsday counts for storm"
+        );
         assert_eq!(state.priority, Player::You);
         assert!(state.stack.is_empty());
+    }
+
+    #[test]
+    fn doomsday_adds_to_spells_cast_before_it() {
+        let mut puzzle = puzzle_with_candidates(vec![Card::ThassasOracle], vec![], 20);
+        puzzle.you.spells_cast_this_turn = 2;
+        let state = State::with_pile(puzzle, &[Card::ThassasOracle]).unwrap();
+        assert_eq!(state.you.spells_cast_this_turn, 3);
     }
 
     #[test]
