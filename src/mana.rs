@@ -1,4 +1,5 @@
-//! Mana as simple per-color counts (plus colorless), per CLAUDE.md.
+//! Mana as simple per-color counts (plus colorless), per CLAUDE.md, and the
+//! payments (mana plus life) a player can make for a cost.
 
 use std::fmt;
 
@@ -44,8 +45,8 @@ impl fmt::Display for Color {
 /// Index of colorless mana in [`ManaPool::amounts`].
 const COLORLESS: usize = 5;
 
-/// Mana available to spend: five colors plus colorless. Also used to describe a
-/// payment (how much of each kind is spent on a spell).
+/// Mana available to spend: five colors plus colorless. Also used to describe
+/// the mana part of a payment.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ManaPool {
     amounts: [u8; 6],
@@ -115,9 +116,10 @@ impl ManaPool {
         Some(ManaPool { amounts })
     }
 
-    /// Every distinct way to pay `cost` out of this pool. Colored pips must be
-    /// paid exactly; generic mana can come from anything left over. Empty if
-    /// the pool can't cover the cost.
+    /// Every distinct way to pay the mana of `cost` out of this pool, treating
+    /// Phyrexian pips as their colored half. Colored pips must be paid
+    /// exactly; generic mana can come from anything left over. Empty if the
+    /// pool can't cover the cost. See [`Payment::options`] for life payments.
     pub fn payments_for(&self, cost: &ManaCost) -> Vec<ManaPool> {
         let pips = cost.pips_as_pool();
         let Some(spare) = self.minus(&pips) else {
@@ -171,16 +173,19 @@ impl fmt::Display for ManaPool {
     }
 }
 
-/// A mana cost: colored pips plus a generic amount.
+/// A mana cost: colored pips, Phyrexian pips (pay the color or 2 life) and a
+/// generic amount.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct ManaCost {
     pips: [u8; 5],
+    phyrexian: [u8; 5],
     pub generic: u8,
 }
 
 impl ManaCost {
     pub const FREE: ManaCost = ManaCost {
         pips: [0; 5],
+        phyrexian: [0; 5],
         generic: 0,
     };
 
@@ -188,7 +193,22 @@ impl ManaCost {
     pub const fn colored(color: Color, n: u8) -> ManaCost {
         let mut pips = [0; 5];
         pips[color.index()] = n;
-        ManaCost { pips, generic: 0 }
+        ManaCost {
+            pips,
+            phyrexian: [0; 5],
+            generic: 0,
+        }
+    }
+
+    /// `n` Phyrexian pips of one color and nothing else.
+    pub const fn phyrexian(color: Color, n: u8) -> ManaCost {
+        let mut phyrexian = [0; 5];
+        phyrexian[color.index()] = n;
+        ManaCost {
+            pips: [0; 5],
+            phyrexian,
+            generic: 0,
+        }
     }
 
     /// Builder-style: this cost plus `n` more pips of `color`.
@@ -203,20 +223,40 @@ impl ManaCost {
         self
     }
 
+    /// Colored (non-Phyrexian) pips of `color`.
     pub fn pip(&self, color: Color) -> u8 {
         self.pips[color.index()]
     }
 
-    pub fn mana_value(&self) -> u8 {
-        self.pips.iter().sum::<u8>() + self.generic
+    pub fn phyrexian_pip(&self, color: Color) -> u8 {
+        self.phyrexian[color.index()]
     }
 
+    /// Phyrexian pips count as one each, whatever is paid for them.
+    pub fn mana_value(&self) -> u8 {
+        self.pips.iter().sum::<u8>() + self.phyrexian.iter().sum::<u8>() + self.generic
+    }
+
+    /// Colored pips plus Phyrexian pips, as a pool: what paying everything
+    /// with mana costs.
     fn pips_as_pool(&self) -> ManaPool {
         let mut pool = ManaPool::EMPTY;
         for color in Color::ALL {
-            pool.add_mana(color, self.pip(color));
+            pool.add_mana(color, self.pip(color) + self.phyrexian_pip(color));
         }
         pool
+    }
+
+    /// This cost with `life_paid[c]` Phyrexian pips of each color paid with
+    /// life instead of mana: those pips are dropped, the rest become colored.
+    fn with_phyrexian_paid_by_life(&self, life_paid: [u8; 5]) -> ManaCost {
+        let mut cost = *self;
+        for color in Color::ALL {
+            let i = color.index();
+            cost.pips[i] += cost.phyrexian[i] - life_paid[i];
+            cost.phyrexian[i] = 0;
+        }
+        cost
     }
 }
 
@@ -233,7 +273,103 @@ impl fmt::Display for ManaCost {
                 write!(f, "{{{}}}", color.symbol())?;
             }
         }
+        for color in Color::ALL {
+            for _ in 0..self.phyrexian_pip(color) {
+                write!(f, "{{{}/P}}", color.symbol())?;
+            }
+        }
         Ok(())
+    }
+}
+
+/// What a player hands over for a spell or ability: mana from the pool and
+/// life (Phyrexian mana, Street Wraith's cycling).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Payment {
+    pub mana: ManaPool,
+    pub life: u8,
+}
+
+impl Payment {
+    pub const FREE: Payment = Payment {
+        mana: ManaPool::EMPTY,
+        life: 0,
+    };
+
+    pub const fn mana(mana: ManaPool) -> Payment {
+        Payment { mana, life: 0 }
+    }
+
+    pub const fn life(life: u8) -> Payment {
+        Payment {
+            mana: ManaPool::EMPTY,
+            life,
+        }
+    }
+
+    pub fn is_free(&self) -> bool {
+        self.mana.is_empty() && self.life == 0
+    }
+
+    /// Every distinct way to pay `cost` from `pool` with `life` to spare. Each
+    /// Phyrexian pip is paid with its color or with 2 life; life can only be
+    /// paid if the total is at most `life` (rule 119.4).
+    pub fn options(pool: &ManaPool, cost: &ManaCost, life: i16) -> Vec<Payment> {
+        let mut out = Vec::new();
+        let mut life_paid = [0u8; 5];
+        phyrexian_splits(cost, 0, &mut life_paid, &mut |split| {
+            let life_cost = 2 * split.iter().sum::<u8>();
+            if i16::from(life_cost) > life {
+                return;
+            }
+            let mana_cost = cost.with_phyrexian_paid_by_life(split);
+            for mana in pool.payments_for(&mana_cost) {
+                let payment = Payment {
+                    mana,
+                    life: life_cost,
+                };
+                if !out.contains(&payment) {
+                    out.push(payment);
+                }
+            }
+        });
+        out
+    }
+}
+
+/// Calls `visit` with every choice of how many Phyrexian pips of each color
+/// are paid with life.
+fn phyrexian_splits(
+    cost: &ManaCost,
+    idx: usize,
+    life_paid: &mut [u8; 5],
+    visit: &mut impl FnMut([u8; 5]),
+) {
+    if idx == life_paid.len() {
+        visit(*life_paid);
+        return;
+    }
+    for n in 0..=cost.phyrexian[idx] {
+        life_paid[idx] = n;
+        phyrexian_splits(cost, idx + 1, life_paid, visit);
+    }
+    life_paid[idx] = 0;
+}
+
+impl From<ManaPool> for Payment {
+    fn from(mana: ManaPool) -> Payment {
+        Payment::mana(mana)
+    }
+}
+
+impl fmt::Display for Payment {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.mana.is_empty(), self.life) {
+            (true, 0) => write!(f, "nothing"),
+            (false, 0) => write!(f, "{}", self.mana),
+            (true, life) => write!(f, "{life} life"),
+            (false, life) => write!(f, "{} and {life} life", self.mana),
+        }
     }
 }
 
@@ -309,6 +445,50 @@ mod tests {
     }
 
     #[test]
+    fn phyrexian_pip_is_paid_with_color_or_two_life() {
+        let probe = ManaCost::phyrexian(Color::U, 1);
+        assert_eq!(probe.mana_value(), 1);
+        let mut options = Payment::options(&ManaPool::of(Color::U, 1), &probe, 10);
+        options.sort();
+        let mut expected = vec![Payment::mana(ManaPool::of(Color::U, 1)), Payment::life(2)];
+        expected.sort();
+        assert_eq!(options, expected);
+        // No blue: life only. Life 1: nothing at all.
+        assert_eq!(
+            Payment::options(&ManaPool::EMPTY, &probe, 2),
+            vec![Payment::life(2)]
+        );
+        assert!(Payment::options(&ManaPool::EMPTY, &probe, 1).is_empty());
+        assert!(Payment::options(&ManaPool::of(Color::B, 3), &probe, 1).is_empty());
+    }
+
+    #[test]
+    fn two_phyrexian_pips_can_be_split() {
+        let cost = ManaCost::phyrexian(Color::U, 2);
+        let mut options = Payment::options(&ManaPool::of(Color::U, 1), &cost, 10);
+        options.sort();
+        let mut expected = vec![
+            Payment {
+                mana: ManaPool::of(Color::U, 1),
+                life: 2,
+            },
+            Payment::life(4),
+        ];
+        expected.sort();
+        assert_eq!(options, expected);
+    }
+
+    #[test]
+    fn plain_costs_never_offer_life() {
+        let options = Payment::options(
+            &ManaPool::of(Color::U, 2),
+            &ManaCost::colored(Color::U, 2),
+            20,
+        );
+        assert_eq!(options, vec![Payment::mana(ManaPool::of(Color::U, 2))]);
+    }
+
+    #[test]
     fn display() {
         assert_eq!(
             ManaPool::of(Color::U, 2).with(Color::B, 1).to_string(),
@@ -320,5 +500,16 @@ mod tests {
             "{1}{U}{U}"
         );
         assert_eq!(ManaCost::FREE.to_string(), "{0}");
+        assert_eq!(ManaCost::phyrexian(Color::U, 1).to_string(), "{U/P}");
+        assert_eq!(Payment::FREE.to_string(), "nothing");
+        assert_eq!(Payment::life(2).to_string(), "2 life");
+        assert_eq!(
+            Payment {
+                mana: ManaPool::of(Color::U, 1),
+                life: 2
+            }
+            .to_string(),
+            "U and 2 life"
+        );
     }
 }

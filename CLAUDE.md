@@ -18,11 +18,11 @@ Development happens inside the dev container in `.devcontainer/` (image `mcr.mic
 ## Project state
 Rust crate, edition 2024, no dependencies yet. Logic lives in a library crate so it can later compile to WebAssembly; `src/main.rs` stays a thin CLI for running puzzles locally. Update this section as structure emerges.
 
-Stage 1 is done. Modules:
-- `src/mana.rs` — `Color`, `ManaPool` (per-color counts + colorless; also used as a payment), `ManaCost`, and `ManaPool::payments_for` (every distinct way to pay a cost).
-- `src/cards.rs` — the `Card` enum (stage 1 pool only) and all card behavior as `match` arms: costs, kinds, land subtypes, mana abilities, enter triggers, `resolve_spell`/`resolve_trigger`, and the options and application of player choices (Brainstorm put-back, Ponder order, scry, surveil).
-- `src/state.rs` — `State` (both players, stack, priority, pending choice, outcome), `PlayerState`, `Permanent`, `StackItem`, `Puzzle`, `Outcome`, `draw`, state-based checks, and `normalize` (sorts hand/graveyard/exile/battlefield so equivalent states hash equal). `Display` for all of them.
-- `src/engine.rs` — `Action`, `Choice`, `legal_actions`, `apply`. A resolution that needs a decision sets `State::pending`; until it is answered the only legal actions are `Action::Choose`. Mana abilities never touch the stack. Puzzles start in `Phase::ChoosingPile`, where the only actions are `Action::ChoosePile`.
+Stages 1 and 2 are done. Modules:
+- `src/mana.rs` — `Color`, `ManaPool` (per-color counts + colorless), `ManaCost` (colored, Phyrexian and generic pips), `Payment` (mana plus life), and `Payment::options` (every distinct way to pay a cost, including 2 life per Phyrexian pip, capped by your life total).
+- `src/cards.rs` — the `Card` enum (stage 1–2 pool) and all card behavior as `match` arms: costs, kinds, land subtypes, mana abilities, cycling costs, fetch filters, enter triggers, loyalty abilities, `resolve_spell`/`resolve_trigger`/`resolve_ability`, and the options and application of player choices (Brainstorm put-back, Ponder order, scry, surveil, land search).
+- `src/state.rs` — `State` (both players, stack, priority, pending choice, outcome), `PlayerState`, `Permanent` (tapped, summoning sick, loyalty), `StackItem` (spell, trigger, activated ability), `Puzzle`, `Outcome`, `draw` (with the Lab Man/Jace replacement and the `drew_from_empty` flag that loses at the next state-based check), `enter_battlefield`, state-based checks, and `normalize` (sorts hand/graveyard/exile/battlefield so equivalent states hash equal). `Display` for all of them.
+- `src/engine.rs` — `Action`, `Choice`, `legal_actions`, `apply`. A resolution that needs a decision sets `State::pending`; until it is answered the only legal actions are `Action::Choose`. Activated abilities (cycling, fetchlands, Doom's tap, loyalty) pay their costs on activation and put a `StackItem::Ability` on the stack; mana abilities never touch the stack. Puzzles start in `Phase::ChoosingPile`, where the only actions are `Action::ChoosePile`.
 - `src/solver.rs` — `solve` (AND/OR DFS, memoized on `State`), `Strategy` with a `walk`/`line` replay that pairs each action with the resulting state, and `verify(puzzle, pile) -> Verdict::{Wins, Fails}` as the single entry point for checking a submitted pile.
 - `tests/solver_piles.rs` — winning / near-miss pile pairs.
 

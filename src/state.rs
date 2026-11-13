@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::cards::{Card, TriggerKind};
+use crate::cards::{AbilityKind, Card, CardKind, LandFilter, TriggerKind};
 use crate::engine::{Action, EngineError, apply};
 use crate::mana::ManaPool;
 
@@ -22,28 +22,43 @@ impl Player {
 }
 
 /// A card on the battlefield. Which player controls it is given by which
-/// battlefield it sits on.
+/// battlefield it sits on. `loyalty` and `loyalty_used` are only meaningful
+/// for planeswalkers and stay 0/false otherwise.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Permanent {
     pub card: Card,
     pub tapped: bool,
     pub summoning_sick: bool,
+    pub loyalty: u8,
+    pub loyalty_used: bool,
 }
 
 impl Permanent {
+    /// A permanent that has been around since before this turn: untapped, not
+    /// summoning sick, a planeswalker at its starting loyalty.
     pub fn untapped(card: Card) -> Permanent {
         Permanent {
             card,
             tapped: false,
             summoning_sick: false,
+            loyalty: card.starting_loyalty(),
+            loyalty_used: false,
         }
     }
 
     pub fn tapped(card: Card) -> Permanent {
         Permanent {
-            card,
             tapped: true,
-            summoning_sick: false,
+            ..Permanent::untapped(card)
+        }
+    }
+
+    /// A permanent as it enters the battlefield this turn.
+    pub fn entering(card: Card, tapped: bool) -> Permanent {
+        Permanent {
+            tapped,
+            summoning_sick: card.kind() == CardKind::Creature,
+            ..Permanent::untapped(card)
         }
     }
 }
@@ -60,6 +75,12 @@ pub enum StackItem {
         kind: TriggerKind,
         controller: Player,
     },
+    /// An activated ability whose costs are already paid.
+    Ability {
+        source: Card,
+        kind: AbilityKind,
+        controller: Player,
+    },
 }
 
 /// Which decision a paused resolution is waiting on.
@@ -71,18 +92,22 @@ pub enum ChoiceKind {
     PonderOrder,
     /// Preordain: scry 2.
     PreordainScry,
-    /// Consider: surveil 1.
+    /// Consider: surveil 1, then draw.
     ConsiderSurveil,
+    /// Surveil 1 on its own (Undercity Sewers, Meticulous Archive).
+    Surveil,
+    /// Search the library for a land matching the filter, or find nothing.
+    SearchLand(LandFilter),
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
-/// until the decision is made; `card` is the spell being resolved and goes to
-/// the graveyard once the choice is applied.
+/// until the decision is made; `bin` is the spell being resolved, if any, and
+/// goes to the graveyard once the choice is applied.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PendingChoice {
     pub player: Player,
-    pub card: Card,
     pub kind: ChoiceKind,
+    pub bin: Option<Card>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -136,6 +161,10 @@ pub struct PlayerState {
     /// Cards drawn this turn, including the draw step.
     pub cards_drawn_this_turn: u8,
     pub land_drop_available: bool,
+    /// Set when a draw found no card and nothing replaced it; the loss is
+    /// applied by the next state-based check, so a win in the same resolution
+    /// (Doctor Doom) still counts.
+    pub drew_from_empty: bool,
 }
 
 impl Default for PlayerState {
@@ -152,6 +181,7 @@ impl Default for PlayerState {
             spells_cast_this_turn: 0,
             cards_drawn_this_turn: 0,
             land_drop_available: true,
+            drew_from_empty: false,
         }
     }
 }
@@ -171,10 +201,40 @@ impl PlayerState {
             .sum()
     }
 
+    /// Lands controlled (Edge of Autumn's "four or fewer lands").
+    pub fn land_count(&self) -> usize {
+        self.battlefield
+            .iter()
+            .filter(|p| p.card.kind() == CardKind::Land)
+            .count()
+    }
+
+    /// Laboratory Maniac or Jace turns a draw from an empty library into a win.
+    fn wins_on_empty_draw(&self) -> bool {
+        self.battlefield
+            .iter()
+            .any(|p| p.card.replaces_empty_draw_with_win())
+    }
+
     /// Removes one copy of `card` from hand.
     pub(crate) fn remove_from_hand(&mut self, card: Card) -> Option<Card> {
         let pos = self.hand.iter().position(|&c| c == card)?;
         Some(self.hand.remove(pos))
+    }
+
+    /// Mills the top `n` cards (fewer if the library is smaller).
+    pub(crate) fn mill(&mut self, n: usize) {
+        let k = n.min(self.library.len());
+        let milled: Vec<Card> = self.library.drain(..k).collect();
+        self.graveyard.extend(milled);
+    }
+
+    /// The library was shuffled: its order is unknown unless at most one card
+    /// is left.
+    pub(crate) fn shuffle(&mut self) {
+        if self.library.len() >= 2 {
+            self.library_ordered = false;
+        }
     }
 
     fn normalize(&mut self) {
@@ -267,8 +327,16 @@ impl State {
         }
     }
 
-    /// One draw instruction of `n` cards. Drawing from an empty library loses
-    /// (replacement effects such as Laboratory Maniac will hook in here).
+    /// Records your win.
+    pub(crate) fn win(&mut self, player: Player) {
+        if player == Player::You && self.outcome.is_none() {
+            self.outcome = Some(Outcome::Win);
+        }
+    }
+
+    /// One draw instruction of `n` cards. A draw from an empty library is a
+    /// win with Laboratory Maniac or Jace in play, and otherwise a loss at the
+    /// next state-based check.
     pub(crate) fn draw(&mut self, player: Player, n: usize) {
         if self.outcome.is_some() {
             return;
@@ -280,7 +348,11 @@ impl State {
         for _ in 0..n {
             let ps = self.player_mut(player);
             if ps.library.is_empty() {
-                self.lose(LossReason::DrewFromEmptyLibrary);
+                if ps.wins_on_empty_draw() {
+                    self.win(player);
+                } else {
+                    ps.drew_from_empty = true;
+                }
                 return;
             }
             let card = ps.library.remove(0);
@@ -289,10 +361,27 @@ impl State {
         }
     }
 
+    /// Puts `card` onto `player`'s battlefield and queues its enter trigger.
+    pub(crate) fn enter_battlefield(&mut self, player: Player, card: Card, tapped: bool) {
+        self.player_mut(player)
+            .battlefield
+            .push(Permanent::entering(card, tapped));
+        if let Some(kind) = card.etb_trigger() {
+            self.stack.push(StackItem::Trigger {
+                source: card,
+                kind,
+                controller: player,
+            });
+        }
+    }
+
     /// State-based checks, run after every action.
     pub(crate) fn check_state_based(&mut self) {
         if self.you.life <= 0 {
             self.lose(LossReason::LifeZero);
+        }
+        if self.you.drew_from_empty {
+            self.lose(LossReason::DrewFromEmptyLibrary);
         }
     }
 
@@ -323,6 +412,12 @@ impl fmt::Display for Permanent {
         if self.summoning_sick {
             f.write_str(" (summoning sick)")?;
         }
+        if self.card.kind() == CardKind::Planeswalker {
+            write!(f, " (loyalty {})", self.loyalty)?;
+            if self.loyalty_used {
+                f.write_str(" (activated)")?;
+            }
+        }
         Ok(())
     }
 }
@@ -334,6 +429,11 @@ impl fmt::Display for StackItem {
             StackItem::Trigger {
                 source, controller, ..
             } => write!(f, "{source} trigger ({controller:?})"),
+            StackItem::Ability {
+                source,
+                kind,
+                controller,
+            } => write!(f, "{source} {kind} ({controller:?})"),
         }
     }
 }
@@ -386,7 +486,7 @@ impl fmt::Display for State {
                 if let Some(outcome) = self.outcome {
                     writeln!(f, "Game over: {outcome}")?;
                 } else if let Some(pending) = &self.pending {
-                    writeln!(f, "{:?} must decide for {}", pending.player, pending.card)?;
+                    writeln!(f, "{:?} must decide: {:?}", pending.player, pending.kind)?;
                 } else {
                     writeln!(f, "{:?} has priority", self.priority)?;
                 }
@@ -445,16 +545,40 @@ mod tests {
     }
 
     #[test]
-    fn draw_from_empty_library_loses() {
+    fn draw_from_empty_library_loses_at_the_state_based_check() {
         let mut state = main_phase(PlayerState {
             library: vec![Card::Island],
             ..PlayerState::default()
         });
         state.draw(Player::You, 2);
+        assert!(state.you.drew_from_empty);
+        assert_eq!(state.outcome, None, "the loss waits for the check");
+        state.check_state_based();
         assert_eq!(
             state.outcome,
             Some(Outcome::Loss(LossReason::DrewFromEmptyLibrary))
         );
+    }
+
+    #[test]
+    fn lab_man_and_jace_turn_an_empty_draw_into_a_win() {
+        for win_con in [Card::LaboratoryManiac, Card::JaceWielderOfMysteries] {
+            let mut state = main_phase(PlayerState {
+                battlefield: vec![Permanent::untapped(win_con)],
+                ..PlayerState::default()
+            });
+            state.draw(Player::You, 1);
+            assert_eq!(state.outcome, Some(Outcome::Win), "{win_con}");
+            assert!(!state.you.drew_from_empty);
+        }
+        // Thassa's Oracle is not a replacement effect.
+        let mut state = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::ThassasOracle)],
+            ..PlayerState::default()
+        });
+        state.draw(Player::You, 1);
+        assert_eq!(state.outcome, None);
+        assert!(state.you.drew_from_empty);
     }
 
     #[test]
@@ -480,6 +604,9 @@ mod tests {
         let mut state = main_phase(PlayerState::default());
         state.outcome = Some(Outcome::Win);
         state.lose(LossReason::LifeZero);
+        state.you.drew_from_empty = true;
+        state.you.life = 0;
+        state.check_state_based();
         assert_eq!(state.outcome, Some(Outcome::Win));
     }
 
@@ -490,10 +617,54 @@ mod tests {
                 Permanent::untapped(Card::ThassasOracle),
                 Permanent::untapped(Card::MoxSapphire),
                 Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::JaceWielderOfMysteries),
+                Permanent::untapped(Card::LaboratoryManiac),
+                Permanent::untapped(Card::DoctorDoom),
             ],
             ..PlayerState::default()
         });
-        assert_eq!(state.you.blue_devotion(), 2);
+        assert_eq!(state.you.blue_devotion(), 2 + 3 + 1);
+    }
+
+    #[test]
+    fn shuffle_keeps_order_with_at_most_one_card() {
+        let mut one = PlayerState {
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        };
+        one.shuffle();
+        assert!(one.library_ordered);
+        let mut two = PlayerState {
+            library: vec![Card::Island, Card::Swamp],
+            ..PlayerState::default()
+        };
+        two.shuffle();
+        assert!(!two.library_ordered);
+    }
+
+    #[test]
+    fn mill_moves_top_cards_to_graveyard() {
+        let mut ps = PlayerState {
+            library: vec![Card::Island, Card::Swamp, Card::Plains],
+            ..PlayerState::default()
+        };
+        ps.mill(2);
+        assert_eq!(ps.library, vec![Card::Plains]);
+        assert_eq!(ps.graveyard, vec![Card::Island, Card::Swamp]);
+        ps.mill(5);
+        assert!(ps.library.is_empty());
+    }
+
+    #[test]
+    fn entering_permanents_get_sickness_and_loyalty() {
+        assert!(Permanent::entering(Card::ThassasOracle, false).summoning_sick);
+        assert!(!Permanent::entering(Card::Island, true).summoning_sick);
+        assert!(Permanent::entering(Card::Island, true).tapped);
+        assert_eq!(
+            Permanent::entering(Card::JaceWielderOfMysteries, false).loyalty,
+            4
+        );
+        assert_eq!(Permanent::untapped(Card::JaceWielderOfMysteries).loyalty, 4);
     }
 
     #[test]

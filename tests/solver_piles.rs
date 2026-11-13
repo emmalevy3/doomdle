@@ -36,6 +36,19 @@ fn assert_fails(puzzle: Puzzle, pile: &[Card]) {
     assert_eq!(verify(puzzle, pile).expect("legal pile"), Verdict::Fails);
 }
 
+fn has_action(steps: &[doomdle::Step], pred: impl Fn(&Action) -> bool) -> bool {
+    steps.iter().any(|s| pred(&s.action))
+}
+
+fn two_islands() -> Vec<Permanent> {
+    vec![
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::Island),
+    ]
+}
+
+// ---------------------------------------------------------------- stage 1
+
 const LED_PILE: [Card; 5] = [
     Card::AncestralRecall,
     Card::ThassasOracle,
@@ -140,20 +153,16 @@ fn without_ancestral_too_many_cards_remain() {
 /// matters.
 #[test]
 fn oracle_in_hand_wins_when_devotion_covers_the_pile() {
-    let battlefield = vec![
-        Permanent::untapped(Card::Island),
-        Permanent::untapped(Card::Island),
-    ];
     // Fewer than five candidates: the whole set is the pile. Empty is fine.
     assert_wins(
-        puzzle(vec![Card::ThassasOracle], battlefield.clone(), vec![]),
+        puzzle(vec![Card::ThassasOracle], two_islands(), vec![]),
         &[],
     );
     // Devotion 2 covers a library of exactly 2.
     assert_wins(
         puzzle(
             vec![Card::ThassasOracle],
-            battlefield,
+            two_islands(),
             vec![Card::Swamp, Card::Swamp],
         ),
         &[Card::Swamp, Card::Swamp],
@@ -162,13 +171,9 @@ fn oracle_in_hand_wins_when_devotion_covers_the_pile() {
 
 #[test]
 fn oracle_with_three_cards_left_falls_one_short() {
-    let battlefield = vec![
-        Permanent::untapped(Card::Island),
-        Permanent::untapped(Card::Island),
-    ];
     let pile = [Card::Swamp, Card::Swamp, Card::Swamp];
     assert_fails(
-        puzzle(vec![Card::ThassasOracle], battlefield, pile.to_vec()),
+        puzzle(vec![Card::ThassasOracle], two_islands(), pile.to_vec()),
         &pile,
     );
 }
@@ -211,4 +216,344 @@ fn no_pile_wins_without_a_win_condition() {
         ],
     ));
     assert_eq!(solve(&start), None);
+}
+
+// ---------------------------------------------------------------- stage 2
+
+const THREE_SWAMPS: [Card; 3] = [Card::Swamp, Card::Swamp, Card::Swamp];
+
+/// Pair 3: Gitaxian Probe for 2 life shrinks the pile to Oracle range.
+#[test]
+fn probe_for_life_wins() {
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::GitaxianProbe, Card::ThassasOracle],
+            two_islands(),
+            THREE_SWAMPS.to_vec(),
+        ),
+        &THREE_SWAMPS,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::GitaxianProbe,
+            payment,
+        } if payment.life == 2
+    )));
+}
+
+#[test]
+fn probe_for_life_at_two_life_kills_you() {
+    // 3 life -> 2 after Doomsday. Paying 2 life hits 0; paying U leaves one
+    // Island for a UU Oracle.
+    let mut p = puzzle(
+        vec![Card::GitaxianProbe, Card::ThassasOracle],
+        two_islands(),
+        THREE_SWAMPS.to_vec(),
+    );
+    p.you.life = 3;
+    assert_fails(p.clone(), &THREE_SWAMPS);
+    // 2 life -> 1: life can't be paid at all.
+    p.you.life = 2;
+    assert_fails(p, &THREE_SWAMPS);
+}
+
+/// Pair 4: a fetchland pulls a dual out of the pile, shrinking it and adding
+/// the second blue source.
+#[test]
+fn fetching_a_dual_out_of_the_pile_wins() {
+    let pile = [Card::Swamp, Card::UndergroundSea, Card::Swamp];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::PollutedDelta),
+                Permanent::untapped(Card::Island),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::ActivateFetch {
+            source: Card::PollutedDelta
+        }
+    )));
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::SearchLand(Some(Card::UndergroundSea)))
+    )));
+}
+
+#[test]
+fn fetching_leaves_too_many_cards_or_is_impossible() {
+    let pile = [Card::Swamp, Card::UndergroundSea, Card::Swamp, Card::Swamp];
+    assert_fails(
+        puzzle(
+            vec![Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::PollutedDelta),
+                Permanent::untapped(Card::Island),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+    let pile = [Card::Swamp, Card::UndergroundSea, Card::Swamp];
+    assert_fails(
+        puzzle(
+            vec![Card::ThassasOracle],
+            vec![
+                Permanent::tapped(Card::PollutedDelta),
+                Permanent::untapped(Card::Island),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+}
+
+/// Pair 5: a surveil land played as the land drop bins the top of the pile.
+#[test]
+fn surveil_land_shrinks_the_pile() {
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::ThassasOracle, Card::UndercitySewers],
+            two_islands(),
+            THREE_SWAMPS.to_vec(),
+        ),
+        &THREE_SWAMPS,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::PlayLand(Card::UndercitySewers)
+    )));
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::Surveil { to_graveyard: true })
+    )));
+}
+
+#[test]
+fn surveil_land_needs_the_land_drop() {
+    let mut p = puzzle(
+        vec![Card::ThassasOracle, Card::UndercitySewers],
+        two_islands(),
+        THREE_SWAMPS.to_vec(),
+    );
+    p.you.land_drop_available = false;
+    assert_fails(p, &THREE_SWAMPS);
+}
+
+/// Pair 6: Doctor Doom draws the last card and wins at 0 life.
+#[test]
+fn doom_draws_the_last_card_and_wins_at_zero_life() {
+    let mut p = puzzle(
+        vec![],
+        vec![Permanent::untapped(Card::DoctorDoom)],
+        vec![Card::Swamp],
+    );
+    p.you.life = 2;
+    let steps = assert_wins(p, &[Card::Swamp]);
+    assert!(has_action(&steps, |a| matches!(a, Action::ActivateDoom)));
+    assert_eq!(steps.last().unwrap().state.you.life, 0);
+}
+
+#[test]
+fn doom_fails_with_two_cards_or_without_being_ready() {
+    let two = [Card::Swamp, Card::Swamp];
+    assert_fails(
+        puzzle(
+            vec![],
+            vec![Permanent::untapped(Card::DoctorDoom)],
+            two.to_vec(),
+        ),
+        &two,
+    );
+    assert_fails(
+        puzzle(
+            vec![],
+            vec![Permanent::tapped(Card::DoctorDoom)],
+            vec![Card::Swamp],
+        ),
+        &[Card::Swamp],
+    );
+    assert_fails(
+        puzzle(
+            vec![],
+            vec![Permanent::entering(Card::DoctorDoom, false)],
+            vec![Card::Swamp],
+        ),
+        &[Card::Swamp],
+    );
+}
+
+/// Pair 7: Jace +1 on yourself mills two and draws from the empty library.
+#[test]
+fn jace_plus_one_wins_on_a_two_card_pile() {
+    let two = [Card::Swamp, Card::Swamp];
+    let steps = assert_wins(
+        puzzle(
+            vec![],
+            vec![Permanent::untapped(Card::JaceWielderOfMysteries)],
+            two.to_vec(),
+        ),
+        &two,
+    );
+    assert!(has_action(&steps, |a| matches!(a, Action::Loyalty { .. })));
+}
+
+#[test]
+fn jace_plus_one_on_three_cards_draws_the_last_one_and_stops() {
+    assert_fails(
+        puzzle(
+            vec![],
+            vec![Permanent::untapped(Card::JaceWielderOfMysteries)],
+            THREE_SWAMPS.to_vec(),
+        ),
+        &THREE_SWAMPS,
+    );
+}
+
+#[test]
+fn jace_cast_this_turn_can_still_activate() {
+    let two = [Card::Swamp, Card::Swamp];
+    let lands = vec![
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::Swamp),
+    ];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::JaceWielderOfMysteries],
+            lands.clone(),
+            two.to_vec(),
+        ),
+        &two,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::JaceWielderOfMysteries,
+            ..
+        }
+    )));
+    // One blue source short: {1}{U}{U}{U} needs three blue.
+    let mut short = lands;
+    short[2] = Permanent::untapped(Card::Swamp);
+    assert_fails(
+        puzzle(vec![Card::JaceWielderOfMysteries], short, two.to_vec()),
+        &two,
+    );
+}
+
+/// Pair 8: Laboratory Maniac turns Brainstorm's third draw into the win.
+#[test]
+fn lab_man_wins_on_brainstorms_third_draw() {
+    let two = [Card::Swamp, Card::Swamp];
+    assert_wins(
+        puzzle(
+            vec![Card::Brainstorm],
+            vec![
+                Permanent::untapped(Card::LaboratoryManiac),
+                Permanent::untapped(Card::Island),
+            ],
+            two.to_vec(),
+        ),
+        &two,
+    );
+}
+
+#[test]
+fn lab_man_with_three_cards_never_draws_from_empty() {
+    assert_fails(
+        puzzle(
+            vec![Card::Brainstorm],
+            vec![
+                Permanent::untapped(Card::LaboratoryManiac),
+                Permanent::untapped(Card::Island),
+            ],
+            THREE_SWAMPS.to_vec(),
+        ),
+        &THREE_SWAMPS,
+    );
+}
+
+/// Pair 9: Edge of Autumn, both modes.
+#[test]
+fn edge_of_autumn_cycled_for_a_tapped_land_draws_into_lab_man() {
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::EdgeOfAutumn],
+            vec![
+                Permanent::untapped(Card::LaboratoryManiac),
+                Permanent::tapped(Card::Island),
+            ],
+            vec![],
+        ),
+        &[],
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Cycle {
+            card: Card::EdgeOfAutumn,
+            sacrifice: Some(Card::Island),
+            ..
+        }
+    )));
+}
+
+#[test]
+fn edge_of_autumn_cannot_be_cycled_without_a_land() {
+    assert_fails(
+        puzzle(
+            vec![Card::EdgeOfAutumn],
+            vec![Permanent::untapped(Card::LaboratoryManiac)],
+            vec![],
+        ),
+        &[],
+    );
+}
+
+#[test]
+fn edge_of_autumn_cast_pulls_a_basic_out_of_the_pile() {
+    // Tropical Island (G) + Island (generic) pay for Edge; Island + Mox pay for
+    // Oracle. The library drops to two, unordered, and Oracle wins on size.
+    let battlefield = vec![
+        Permanent::untapped(Card::TropicalIsland),
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::MoxSapphire),
+    ];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::EdgeOfAutumn, Card::ThassasOracle],
+            battlefield.clone(),
+            THREE_SWAMPS.to_vec(),
+        ),
+        &THREE_SWAMPS,
+    );
+    // Either mode gets there; the solver picks one and the line replays.
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::EdgeOfAutumn,
+            ..
+        } | Action::Cycle {
+            card: Card::EdgeOfAutumn,
+            ..
+        }
+    )));
+    // Four cards in the pile: neither mode removes enough.
+    let four = [Card::Swamp, Card::Swamp, Card::Swamp, Card::Swamp];
+    assert_fails(
+        puzzle(
+            vec![Card::EdgeOfAutumn, Card::ThassasOracle],
+            battlefield,
+            four.to_vec(),
+        ),
+        &four,
+    );
 }

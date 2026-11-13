@@ -5,8 +5,8 @@
 
 use std::fmt;
 
-use crate::cards::{self, Card, CardKind, ManaAbility};
-use crate::mana::{Color, ManaPool};
+use crate::cards::{self, AbilityKind, Card, CardKind, CyclingCost, LoyaltyAbility, ManaAbility};
+use crate::mana::{Color, Payment};
 use crate::state::{LossReason, Permanent, Phase, Player, StackItem, State};
 
 /// A player's answer to a [`crate::state::PendingChoice`].
@@ -17,13 +17,11 @@ pub enum Choice {
     /// The new order of the looked-at cards, top first.
     PonderOrder(Vec<Card>),
     /// Cards kept on top (in order) and cards sent to the bottom (in order).
-    PreordainScry {
-        top: Vec<Card>,
-        bottom: Vec<Card>,
-    },
-    ConsiderSurveil {
-        to_graveyard: bool,
-    },
+    PreordainScry { top: Vec<Card>, bottom: Vec<Card> },
+    /// Surveil 1 (Consider, Undercity Sewers, Meticulous Archive).
+    Surveil { to_graveyard: bool },
+    /// The land found by a search, or `None` to find nothing.
+    SearchLand(Option<Card>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -34,9 +32,26 @@ pub enum Action {
     /// Cast `card` from hand, paying exactly `payment`.
     CastSpell {
         card: Card,
-        payment: ManaPool,
+        payment: Payment,
     },
     PlayLand(Card),
+    /// Cycle `card` from hand. `sacrifice` names the land for Edge of Autumn.
+    Cycle {
+        card: Card,
+        payment: Payment,
+        sacrifice: Option<Card>,
+    },
+    /// Crack an untapped fetchland: {T}, pay 1 life, sacrifice it.
+    ActivateFetch {
+        source: Card,
+    },
+    /// Doctor Doom's {T} ability.
+    ActivateDoom,
+    /// A planeswalker's loyalty ability (sorcery speed, once per turn).
+    Loyalty {
+        source: Card,
+        ability: LoyaltyAbility,
+    },
     /// Tap an untapped permanent with this card name for one mana.
     TapForMana {
         source: Card,
@@ -102,9 +117,9 @@ pub fn legal_actions(state: &State) -> Vec<Action> {
     }
 }
 
-/// Ordered so that passing and casting come before mana abilities: the solver
-/// tries actions in this order, and resolving or casting what you already can
-/// pay for beats floating mana you may never use.
+/// Ordered so that passing, casting and activating come before mana
+/// abilities: the solver tries actions in this order, and resolving or
+/// casting what you already can pay for beats floating mana you may never use.
 fn your_actions(state: &State) -> Vec<Action> {
     let you = &state.you;
     let sorcery_speed = state.stack.is_empty();
@@ -117,11 +132,32 @@ fn your_actions(state: &State) -> Vec<Action> {
                     out.push(Action::PlayLand(card));
                 }
             }
-            CardKind::Instant => push_casts(&mut out, you.mana_pool, card),
-            CardKind::Sorcery | CardKind::Creature | CardKind::Artifact => {
+            CardKind::Instant => push_casts(&mut out, you, card),
+            CardKind::Sorcery
+            | CardKind::Creature
+            | CardKind::Artifact
+            | CardKind::Planeswalker => {
                 if sorcery_speed {
-                    push_casts(&mut out, you.mana_pool, card);
+                    push_casts(&mut out, you, card);
                 }
+            }
+        }
+        push_cycling(&mut out, you, card);
+    }
+
+    for perm in distinct(&you.battlefield) {
+        if perm.card.fetch_filter().is_some() && !perm.tapped && you.life >= 1 {
+            out.push(Action::ActivateFetch { source: perm.card });
+        }
+        if perm.card == Card::DoctorDoom && !perm.tapped && !perm.summoning_sick {
+            out.push(Action::ActivateDoom);
+        }
+        if sorcery_speed && !perm.loyalty_used {
+            for ability in perm.card.loyalty_abilities() {
+                out.push(Action::Loyalty {
+                    source: perm.card,
+                    ability,
+                });
             }
         }
     }
@@ -157,9 +193,51 @@ fn your_actions(state: &State) -> Vec<Action> {
     out
 }
 
-fn push_casts(out: &mut Vec<Action>, pool: ManaPool, card: Card) {
-    for payment in pool.payments_for(&card.mana_cost()) {
+fn push_casts(out: &mut Vec<Action>, you: &crate::state::PlayerState, card: Card) {
+    if !card.castable() {
+        return;
+    }
+    for payment in Payment::options(&you.mana_pool, &card.mana_cost(), you.life) {
         out.push(Action::CastSpell { card, payment });
+    }
+}
+
+fn push_cycling(out: &mut Vec<Action>, you: &crate::state::PlayerState, card: Card) {
+    match card.cycling_cost() {
+        None => {}
+        Some(CyclingCost::Mana(cost)) => {
+            for mana in you.mana_pool.payments_for(&cost) {
+                out.push(Action::Cycle {
+                    card,
+                    payment: Payment::mana(mana),
+                    sacrifice: None,
+                });
+            }
+        }
+        Some(CyclingCost::Life(n)) => {
+            if you.life >= i16::from(n) {
+                out.push(Action::Cycle {
+                    card,
+                    payment: Payment::life(n),
+                    sacrifice: None,
+                });
+            }
+        }
+        Some(CyclingCost::SacrificeLand) => {
+            let lands: Vec<Card> = you
+                .battlefield
+                .iter()
+                .filter(|p| p.card.kind() == CardKind::Land)
+                .map(|p| p.card)
+                .collect();
+            for land in distinct(&lands) {
+                out.push(Action::Cycle {
+                    card,
+                    payment: Payment::FREE,
+                    sacrifice: Some(land),
+                });
+            }
+        }
     }
 }
 
@@ -222,6 +300,16 @@ pub fn apply(state: &State, action: &Action) -> Result<State, EngineError> {
             Action::Pass => pass(&mut next)?,
             Action::CastSpell { card, payment } => cast(&mut next, actor, *card, payment)?,
             Action::PlayLand(card) => play_land(&mut next, actor, *card)?,
+            Action::Cycle {
+                card,
+                payment,
+                sacrifice,
+            } => cycle(&mut next, actor, *card, payment, *sacrifice)?,
+            Action::ActivateFetch { source } => activate_fetch(&mut next, actor, *source)?,
+            Action::ActivateDoom => activate_doom(&mut next, actor)?,
+            Action::Loyalty { source, ability } => {
+                activate_loyalty(&mut next, actor, *source, *ability)?
+            }
             Action::TapForMana { source, color } => {
                 tap_for_mana(&mut next, actor, *source, *color)?
             }
@@ -289,19 +377,8 @@ fn pass(state: &mut State) -> Result<(), EngineError> {
 fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
     match item {
         StackItem::Spell { card, controller } => match card.kind() {
-            CardKind::Creature | CardKind::Artifact => {
-                state.player_mut(controller).battlefield.push(Permanent {
-                    card,
-                    tapped: false,
-                    summoning_sick: card.kind() == CardKind::Creature,
-                });
-                if let Some(kind) = card.etb_trigger() {
-                    state.stack.push(StackItem::Trigger {
-                        source: card,
-                        kind,
-                        controller,
-                    });
-                }
+            CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
+                state.enter_battlefield(controller, card, false);
                 Ok(())
             }
             CardKind::Instant | CardKind::Sorcery => cards::resolve_spell(state, card, controller),
@@ -310,6 +387,11 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
         StackItem::Trigger {
             kind, controller, ..
         } => cards::resolve_trigger(state, kind, controller),
+        StackItem::Ability {
+            source,
+            kind,
+            controller,
+        } => cards::resolve_ability(state, kind, source, controller),
     }
 }
 
@@ -317,7 +399,7 @@ fn cast(
     state: &mut State,
     player: Player,
     card: Card,
-    payment: &ManaPool,
+    payment: &Payment,
 ) -> Result<(), EngineError> {
     let illegal = || {
         EngineError::IllegalAction(Action::CastSpell {
@@ -326,14 +408,13 @@ fn cast(
         })
     };
     let ps = state.player_mut(player);
-    if !ps
-        .mana_pool
-        .payments_for(&card.mana_cost())
-        .contains(payment)
+    if !card.castable()
+        || !Payment::options(&ps.mana_pool, &card.mana_cost(), ps.life).contains(payment)
     {
         return Err(illegal());
     }
-    ps.mana_pool = ps.mana_pool.minus(payment).ok_or_else(illegal)?;
+    ps.mana_pool = ps.mana_pool.minus(&payment.mana).ok_or_else(illegal)?;
+    ps.life -= i16::from(payment.life);
     ps.remove_from_hand(card).ok_or_else(illegal)?;
     ps.spells_cast_this_turn += 1;
     state.stack.push(StackItem::Spell {
@@ -352,7 +433,119 @@ fn play_land(state: &mut State, player: Player, card: Card) -> Result<(), Engine
     ps.remove_from_hand(card)
         .ok_or(EngineError::IllegalAction(Action::PlayLand(card)))?;
     ps.land_drop_available = false;
-    ps.battlefield.push(Permanent::untapped(card));
+    state.enter_battlefield(player, card, card.enters_tapped());
+    acted(state, player);
+    Ok(())
+}
+
+/// Cycling: pay the cost, discard the card, put "draw a card" on the stack.
+/// Not a spell, so it neither counts for storm nor can be countered.
+fn cycle(
+    state: &mut State,
+    player: Player,
+    card: Card,
+    payment: &Payment,
+    sacrifice: Option<Card>,
+) -> Result<(), EngineError> {
+    let illegal = || {
+        EngineError::IllegalAction(Action::Cycle {
+            card,
+            payment: *payment,
+            sacrifice,
+        })
+    };
+    let cost = card.cycling_cost().ok_or_else(illegal)?;
+    match (cost, sacrifice) {
+        (CyclingCost::Mana(cost), None) => {
+            let ps = state.player_mut(player);
+            if payment.life != 0 || !ps.mana_pool.payments_for(&cost).contains(&payment.mana) {
+                return Err(illegal());
+            }
+            ps.mana_pool = ps.mana_pool.minus(&payment.mana).ok_or_else(illegal)?;
+        }
+        (CyclingCost::Life(n), None) => {
+            let ps = state.player_mut(player);
+            if *payment != Payment::life(n) || ps.life < i16::from(n) {
+                return Err(illegal());
+            }
+            ps.life -= i16::from(n);
+        }
+        (CyclingCost::SacrificeLand, Some(land)) => {
+            if !payment.is_free() || land.kind() != CardKind::Land {
+                return Err(illegal());
+            }
+            let idx = find_permanent(state, player, land, |_| true).ok_or_else(illegal)?;
+            let ps = state.player_mut(player);
+            ps.battlefield.remove(idx);
+            ps.graveyard.push(land);
+        }
+        _ => return Err(illegal()),
+    }
+    let ps = state.player_mut(player);
+    ps.remove_from_hand(card).ok_or_else(illegal)?;
+    ps.graveyard.push(card);
+    state.stack.push(StackItem::Ability {
+        source: card,
+        kind: AbilityKind::Cycling,
+        controller: player,
+    });
+    acted(state, player);
+    Ok(())
+}
+
+fn activate_fetch(state: &mut State, player: Player, source: Card) -> Result<(), EngineError> {
+    let illegal = || EngineError::IllegalAction(Action::ActivateFetch { source });
+    if source.fetch_filter().is_none() || state.player(player).life < 1 {
+        return Err(illegal());
+    }
+    let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
+    let ps = state.player_mut(player);
+    ps.life -= 1;
+    ps.battlefield.remove(idx);
+    ps.graveyard.push(source);
+    state.stack.push(StackItem::Ability {
+        source,
+        kind: AbilityKind::Fetch,
+        controller: player,
+    });
+    acted(state, player);
+    Ok(())
+}
+
+fn activate_doom(state: &mut State, player: Player) -> Result<(), EngineError> {
+    let source = Card::DoctorDoom;
+    let idx = find_permanent(state, player, source, |p| !p.tapped && !p.summoning_sick)
+        .ok_or(EngineError::IllegalAction(Action::ActivateDoom))?;
+    state.player_mut(player).battlefield[idx].tapped = true;
+    state.stack.push(StackItem::Ability {
+        source,
+        kind: AbilityKind::DoomDraw,
+        controller: player,
+    });
+    acted(state, player);
+    Ok(())
+}
+
+fn activate_loyalty(
+    state: &mut State,
+    player: Player,
+    source: Card,
+    ability: LoyaltyAbility,
+) -> Result<(), EngineError> {
+    let illegal = || EngineError::IllegalAction(Action::Loyalty { source, ability });
+    if !source.loyalty_abilities().contains(&ability) || !state.stack.is_empty() {
+        return Err(illegal());
+    }
+    let idx = find_permanent(state, player, source, |p| !p.loyalty_used).ok_or_else(illegal)?;
+    let perm = &mut state.player_mut(player).battlefield[idx];
+    let loyalty = i16::from(perm.loyalty) + i16::from(ability.loyalty_change());
+    perm.loyalty = u8::try_from(loyalty).map_err(|_| illegal())?;
+    perm.loyalty_used = true;
+    state.stack.push(StackItem::Ability {
+        source,
+        kind: ability.ability(),
+        controller: player,
+    });
     acted(state, player);
     Ok(())
 }
@@ -456,13 +649,28 @@ impl fmt::Display for Choice {
                     list(bottom)
                 )
             }
-            Choice::ConsiderSurveil { to_graveyard } => {
+            Choice::Surveil { to_graveyard } => {
                 if *to_graveyard {
-                    write!(f, "Consider: top card to graveyard")
+                    write!(f, "Surveil: top card to graveyard")
                 } else {
-                    write!(f, "Consider: keep top card")
+                    write!(f, "Surveil: keep top card")
                 }
             }
+            Choice::SearchLand(Some(card)) => write!(f, "Find {card}"),
+            Choice::SearchLand(None) => write!(f, "Find nothing"),
+        }
+    }
+}
+
+impl fmt::Display for LoyaltyAbility {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LoyaltyAbility::JacePlusOne {
+                target: Player::You,
+            } => f.write_str("+1 targeting yourself"),
+            LoyaltyAbility::JacePlusOne {
+                target: Player::Opponent,
+            } => f.write_str("+1 targeting the opponent"),
         }
     }
 }
@@ -473,13 +681,30 @@ impl fmt::Display for Action {
             Action::ChoosePile(pile) => write!(f, "Doomsday pile (top first): {}", list(pile)),
             Action::Pass => write!(f, "Pass priority"),
             Action::CastSpell { card, payment } => {
-                if payment.is_empty() {
+                if payment.is_free() {
                     write!(f, "Cast {card} for free")
                 } else {
                     write!(f, "Cast {card} paying {payment}")
                 }
             }
             Action::PlayLand(card) => write!(f, "Play {card}"),
+            Action::Cycle {
+                card,
+                payment,
+                sacrifice,
+            } => {
+                write!(f, "Cycle {card}")?;
+                if let Some(land) = sacrifice {
+                    write!(f, " sacrificing {land}")?;
+                }
+                if !payment.is_free() {
+                    write!(f, " paying {payment}")?;
+                }
+                Ok(())
+            }
+            Action::ActivateFetch { source } => write!(f, "Crack {source}"),
+            Action::ActivateDoom => write!(f, "Tap Doctor Doom to draw"),
+            Action::Loyalty { source, ability } => write!(f, "{source}: {ability}"),
             Action::TapForMana { source, color } => write!(f, "Tap {source} for {color}"),
             Action::SacrificeForMana { source, color } => {
                 write!(f, "Sacrifice {source} for {color}")
@@ -509,11 +734,20 @@ fn list(cards: &[Card]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cards::TriggerKind;
+    use crate::mana::ManaPool;
     use crate::state::test_support::main_phase;
-    use crate::state::{Outcome, PlayerState, Puzzle};
+    use crate::state::{ChoiceKind, Outcome, PendingChoice, PlayerState, Puzzle};
 
     fn cast_action(card: Card, payment: ManaPool) -> Action {
-        Action::CastSpell { card, payment }
+        Action::CastSpell {
+            card,
+            payment: payment.into(),
+        }
+    }
+
+    fn pass_twice(state: &State) -> State {
+        apply(&apply(state, &Action::Pass).unwrap(), &Action::Pass).unwrap()
     }
 
     #[test]
@@ -605,14 +839,19 @@ mod tests {
                 Card::Brainstorm,
                 Card::ThassasOracle,
                 Card::LotusPetal,
+                Card::JaceWielderOfMysteries,
             ],
-            mana_pool: ManaPool::of(Color::U, 3),
+            mana_pool: ManaPool::of(Color::U, 4),
             ..PlayerState::default()
         });
         let open = legal_actions(&state);
         assert!(open.contains(&cast_action(Card::Ponder, ManaPool::of(Color::U, 1))));
         assert!(open.contains(&cast_action(Card::ThassasOracle, ManaPool::of(Color::U, 2))));
         assert!(open.contains(&cast_action(Card::LotusPetal, ManaPool::EMPTY)));
+        assert!(open.contains(&cast_action(
+            Card::JaceWielderOfMysteries,
+            ManaPool::of(Color::U, 4)
+        )));
 
         state.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
@@ -623,7 +862,10 @@ mod tests {
         assert!(!busy.iter().any(|a| matches!(
             a,
             Action::CastSpell {
-                card: Card::Ponder | Card::ThassasOracle | Card::LotusPetal,
+                card: Card::Ponder
+                    | Card::ThassasOracle
+                    | Card::LotusPetal
+                    | Card::JaceWielderOfMysteries,
                 ..
             }
         )));
@@ -653,6 +895,427 @@ mod tests {
                 ..
             }
         )));
+    }
+
+    #[test]
+    fn probe_is_cast_for_blue_or_two_life() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::GitaxianProbe],
+            mana_pool: ManaPool::of(Color::U, 1),
+            library: vec![Card::Island],
+            life: 10,
+            ..PlayerState::default()
+        });
+        let casts = legal_actions(&state)
+            .iter()
+            .filter(|a| matches!(a, Action::CastSpell { .. }))
+            .count();
+        assert_eq!(casts, 2);
+        let for_life = Action::CastSpell {
+            card: Card::GitaxianProbe,
+            payment: Payment::life(2),
+        };
+        let next = apply(&state, &for_life).unwrap();
+        assert_eq!(next.you.life, 8);
+        assert_eq!(next.you.mana_pool, ManaPool::of(Color::U, 1));
+        assert_eq!(next.you.spells_cast_this_turn, 1, "still a spell for storm");
+        assert_eq!(pass_twice(&next).you.hand, vec![Card::Island]);
+    }
+
+    #[test]
+    fn life_cannot_be_paid_below_what_you_have() {
+        let one_life = main_phase(PlayerState {
+            hand: vec![Card::GitaxianProbe, Card::StreetWraith],
+            life: 1,
+            ..PlayerState::default()
+        });
+        assert_eq!(legal_actions(&one_life), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn paying_life_down_to_zero_loses_after_the_action() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::GitaxianProbe],
+            library: vec![Card::Island],
+            life: 2,
+            ..PlayerState::default()
+        });
+        let next = apply(
+            &state,
+            &Action::CastSpell {
+                card: Card::GitaxianProbe,
+                payment: Payment::life(2),
+            },
+        )
+        .unwrap();
+        assert_eq!(next.outcome, Some(Outcome::Loss(LossReason::LifeZero)));
+    }
+
+    #[test]
+    fn street_wraith_cycles_for_two_life_and_is_never_cast() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::StreetWraith],
+            mana_pool: ManaPool::of(Color::B, 5),
+            library: vec![Card::Island],
+            spells_cast_this_turn: 1,
+            life: 5,
+            ..PlayerState::default()
+        });
+        let actions = legal_actions(&state);
+        assert!(
+            !actions
+                .iter()
+                .any(|a| matches!(a, Action::CastSpell { .. }))
+        );
+        let cycle = Action::Cycle {
+            card: Card::StreetWraith,
+            payment: Payment::life(2),
+            sacrifice: None,
+        };
+        assert!(actions.contains(&cycle));
+        let next = apply(&state, &cycle).unwrap();
+        assert_eq!(next.you.life, 3);
+        assert!(next.you.hand.is_empty());
+        assert_eq!(next.you.graveyard, vec![Card::StreetWraith]);
+        assert_eq!(next.you.spells_cast_this_turn, 1, "cycling is not a spell");
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Ability {
+                source: Card::StreetWraith,
+                kind: AbilityKind::Cycling,
+                controller: Player::You,
+            }]
+        );
+        assert_eq!(pass_twice(&next).you.hand, vec![Card::Island]);
+    }
+
+    #[test]
+    fn cycling_is_instant_speed() {
+        let mut state = main_phase(PlayerState {
+            hand: vec![Card::StreetWraith],
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        state.stack.push(StackItem::Spell {
+            card: Card::DarkRitual,
+            controller: Player::You,
+        });
+        assert!(
+            legal_actions(&state)
+                .iter()
+                .any(|a| matches!(a, Action::Cycle { .. }))
+        );
+    }
+
+    #[test]
+    fn edge_of_autumn_cycles_by_sacrificing_any_land() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::EdgeOfAutumn],
+            battlefield: vec![
+                Permanent::tapped(Card::Island),
+                Permanent::untapped(Card::Swamp),
+                Permanent::untapped(Card::LotusPetal),
+            ],
+            library: vec![Card::Plains],
+            ..PlayerState::default()
+        });
+        let cycles: Vec<Action> = legal_actions(&state)
+            .into_iter()
+            .filter(|a| matches!(a, Action::Cycle { .. }))
+            .collect();
+        assert_eq!(
+            cycles,
+            vec![
+                Action::Cycle {
+                    card: Card::EdgeOfAutumn,
+                    payment: Payment::FREE,
+                    sacrifice: Some(Card::Island),
+                },
+                Action::Cycle {
+                    card: Card::EdgeOfAutumn,
+                    payment: Payment::FREE,
+                    sacrifice: Some(Card::Swamp),
+                },
+            ]
+        );
+        let next = apply(&state, &cycles[0]).unwrap();
+        assert_eq!(
+            next.you.battlefield,
+            vec![
+                Permanent::untapped(Card::LotusPetal),
+                Permanent::untapped(Card::Swamp),
+            ]
+        );
+        assert_eq!(next.you.graveyard, vec![Card::EdgeOfAutumn, Card::Island]);
+        assert_eq!(pass_twice(&next).you.hand, vec![Card::Plains]);
+    }
+
+    #[test]
+    fn edge_of_autumn_cannot_cycle_without_a_land() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::EdgeOfAutumn],
+            battlefield: vec![Permanent::untapped(Card::LotusPetal)],
+            ..PlayerState::default()
+        });
+        assert!(
+            !legal_actions(&state)
+                .iter()
+                .any(|a| matches!(a, Action::Cycle { .. }))
+        );
+    }
+
+    #[test]
+    fn fetchland_costs_a_tap_a_life_and_itself() {
+        let state = main_phase(PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::PollutedDelta),
+                Permanent::tapped(Card::FloodedStrand),
+            ],
+            library: vec![Card::Island, Card::Swamp],
+            life: 3,
+            ..PlayerState::default()
+        });
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&Action::ActivateFetch {
+            source: Card::PollutedDelta
+        }));
+        assert!(!actions.contains(&Action::ActivateFetch {
+            source: Card::FloodedStrand
+        }));
+        let next = apply(
+            &state,
+            &Action::ActivateFetch {
+                source: Card::PollutedDelta,
+            },
+        )
+        .unwrap();
+        assert_eq!(next.you.life, 2);
+        assert_eq!(
+            next.you.battlefield,
+            vec![Permanent::tapped(Card::FloodedStrand)]
+        );
+        assert_eq!(next.you.graveyard, vec![Card::PollutedDelta]);
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Ability {
+                source: Card::PollutedDelta,
+                kind: AbilityKind::Fetch,
+                controller: Player::You,
+            }]
+        );
+        let resolved = pass_twice(&next);
+        assert_eq!(
+            resolved.pending.unwrap().kind,
+            ChoiceKind::SearchLand(crate::cards::LandFilter::Types(
+                Card::PollutedDelta.fetch_filter().unwrap()
+            ))
+        );
+        let found = apply(
+            &resolved,
+            &Action::Choose(Choice::SearchLand(Some(Card::Swamp))),
+        )
+        .unwrap();
+        assert!(
+            found
+                .you
+                .battlefield
+                .contains(&Permanent::untapped(Card::Swamp))
+        );
+        assert_eq!(found.you.library, vec![Card::Island]);
+        assert_eq!(found.pending, None);
+    }
+
+    #[test]
+    fn fetching_at_one_life_is_legal_but_fatal() {
+        let state = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::PollutedDelta)],
+            life: 1,
+            ..PlayerState::default()
+        });
+        let action = Action::ActivateFetch {
+            source: Card::PollutedDelta,
+        };
+        assert!(legal_actions(&state).contains(&action));
+        let next = apply(&state, &action).unwrap();
+        assert_eq!(next.outcome, Some(Outcome::Loss(LossReason::LifeZero)));
+
+        let mut dead = state;
+        dead.you.life = 0;
+        assert!(!legal_actions(&dead).contains(&action));
+    }
+
+    #[test]
+    fn surveil_land_enters_tapped_and_triggers() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::UndercitySewers],
+            library: vec![Card::Island, Card::Swamp],
+            ..PlayerState::default()
+        });
+        let played = apply(&state, &Action::PlayLand(Card::UndercitySewers)).unwrap();
+        assert_eq!(
+            played.you.battlefield,
+            vec![Permanent::tapped(Card::UndercitySewers)]
+        );
+        assert!(!played.you.land_drop_available);
+        assert_eq!(
+            played.stack,
+            vec![StackItem::Trigger {
+                source: Card::UndercitySewers,
+                kind: TriggerKind::Surveil,
+                controller: Player::You,
+            }]
+        );
+        // No mana from a tapped land.
+        assert!(
+            !legal_actions(&played)
+                .iter()
+                .any(|a| matches!(a, Action::TapForMana { .. }))
+        );
+        let choice = pass_twice(&played);
+        let binned = apply(
+            &choice,
+            &Action::Choose(Choice::Surveil { to_graveyard: true }),
+        )
+        .unwrap();
+        assert_eq!(binned.you.library, vec![Card::Swamp]);
+        assert_eq!(binned.you.graveyard, vec![Card::Island]);
+    }
+
+    #[test]
+    fn doom_activation_needs_an_untapped_unsick_doom() {
+        let ready = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::DoctorDoom)],
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        assert!(legal_actions(&ready).contains(&Action::ActivateDoom));
+        let next = apply(&ready, &Action::ActivateDoom).unwrap();
+        assert_eq!(
+            next.you.battlefield,
+            vec![Permanent::tapped(Card::DoctorDoom)]
+        );
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Ability {
+                source: Card::DoctorDoom,
+                kind: AbilityKind::DoomDraw,
+                controller: Player::You,
+            }]
+        );
+        assert!(!legal_actions(&next).contains(&Action::ActivateDoom));
+
+        let tapped = main_phase(PlayerState {
+            battlefield: vec![Permanent::tapped(Card::DoctorDoom)],
+            ..PlayerState::default()
+        });
+        assert!(!legal_actions(&tapped).contains(&Action::ActivateDoom));
+
+        let sick = main_phase(PlayerState {
+            battlefield: vec![Permanent::entering(Card::DoctorDoom, false)],
+            ..PlayerState::default()
+        });
+        assert!(!legal_actions(&sick).contains(&Action::ActivateDoom));
+    }
+
+    #[test]
+    fn doom_cast_from_hand_is_summoning_sick() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::DoctorDoom],
+            mana_pool: ManaPool::of(Color::B, 4),
+            ..PlayerState::default()
+        });
+        let cast = apply(
+            &state,
+            &cast_action(Card::DoctorDoom, ManaPool::of(Color::B, 4)),
+        )
+        .unwrap();
+        let resolved = pass_twice(&cast);
+        assert!(resolved.you.battlefield[0].summoning_sick);
+        assert!(!legal_actions(&resolved).contains(&Action::ActivateDoom));
+    }
+
+    #[test]
+    fn jace_loyalty_is_sorcery_speed_and_once_per_turn() {
+        let state = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::JaceWielderOfMysteries)],
+            library: vec![Card::Island, Card::Swamp, Card::Plains],
+            ..PlayerState::default()
+        });
+        let plus_you = Action::Loyalty {
+            source: Card::JaceWielderOfMysteries,
+            ability: LoyaltyAbility::JacePlusOne {
+                target: Player::You,
+            },
+        };
+        let plus_them = Action::Loyalty {
+            source: Card::JaceWielderOfMysteries,
+            ability: LoyaltyAbility::JacePlusOne {
+                target: Player::Opponent,
+            },
+        };
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&plus_you));
+        assert!(actions.contains(&plus_them));
+
+        let next = apply(&state, &plus_you).unwrap();
+        let jace = next.you.battlefield[0];
+        assert_eq!(jace.loyalty, 5);
+        assert!(jace.loyalty_used);
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Ability {
+                source: Card::JaceWielderOfMysteries,
+                kind: AbilityKind::JacePlusOne {
+                    target: Player::You
+                },
+                controller: Player::You,
+            }]
+        );
+        // Not again this turn, and not with something on the stack.
+        assert!(
+            !legal_actions(&next)
+                .iter()
+                .any(|a| matches!(a, Action::Loyalty { .. }))
+        );
+        let resolved = pass_twice(&next);
+        assert!(
+            !legal_actions(&resolved)
+                .iter()
+                .any(|a| matches!(a, Action::Loyalty { .. }))
+        );
+
+        let mut busy = state.clone();
+        busy.stack.push(StackItem::Spell {
+            card: Card::DarkRitual,
+            controller: Player::You,
+        });
+        assert!(
+            !legal_actions(&busy)
+                .iter()
+                .any(|a| matches!(a, Action::Loyalty { .. }))
+        );
+    }
+
+    #[test]
+    fn jace_can_activate_the_turn_he_enters() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::JaceWielderOfMysteries],
+            mana_pool: ManaPool::of(Color::U, 4),
+            library: vec![Card::Island, Card::Swamp],
+            ..PlayerState::default()
+        });
+        let cast = apply(
+            &state,
+            &cast_action(Card::JaceWielderOfMysteries, ManaPool::of(Color::U, 4)),
+        )
+        .unwrap();
+        let resolved = pass_twice(&cast);
+        assert_eq!(resolved.you.battlefield[0].loyalty, 4);
+        assert!(
+            legal_actions(&resolved)
+                .iter()
+                .any(|a| matches!(a, Action::Loyalty { .. }))
+        );
     }
 
     #[test]
@@ -826,16 +1489,15 @@ mod tests {
 
     #[test]
     fn led_is_not_available_while_a_choice_is_pending() {
-        let state = main_phase(PlayerState {
+        let mut state = main_phase(PlayerState {
             hand: vec![Card::Island, Card::Swamp],
             battlefield: vec![Permanent::untapped(Card::LionsEyeDiamond)],
             ..PlayerState::default()
         });
-        let mut state = state;
-        state.pending = Some(crate::state::PendingChoice {
+        state.pending = Some(PendingChoice {
             player: Player::You,
-            card: Card::Brainstorm,
-            kind: crate::state::ChoiceKind::BrainstormPutBack,
+            kind: ChoiceKind::BrainstormPutBack,
+            bin: Some(Card::Brainstorm),
         });
         let actions = legal_actions(&state);
         assert!(!actions.is_empty());
@@ -858,11 +1520,32 @@ mod tests {
             &cast_action(Card::DarkRitual, ManaPool::of(Color::B, 1)),
         )
         .unwrap();
-        let state = apply(&apply(&state, &Action::Pass).unwrap(), &Action::Pass).unwrap();
+        let state = pass_twice(&state);
         assert_eq!(
             state.you.mana_pool,
             ManaPool::of(Color::B, 3).with(Color::U, 2)
         );
+    }
+
+    #[test]
+    fn actions_are_ordered_pass_casts_abilities_then_mana() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::StreetWraith, Card::Brainstorm],
+            battlefield: vec![
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::PollutedDelta),
+            ],
+            mana_pool: ManaPool::of(Color::U, 1),
+            ..PlayerState::default()
+        });
+        let actions = legal_actions(&state);
+        let pos = |pred: fn(&Action) -> bool| actions.iter().position(pred).unwrap();
+        let pass = pos(|a| matches!(a, Action::Pass));
+        let cast = pos(|a| matches!(a, Action::CastSpell { .. }));
+        let cycle = pos(|a| matches!(a, Action::Cycle { .. }));
+        let fetch = pos(|a| matches!(a, Action::ActivateFetch { .. }));
+        let tap = pos(|a| matches!(a, Action::TapForMana { .. }));
+        assert!(pass < cast && cast < fetch && cycle < fetch && fetch < tap);
     }
 
     fn puzzle_with_candidates(candidates: Vec<Card>, graveyard: Vec<Card>, life: i16) -> Puzzle {

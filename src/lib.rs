@@ -10,9 +10,12 @@ pub mod mana;
 pub mod solver;
 pub mod state;
 
-pub use cards::{Card, CardKind, LandType, ManaAbility, TriggerKind};
+pub use cards::{
+    AbilityKind, Card, CardKind, CyclingCost, LandFilter, LandType, LoyaltyAbility, ManaAbility,
+    TriggerKind,
+};
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
-pub use mana::{Color, ManaCost, ManaPool};
+pub use mana::{Color, ManaCost, ManaPool, Payment};
 pub use solver::{Step, Strategy, Verdict, solve, verify};
 pub use state::{
     ChoiceKind, LossReason, Outcome, PendingChoice, Permanent, Phase, Player, PlayerState, Puzzle,
