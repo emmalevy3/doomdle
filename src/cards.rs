@@ -269,10 +269,7 @@ pub(crate) fn resolve_spell(
             state.draw(controller, 1);
         }
         Card::AncestralRecall => state.draw(controller, 3),
-        Card::DarkRitual => state
-            .player_mut(controller)
-            .mana_pool
-            .add_mana(Color::B, 3),
+        Card::DarkRitual => state.player_mut(controller).mana_pool.add_mana(Color::B, 3),
         _ => return Err(EngineError::Internal("not an instant or sorcery")),
     }
     state.player_mut(controller).graveyard.push(card);
@@ -497,7 +494,10 @@ mod tests {
             ..PlayerState::default()
         });
         let state = resolve(state, Card::AncestralRecall);
-        assert_eq!(state.you.hand, vec![Card::Plains, Card::Island, Card::Swamp]);
+        assert_eq!(
+            state.you.hand,
+            vec![Card::Plains, Card::Island, Card::Swamp]
+        );
         assert_eq!(state.you.library, vec![Card::Forest]);
         assert_eq!(state.you.graveyard, vec![Card::AncestralRecall]);
         assert_eq!(state.you.cards_drawn_this_turn, 3);
@@ -560,7 +560,10 @@ mod tests {
         )
         .unwrap();
         assert_eq!(next.you.hand, vec![Card::ThassasOracle]);
-        assert_eq!(next.you.library, vec![Card::Island, Card::Swamp, Card::Forest]);
+        assert_eq!(
+            next.you.library,
+            vec![Card::Island, Card::Swamp, Card::Forest]
+        );
         assert!(next.you.library_ordered);
         assert_eq!(next.you.graveyard, vec![Card::Ponder]);
     }

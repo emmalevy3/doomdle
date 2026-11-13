@@ -16,7 +16,17 @@ Before saying a task is done, run fmt, clippy and test and make sure all three p
 Development happens inside the dev container in `.devcontainer/` (image `mcr.microsoft.com/devcontainers/rust:1`, with Node and Claude Code installed). Only the project folder is mounted; Claude Code config persists in a Docker volume at `/home/vscode/.claude`.
 
 ## Project state
-Rust crate, edition 2024, no dependencies yet. Logic should live in a library crate (`src/lib.rs` and modules) so it can later compile to WebAssembly; `src/main.rs` stays a thin CLI for running puzzles locally. Update this section as structure emerges.
+Rust crate, edition 2024, no dependencies yet. Logic lives in a library crate so it can later compile to WebAssembly; `src/main.rs` stays a thin CLI for running puzzles locally. Update this section as structure emerges.
+
+Stage 1 is done. Modules:
+- `src/mana.rs` — `Color`, `ManaPool` (per-color counts + colorless; also used as a payment), `ManaCost`, and `ManaPool::payments_for` (every distinct way to pay a cost).
+- `src/cards.rs` — the `Card` enum (stage 1 pool only) and all card behavior as `match` arms: costs, kinds, land subtypes, mana abilities, enter triggers, `resolve_spell`/`resolve_trigger`, and the options and application of player choices (Brainstorm put-back, Ponder order, scry, surveil).
+- `src/state.rs` — `State` (both players, stack, priority, pending choice, outcome), `PlayerState`, `Permanent`, `StackItem`, `Puzzle`, `Outcome`, `draw`, state-based checks, and `normalize` (sorts hand/graveyard/exile/battlefield so equivalent states hash equal). `Display` for all of them.
+- `src/engine.rs` — `Action`, `Choice`, `legal_actions`, `apply`. A resolution that needs a decision sets `State::pending`; until it is answered the only legal actions are `Action::Choose`. Mana abilities never touch the stack. Puzzles start in `Phase::ChoosingPile`, where the only actions are `Action::ChoosePile`.
+- `src/solver.rs` — `solve` (AND/OR DFS, memoized on `State`), `Strategy` with a `walk`/`line` replay that pairs each action with the resulting state, and `verify(puzzle, pile) -> Verdict::{Wins, Fails}` as the single entry point for checking a submitted pile.
+- `tests/solver_piles.rs` — winning / near-miss pile pairs.
+
+Puzzles are built as `Puzzle` structs in code; there is no file format yet.
 
 ## Rules source of truth
 - `CARDS.md` defines every card in the pool and exactly how it behaves *in this engine*. Read it before touching any card logic.

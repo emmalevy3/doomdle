@@ -251,7 +251,10 @@ mod tests {
     #[test]
     fn no_payment_when_short() {
         let pool = ManaPool::of(Color::U, 1);
-        assert!(pool.payments_for(&ManaCost::colored(Color::U, 2)).is_empty());
+        assert!(
+            pool.payments_for(&ManaCost::colored(Color::U, 2))
+                .is_empty()
+        );
         assert!(
             ManaPool::of(Color::B, 5)
                 .payments_for(&ManaCost::colored(Color::U, 1))
@@ -307,7 +310,10 @@ mod tests {
 
     #[test]
     fn display() {
-        assert_eq!(ManaPool::of(Color::U, 2).with(Color::B, 1).to_string(), "UUB");
+        assert_eq!(
+            ManaPool::of(Color::U, 2).with(Color::B, 1).to_string(),
+            "UUB"
+        );
         assert_eq!(ManaPool::EMPTY.to_string(), "0");
         assert_eq!(
             ManaCost::colored(Color::U, 2).with_generic(1).to_string(),

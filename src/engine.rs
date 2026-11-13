@@ -17,8 +17,13 @@ pub enum Choice {
     /// The new order of the looked-at cards, top first.
     PonderOrder(Vec<Card>),
     /// Cards kept on top (in order) and cards sent to the bottom (in order).
-    PreordainScry { top: Vec<Card>, bottom: Vec<Card> },
-    ConsiderSurveil { to_graveyard: bool },
+    PreordainScry {
+        top: Vec<Card>,
+        bottom: Vec<Card>,
+    },
+    ConsiderSurveil {
+        to_graveyard: bool,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -27,14 +32,25 @@ pub enum Action {
     ChoosePile(Vec<Card>),
     Pass,
     /// Cast `card` from hand, paying exactly `payment`.
-    CastSpell { card: Card, payment: ManaPool },
+    CastSpell {
+        card: Card,
+        payment: ManaPool,
+    },
     PlayLand(Card),
     /// Tap an untapped permanent with this card name for one mana.
-    TapForMana { source: Card, color: Color },
+    TapForMana {
+        source: Card,
+        color: Color,
+    },
     /// Black Lotus or Lotus Petal.
-    SacrificeForMana { source: Card, color: Color },
+    SacrificeForMana {
+        source: Card,
+        color: Color,
+    },
     /// Lion's Eye Diamond: discard your hand, add three of `color`.
-    ActivateLed { color: Color },
+    ActivateLed {
+        color: Color,
+    },
     Choose(Choice),
 }
 
@@ -206,7 +222,9 @@ pub fn apply(state: &State, action: &Action) -> Result<State, EngineError> {
             Action::Pass => pass(&mut next)?,
             Action::CastSpell { card, payment } => cast(&mut next, actor, *card, payment)?,
             Action::PlayLand(card) => play_land(&mut next, actor, *card)?,
-            Action::TapForMana { source, color } => tap_for_mana(&mut next, actor, *source, *color)?,
+            Action::TapForMana { source, color } => {
+                tap_for_mana(&mut next, actor, *source, *color)?
+            }
             Action::SacrificeForMana { source, color } => {
                 sacrifice_for_mana(&mut next, actor, *source, *color)?
             }
@@ -305,7 +323,11 @@ fn cast(
         })
     };
     let ps = state.player_mut(player);
-    if !ps.mana_pool.payments_for(&card.mana_cost()).contains(payment) {
+    if !ps
+        .mana_pool
+        .payments_for(&card.mana_cost())
+        .contains(payment)
+    {
         return Err(illegal());
     }
     ps.mana_pool = ps.mana_pool.minus(payment).ok_or_else(illegal)?;
@@ -460,7 +482,10 @@ impl fmt::Display for Action {
                 write!(f, "Sacrifice {source} for {color}")
             }
             Action::ActivateLed { color } => {
-                write!(f, "Crack Lion's Eye Diamond for {color}{color}{color}, discarding hand")
+                write!(
+                    f,
+                    "Crack Lion's Eye Diamond for {color}{color}{color}, discarding hand"
+                )
             }
             Action::Choose(choice) => write!(f, "{choice}"),
         }
@@ -572,7 +597,12 @@ mod tests {
     #[test]
     fn sorcery_speed_needs_an_empty_stack() {
         let mut state = main_phase(PlayerState {
-            hand: vec![Card::Ponder, Card::Brainstorm, Card::ThassasOracle, Card::LotusPetal],
+            hand: vec![
+                Card::Ponder,
+                Card::Brainstorm,
+                Card::ThassasOracle,
+                Card::LotusPetal,
+            ],
             mana_pool: ManaPool::of(Color::U, 3),
             ..PlayerState::default()
         });
@@ -595,7 +625,10 @@ mod tests {
             }
         )));
         assert_eq!(
-            apply(&state, &cast_action(Card::Ponder, ManaPool::of(Color::U, 1))),
+            apply(
+                &state,
+                &cast_action(Card::Ponder, ManaPool::of(Color::U, 1))
+            ),
             Err(EngineError::IllegalAction(cast_action(
                 Card::Ponder,
                 ManaPool::of(Color::U, 1)
@@ -627,7 +660,10 @@ mod tests {
         });
         assert!(legal_actions(&state).contains(&Action::PlayLand(Card::Island)));
         let played = apply(&state, &Action::PlayLand(Card::Island)).unwrap();
-        assert_eq!(played.you.battlefield, vec![Permanent::untapped(Card::Island)]);
+        assert_eq!(
+            played.you.battlefield,
+            vec![Permanent::untapped(Card::Island)]
+        );
         assert!(!played.you.land_drop_available);
         assert!(!legal_actions(&played).contains(&Action::PlayLand(Card::Swamp)));
 
@@ -680,7 +716,12 @@ mod tests {
         )
         .unwrap();
         assert_eq!(next.you.mana_pool, ManaPool::of(Color::B, 1));
-        assert!(next.you.battlefield.iter().all(|p| p.tapped || p.card == Card::MoxJet));
+        assert!(
+            next.you
+                .battlefield
+                .iter()
+                .all(|p| p.tapped || p.card == Card::MoxJet)
+        );
         // A tapped land can't be tapped again.
         assert!(!legal_actions(&next).iter().any(|a| matches!(
             a,
@@ -726,7 +767,10 @@ mod tests {
         .unwrap();
         assert_eq!(lotus.you.mana_pool, ManaPool::of(Color::U, 3));
         assert_eq!(lotus.you.graveyard, vec![Card::BlackLotus]);
-        assert_eq!(lotus.you.battlefield, vec![Permanent::untapped(Card::LotusPetal)]);
+        assert_eq!(
+            lotus.you.battlefield,
+            vec![Permanent::untapped(Card::LotusPetal)]
+        );
         let petal = apply(
             &lotus,
             &Action::SacrificeForMana {
@@ -735,7 +779,10 @@ mod tests {
             },
         )
         .unwrap();
-        assert_eq!(petal.you.mana_pool, ManaPool::of(Color::U, 3).with(Color::G, 1));
+        assert_eq!(
+            petal.you.mana_pool,
+            ManaPool::of(Color::U, 3).with(Color::G, 1)
+        );
         assert!(petal.you.battlefield.is_empty());
     }
 
@@ -803,9 +850,16 @@ mod tests {
             mana_pool: ManaPool::of(Color::B, 1).with(Color::U, 2),
             ..PlayerState::default()
         });
-        let state = apply(&state, &cast_action(Card::DarkRitual, ManaPool::of(Color::B, 1))).unwrap();
+        let state = apply(
+            &state,
+            &cast_action(Card::DarkRitual, ManaPool::of(Color::B, 1)),
+        )
+        .unwrap();
         let state = apply(&apply(&state, &Action::Pass).unwrap(), &Action::Pass).unwrap();
-        assert_eq!(state.you.mana_pool, ManaPool::of(Color::B, 3).with(Color::U, 2));
+        assert_eq!(
+            state.you.mana_pool,
+            ManaPool::of(Color::B, 3).with(Color::U, 2)
+        );
     }
 
     fn puzzle_with_candidates(candidates: Vec<Card>, graveyard: Vec<Card>, life: i16) -> Puzzle {
@@ -866,7 +920,14 @@ mod tests {
     #[test]
     fn doomsday_must_pick_exactly_five_that_exist() {
         let puzzle = puzzle_with_candidates(
-            vec![Card::Island, Card::Island, Card::Swamp, Card::Plains, Card::Forest, Card::Mountain],
+            vec![
+                Card::Island,
+                Card::Island,
+                Card::Swamp,
+                Card::Plains,
+                Card::Forest,
+                Card::Mountain,
+            ],
             vec![],
             20,
         );
@@ -874,15 +935,29 @@ mod tests {
         assert!(matches!(
             State::with_pile(
                 puzzle.clone(),
-                &[Card::Island, Card::Island, Card::Island, Card::Swamp, Card::Plains]
+                &[
+                    Card::Island,
+                    Card::Island,
+                    Card::Island,
+                    Card::Swamp,
+                    Card::Plains
+                ]
             ),
             Err(EngineError::IllegalAction(_))
         ));
-        assert!(State::with_pile(
-            puzzle.clone(),
-            &[Card::Island, Card::Island, Card::Swamp, Card::Plains, Card::Forest]
-        )
-        .is_ok());
+        assert!(
+            State::with_pile(
+                puzzle.clone(),
+                &[
+                    Card::Island,
+                    Card::Island,
+                    Card::Swamp,
+                    Card::Plains,
+                    Card::Forest
+                ]
+            )
+            .is_ok()
+        );
         // 6 candidates with a duplicate: 6!/1! orderings minus the repeats.
         let choices = legal_actions(&State::new(puzzle));
         assert_eq!(choices.len(), 720 - 360);
