@@ -294,13 +294,16 @@ pub enum AltCost {
 }
 
 /// What a player hands over for a spell or ability: mana from the pool, life
-/// (Phyrexian mana, Street Wraith's cycling, Force of Will) and, for an
-/// alternative cost, the card it pitches or bounces.
+/// (Phyrexian mana, Street Wraith's cycling, Force of Will), for an
+/// alternative cost the card it pitches or bounces, and how many times a
+/// replicate cost was paid (Consign to Memory; the mana for it is included
+/// in `mana`).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Payment {
     pub mana: ManaPool,
     pub life: u8,
     pub alt: Option<AltCost>,
+    pub replicate: u8,
 }
 
 impl Payment {
@@ -308,26 +311,25 @@ impl Payment {
         mana: ManaPool::EMPTY,
         life: 0,
         alt: None,
+        replicate: 0,
     };
 
     pub const fn mana(mana: ManaPool) -> Payment {
         Payment {
             mana,
-            life: 0,
-            alt: None,
+            ..Payment::FREE
         }
     }
 
     pub const fn life(life: u8) -> Payment {
         Payment {
-            mana: ManaPool::EMPTY,
             life,
-            alt: None,
+            ..Payment::FREE
         }
     }
 
     pub fn is_free(&self) -> bool {
-        self.mana.is_empty() && self.life == 0 && self.alt.is_none()
+        self.mana.is_empty() && self.life == 0 && self.alt.is_none() && self.replicate == 0
     }
 
     /// Every distinct way to pay `cost` from `pool` with `life` to spare. Each
@@ -346,7 +348,7 @@ impl Payment {
                 let payment = Payment {
                     mana,
                     life: life_cost,
-                    alt: None,
+                    ..Payment::FREE
                 };
                 if !out.contains(&payment) {
                     out.push(payment);
@@ -395,6 +397,11 @@ impl fmt::Display for Payment {
             Some(AltCost::Pitch(card)) => parts.push(format!("exiling {card} from hand")),
             Some(AltCost::ReturnIsland(card)) => parts.push(format!("returning {card} to hand")),
             None => {}
+        }
+        match self.replicate {
+            0 => {}
+            1 => parts.push("replicated once".to_string()),
+            n => parts.push(format!("replicated {n} times")),
         }
         if parts.is_empty() {
             f.write_str("nothing")
@@ -502,7 +509,7 @@ mod tests {
             Payment {
                 mana: ManaPool::of(Color::U, 1),
                 life: 2,
-                alt: None,
+                ..Payment::FREE
             },
             Payment::life(4),
         ];
@@ -539,7 +546,7 @@ mod tests {
             Payment {
                 mana: ManaPool::of(Color::U, 1),
                 life: 2,
-                alt: None,
+                ..Payment::FREE
             }
             .to_string(),
             "U and 2 life"

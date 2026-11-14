@@ -2,8 +2,8 @@
 //! that must fail.
 
 use doomdle::{
-    Action, Card, Outcome, Permanent, PlayerState, Puzzle, State, Target, Verdict, Zone, solve,
-    verify,
+    Action, Card, Outcome, Permanent, Player, PlayerState, Puzzle, State, Target, Verdict, Zone,
+    solve, verify,
 };
 
 fn puzzle(hand: Vec<Card>, battlefield: Vec<Permanent>, candidates: Vec<Card>) -> Puzzle {
@@ -592,7 +592,10 @@ fn unearth_returns_a_surveilled_oracle() {
         a,
         Action::CastSpell {
             card: Card::Unearth,
-            target: Some(Target::Card(Card::ThassasOracle)),
+            target: Some(Target::Graveyard {
+                owner: Player::You,
+                card: Card::ThassasOracle
+            }),
             ..
         }
     )));
@@ -1013,6 +1016,220 @@ fn spell_pierce_on_the_cantrip_needs_two_open() {
                 card: Card::ThassasOracle,
                 ..
             }),
+            ..
+        }
+    )));
+}
+
+// --------------------------------------------------------------- stage 4b
+
+/// Pair 20: Pyroblast kills Oracle under its trigger. Hydroblast in hand
+/// answers the Pyroblast.
+#[test]
+fn pyroblast_on_oracle_is_beaten_by_hydroblast() {
+    let one = [Card::Swamp];
+    let pyroblast = || opponent(vec![Card::Pyroblast], 0);
+    let red = PlayerState {
+        battlefield: vec![Permanent::untapped(Card::Mountain)],
+        ..pyroblast()
+    };
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            red.clone(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle, Card::Hydroblast],
+            islands(3),
+            one.to_vec(),
+            red,
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Pyroblast,
+            target: Some(Target::Permanent {
+                card: Card::ThassasOracle,
+                ..
+            }),
+            ..
+        }
+    )));
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Hydroblast,
+            target: Some(Target::Stack {
+                card: Card::Pyroblast,
+                ..
+            }),
+            ..
+        }
+    )));
+    // No red source: Pyroblast is dead and plain Oracle wins.
+    assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            pyroblast(),
+        ),
+        &one,
+    );
+}
+
+/// Pair 21: Snuff Out kills Laboratory Maniac in response to the draw; Oracle
+/// as a second win condition gets around it.
+#[test]
+fn snuff_out_on_lab_man_is_beaten_by_a_second_win_condition() {
+    let one = [Card::Swamp];
+    let snuff = || PlayerState {
+        battlefield: vec![Permanent::untapped(Card::Swamp)],
+        ..opponent(vec![Card::SnuffOut], 0)
+    };
+    assert_fails(
+        puzzle_vs(
+            vec![Card::LaboratoryManiac, Card::Brainstorm],
+            islands(4),
+            one.to_vec(),
+            snuff(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![
+                Card::LaboratoryManiac,
+                Card::Brainstorm,
+                Card::ThassasOracle,
+            ],
+            islands(6),
+            one.to_vec(),
+            snuff(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::SnuffOut,
+            payment: doomdle::Payment { life: 4, .. },
+            ..
+        }
+    )));
+}
+
+/// Pair 22: Surgical Extraction on Doomsday shuffles the pile. A Consider
+/// line that looks at one card of three dies to it; Oracle with devotion for
+/// the whole pile doesn't care.
+#[test]
+fn surgical_on_doomsday_scrambles_the_pile() {
+    let surgical = || PlayerState {
+        battlefield: vec![Permanent::untapped(Card::Swamp)],
+        ..opponent(vec![Card::SurgicalExtraction], 0)
+    };
+    let pile = [Card::Swamp, Card::Plains, Card::Island];
+    let hand = || vec![Card::Consider, Card::ThassasOracle];
+    assert_wins(puzzle(hand(), islands(3), pile.to_vec()), &pile);
+    assert_fails(
+        puzzle_vs(hand(), islands(3), pile.to_vec(), surgical()),
+        &pile,
+    );
+    let two = [Card::Swamp, Card::Plains];
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            two.to_vec(),
+            surgical(),
+        ),
+        &two,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::SurgicalExtraction,
+            target: Some(Target::Graveyard {
+                card: Card::Doomsday,
+                ..
+            }),
+            ..
+        }
+    )));
+}
+
+/// Pair 23: Flusterstorm with storm three taxes Dark Ritual three times. Oracle
+/// cast off lands instead can't be targeted.
+#[test]
+fn flusterstorm_taxes_the_ritual_but_not_the_creature() {
+    let one = [Card::Swamp];
+    let fluster = || opponent(vec![Card::Flusterstorm], 1);
+    // Doomsday was the third spell: storm 3 on the Ritual needs {3} spare.
+    let after_two = |hand, battlefield| {
+        let mut p = puzzle_vs(hand, battlefield, one.to_vec(), fluster());
+        p.you.spells_cast_this_turn = 2;
+        p
+    };
+    assert_fails(
+        after_two(
+            vec![Card::DarkRitual, Card::LaboratoryManiac, Card::Brainstorm],
+            vec![
+                Permanent::untapped(Card::Swamp),
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Island),
+            ],
+        ),
+        &one,
+    );
+    // Same hand, but Oracle wins off two Islands with nothing to Flusterstorm.
+    let steps = assert_wins_vs(
+        after_two(
+            vec![Card::DarkRitual, Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::Swamp),
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Island),
+            ],
+        ),
+        &one,
+    );
+    assert!(!has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Flusterstorm,
+            ..
+        }
+    )));
+}
+
+/// Pair 24: Mindbreak Trap is free once you have cast three spells. A long
+/// line loses to it; a two-spell line leaves it uncastable.
+#[test]
+fn mindbreak_trap_punishes_the_long_line() {
+    let trap = || opponent(vec![Card::MindbreakTrap], 1);
+    // Doomsday, Brainstorm, then Oracle is the third spell: Trap is free.
+    let pile = [Card::ThassasOracle, Card::Swamp, Card::Plains];
+    assert_fails(
+        puzzle_vs(vec![Card::Brainstorm], islands(3), pile.to_vec(), trap()),
+        &pile,
+    );
+    // Oracle straight from hand is only the second spell.
+    let one = [Card::Swamp];
+    let steps = assert_wins_vs(
+        puzzle_vs(vec![Card::ThassasOracle], islands(2), one.to_vec(), trap()),
+        &one,
+    );
+    assert!(!has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::MindbreakTrap,
             ..
         }
     )));

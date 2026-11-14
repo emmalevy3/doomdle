@@ -5,7 +5,9 @@
 
 use std::fmt;
 
-use crate::cards::{self, AbilityKind, Card, CardKind, CyclingCost, LoyaltyAbility, ManaAbility};
+use crate::cards::{
+    self, AbilityKind, Card, CardKind, CyclingCost, LoyaltyAbility, ManaAbility, TriggerKind,
+};
 use crate::mana::{AltCost, Color, ManaPool, Payment};
 use crate::state::{
     LossReason, Permanent, Phase, Player, PlayerState, StackItem, State, Target, Zone,
@@ -38,6 +40,9 @@ pub enum Choice {
     PayTax(ManaPool),
     /// Don't pay: the spell is countered.
     DeclineTax,
+    /// Where a storm or replicate trigger's copies go, one target per copy
+    /// (sorted, since the order of the copies doesn't matter).
+    CopyTargets(Vec<Target>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -292,10 +297,31 @@ fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
         Player::Opponent => reachable_pools(ps),
     };
     let mut out = Vec::new();
-    for pool in &pools {
-        for payment in Payment::options(pool, &card.mana_cost(), ps.life) {
-            if !out.contains(&payment) {
-                out.push(payment);
+    let mut add = |cost: &crate::mana::ManaCost, replicate: u8| -> bool {
+        let mut any = false;
+        for pool in &pools {
+            for payment in Payment::options(pool, cost, ps.life) {
+                let payment = Payment {
+                    replicate,
+                    ..payment
+                };
+                any = true;
+                if !out.contains(&payment) {
+                    out.push(payment);
+                }
+            }
+        }
+        any
+    };
+    let base = card.mana_cost();
+    add(&base, 0);
+    // Replicate: pay the extra cost as many times as the mana allows.
+    if let Some(extra) = card.replicate_cost() {
+        let mut cost = base;
+        for times in 1.. {
+            cost = cost.with_generic(extra.generic);
+            if !add(&cost, times) {
+                break;
             }
         }
     }
@@ -466,6 +492,28 @@ pub(crate) fn unordered_selections(items: &[Card], k: usize) -> Vec<Vec<Card>> {
     out
 }
 
+/// Every sorted multiset of size `k` drawn from `items` (distinct), with
+/// repetition allowed: how `k` copies can be spread over the targets.
+pub(crate) fn multisets<T: Ord + Copy>(items: &[T], k: usize) -> Vec<Vec<T>> {
+    fn go<T: Ord + Copy>(items: &[T], k: usize, acc: &mut Vec<T>, out: &mut Vec<Vec<T>>) {
+        if k == 0 {
+            out.push(acc.clone());
+            return;
+        }
+        for (i, &item) in items.iter().enumerate() {
+            acc.push(item);
+            go(&items[i..], k - 1, acc, out);
+            acc.pop();
+        }
+    }
+    let mut distinct = items.to_vec();
+    distinct.sort();
+    distinct.dedup();
+    let mut out = Vec::new();
+    go(&distinct, k, &mut Vec::new(), &mut out);
+    out
+}
+
 /// Every distinct ordered selection of `k` items from a multiset.
 pub(crate) fn ordered_selections(items: &[Card], k: usize) -> Vec<Vec<Card>> {
     let mut pool = items.to_vec();
@@ -605,13 +653,15 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
             card,
             controller,
             target,
+            copy,
         } => match card.kind() {
             CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
                 state.enter_battlefield(controller, card, false);
                 Ok(())
             }
             CardKind::Instant | CardKind::Sorcery => {
-                cards::resolve_spell(state, card, controller, target)
+                let bin = if copy { None } else { Some(card) };
+                cards::resolve_spell(state, card, controller, target, bin)
             }
             CardKind::Land => Err(EngineError::Internal("a land can't be on the stack")),
         },
@@ -674,11 +724,25 @@ fn cast(
         None => {}
     }
     ps.spells_cast_this_turn += 1;
+    // Storm counts every spell cast before this one this turn, by anyone.
+    let storm = state.you.spells_cast_this_turn + state.opponent.spells_cast_this_turn - 1;
     state.stack.push(StackItem::Spell {
         card,
         controller: player,
         target,
+        copy: false,
     });
+    let copies = match (card.has_storm(), payment.replicate) {
+        (true, _) => storm,
+        (false, n) => n,
+    };
+    if copies > 0 {
+        state.stack.push(StackItem::Trigger {
+            source: card,
+            kind: TriggerKind::Copies { count: copies },
+            controller: player,
+        });
+    }
     acted(state, player);
     Ok(())
 }
@@ -963,6 +1027,10 @@ impl fmt::Display for Choice {
             Choice::UntapLands(cards) => write!(f, "Untap {}", list(cards)),
             Choice::PayTax(mana) => write!(f, "Pay {mana} to keep the spell"),
             Choice::DeclineTax => write!(f, "Don't pay: let the spell be countered"),
+            Choice::CopyTargets(targets) => {
+                let names: Vec<String> = targets.iter().map(|t| t.to_string()).collect();
+                write!(f, "Copies target {}", names.join(", "))
+            }
         }
     }
 }
@@ -1107,6 +1175,7 @@ mod tests {
                 card: Card::Brainstorm,
                 controller: Player::You,
                 target: None,
+                copy: false,
             }]
         );
         assert!(next.you.hand.is_empty());
@@ -1125,6 +1194,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         let after_mine = apply(&state, &Action::Pass).unwrap();
         assert_eq!(after_mine.priority, Player::Opponent);
@@ -1147,6 +1217,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         // Opponent passes first (we fake it by handing them priority).
         state.priority = Player::Opponent;
@@ -1201,6 +1272,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         let busy = legal_actions(&state);
         assert!(busy.contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1))));
@@ -1349,6 +1421,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         assert!(
             legal_actions(&state)
@@ -1639,6 +1712,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         assert!(
             !legal_actions(&busy)
@@ -1689,6 +1763,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         assert!(!legal_actions(&busy).contains(&play_land_action(Card::Island)));
     }
@@ -1815,6 +1890,7 @@ mod tests {
             card: Card::Brainstorm,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         let action = Action::ActivateLed { color: Color::U };
         assert!(legal_actions(&state).contains(&action));
@@ -2039,7 +2115,10 @@ mod tests {
         let cast = |target| Action::CastSpell {
             card: Card::Unearth,
             payment: ManaPool::of(Color::B, 1).into(),
-            target: Some(Target::Card(target)),
+            target: Some(Target::Graveyard {
+                owner: Player::You,
+                card: target,
+            }),
             from: Zone::Hand,
         };
         let casts: Vec<Action> = legal_actions(&state)
@@ -2056,7 +2135,11 @@ mod tests {
             vec![StackItem::Spell {
                 card: Card::Unearth,
                 controller: Player::You,
-                target: Some(Target::Card(Card::ThassasOracle)),
+                target: Some(Target::Graveyard {
+                    owner: Player::You,
+                    card: Card::ThassasOracle
+                }),
+                copy: false,
             }]
         );
         assert!(matches!(
@@ -2077,6 +2160,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
+            copy: false,
         });
         let cycle = Action::Cycle {
             card: Card::Unearth,
@@ -2309,6 +2393,7 @@ mod tests {
             card,
             controller: Player::You,
             target: None,
+            copy: false,
         }
     }
 
@@ -2317,6 +2402,7 @@ mod tests {
             card,
             controller: Player::Opponent,
             target,
+            copy: false,
         }
     }
 
@@ -2562,7 +2648,7 @@ mod tests {
                 .into_iter()
                 .map(|t| match t {
                     Target::Stack { card, .. } => card,
-                    Target::Card(card) => card,
+                    Target::Graveyard { card, .. } | Target::Permanent { card, .. } => card,
                 })
                 .collect()
         };
@@ -2867,5 +2953,290 @@ mod tests {
                 their_spell(Card::Counterspell, None),
             ]
         );
+    }
+
+    // ------------------------------------------------------------ stage 4b
+
+    #[test]
+    fn multisets_spread_copies_over_targets() {
+        let a = on_stack(0, Card::Brainstorm);
+        let b = on_stack(1, Card::DarkRitual);
+        assert_eq!(
+            multisets(&[a, b], 3),
+            vec![vec![a, a, a], vec![a, a, b], vec![a, b, b], vec![b, b, b],]
+        );
+        assert_eq!(multisets(&[a], 2), vec![vec![a, a]]);
+        assert_eq!(multisets::<Target>(&[], 0), vec![Vec::new()]);
+        assert!(multisets::<Target>(&[], 1).is_empty());
+        // Duplicates in the input are one target.
+        assert_eq!(multisets(&[b, a, a], 1), vec![vec![a], vec![b]]);
+    }
+
+    #[test]
+    fn removal_and_odd_counter_targets() {
+        let mut state = main_phase(PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::ThassasOracle),
+                Permanent::untapped(Card::JaceWielderOfMysteries),
+                Permanent::untapped(Card::LaboratoryManiac),
+                Permanent::untapped(Card::DoctorDoom),
+                Permanent::untapped(Card::MoxSapphire),
+                Permanent::untapped(Card::Island),
+            ],
+            graveyard: vec![Card::Doomsday, Card::Island, Card::ThassasOracle],
+            ..PlayerState::default()
+        });
+        for card in [Card::Brainstorm, Card::DarkRitual, Card::LionsEyeDiamond] {
+            state.stack.push(your_spell(card));
+        }
+        let targets = |card: Card| card.target_options(&state, Player::Opponent).unwrap();
+        let perm = |card| Target::Permanent {
+            owner: Player::You,
+            card,
+        };
+        let gy = |card| Target::Graveyard {
+            owner: Player::You,
+            card,
+        };
+        assert_eq!(
+            targets(Card::Pyroblast),
+            vec![
+                on_stack(0, Card::Brainstorm),
+                perm(Card::ThassasOracle),
+                perm(Card::JaceWielderOfMysteries),
+                perm(Card::LaboratoryManiac),
+            ]
+        );
+        // Nothing of yours is red: Hydroblast can't be cast.
+        assert_eq!(targets(Card::Hydroblast), Vec::<Target>::new());
+        assert_eq!(
+            targets(Card::SwordsToPlowshares),
+            vec![
+                perm(Card::ThassasOracle),
+                perm(Card::DoctorDoom),
+                perm(Card::LaboratoryManiac),
+            ]
+        );
+        assert_eq!(
+            targets(Card::SnuffOut),
+            vec![perm(Card::ThassasOracle), perm(Card::LaboratoryManiac)]
+        );
+        assert_eq!(
+            targets(Card::SurgicalExtraction),
+            vec![gy(Card::ThassasOracle), gy(Card::Doomsday)]
+        );
+        assert_eq!(
+            targets(Card::Flusterstorm),
+            vec![on_stack(0, Card::Brainstorm), on_stack(1, Card::DarkRitual)]
+        );
+        assert_eq!(
+            targets(Card::ConsignToMemory),
+            vec![on_stack(2, Card::LionsEyeDiamond)]
+        );
+        assert_eq!(
+            targets(Card::MindbreakTrap),
+            vec![on_stack(2, Card::LionsEyeDiamond)]
+        );
+        // Your Hydroblast can answer their Pyroblast.
+        let mut theirs = main_phase(PlayerState::default());
+        theirs.stack.push(their_spell(Card::Pyroblast, None));
+        assert_eq!(
+            Card::Hydroblast.target_options(&theirs, Player::You),
+            Some(vec![on_stack(0, Card::Pyroblast)])
+        );
+        assert_eq!(
+            Card::Pyroblast.target_options(&theirs, Player::You),
+            Some(Vec::new())
+        );
+    }
+
+    #[test]
+    fn snuff_out_costs_four_life_with_a_swamp() {
+        let snuff = |land: Option<Card>, life: i16| {
+            let battlefield = land.map(Permanent::untapped).into_iter().collect();
+            let state = facing(
+                PlayerState {
+                    battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                    ..PlayerState::default()
+                },
+                PlayerState {
+                    life,
+                    ..opponent_with(vec![Card::SnuffOut], battlefield)
+                },
+                Card::Brainstorm,
+            );
+            legal_actions(&state)
+        };
+        let alt = their_cast(
+            Card::SnuffOut,
+            Payment::life(4),
+            Target::Permanent {
+                owner: Player::You,
+                card: Card::LaboratoryManiac,
+            },
+        );
+        assert_eq!(
+            snuff(Some(Card::Swamp), 20),
+            vec![alt.clone(), Action::Pass]
+        );
+        assert_eq!(
+            snuff(Some(Card::UndergroundSea), 4),
+            vec![alt.clone(), Action::Pass]
+        );
+        assert_eq!(snuff(Some(Card::Island), 20), vec![Action::Pass]);
+        assert_eq!(snuff(Some(Card::Swamp), 3), vec![Action::Pass]);
+        assert_eq!(snuff(None, 20), vec![Action::Pass]);
+        // Paying the life at exactly 4 kills the opponent.
+        let state = facing(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                life: 4,
+                ..opponent_with(vec![Card::SnuffOut], vec![Permanent::untapped(Card::Swamp)])
+            },
+            Card::Brainstorm,
+        );
+        let next = apply(&state, &alt).unwrap();
+        assert_eq!(next.opponent.life, 0);
+        assert_eq!(next.outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn mindbreak_trap_is_free_after_your_third_spell() {
+        let trap = |spells_cast: u8, lands: usize| {
+            let state = facing(
+                PlayerState {
+                    spells_cast_this_turn: spells_cast,
+                    ..PlayerState::default()
+                },
+                opponent_with(
+                    vec![Card::MindbreakTrap],
+                    vec![Permanent::untapped(Card::Island); lands],
+                ),
+                Card::Brainstorm,
+            );
+            legal_actions(&state)
+        };
+        let target = on_stack(0, Card::Brainstorm);
+        assert_eq!(trap(2, 0), vec![Action::Pass]);
+        assert_eq!(
+            trap(3, 0),
+            vec![
+                their_cast(Card::MindbreakTrap, Payment::FREE, target),
+                Action::Pass
+            ]
+        );
+        assert_eq!(
+            trap(2, 4),
+            vec![
+                their_cast(
+                    Card::MindbreakTrap,
+                    Payment::mana(ManaPool::of(Color::U, 4)),
+                    target
+                ),
+                Action::Pass
+            ]
+        );
+    }
+
+    #[test]
+    fn consign_replicates_as_often_as_the_mana_allows() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::ConsignToMemory],
+                vec![Permanent::untapped(Card::Island); 3],
+            ),
+            Card::LionsEyeDiamond,
+        );
+        let target = on_stack(0, Card::LionsEyeDiamond);
+        let consign = |n: u8| {
+            their_cast(
+                Card::ConsignToMemory,
+                Payment {
+                    replicate: n,
+                    ..Payment::mana(ManaPool::of(Color::U, n + 1))
+                },
+                target,
+            )
+        };
+        assert_eq!(
+            legal_actions(&state),
+            vec![consign(0), consign(1), consign(2), Action::Pass]
+        );
+        let next = apply(&state, &consign(2)).unwrap();
+        assert_eq!(
+            next.stack[1..],
+            [
+                their_spell(Card::ConsignToMemory, Some(target)),
+                StackItem::Trigger {
+                    source: Card::ConsignToMemory,
+                    kind: TriggerKind::Copies { count: 2 },
+                    controller: Player::Opponent,
+                },
+            ]
+        );
+        assert_eq!(
+            next.opponent.battlefield,
+            vec![Permanent::tapped(Card::Island); 3]
+        );
+        // Without replicate there is no trigger.
+        let plain = apply(&state, &consign(0)).unwrap();
+        assert_eq!(plain.stack.len(), 2);
+    }
+
+    #[test]
+    fn flusterstorm_storm_counts_both_players_earlier_spells() {
+        let state = facing(
+            PlayerState {
+                spells_cast_this_turn: 2,
+                ..PlayerState::default()
+            },
+            PlayerState {
+                spells_cast_this_turn: 1,
+                ..opponent_with(
+                    vec![Card::Flusterstorm],
+                    vec![Permanent::untapped(Card::Island)],
+                )
+            },
+            Card::Brainstorm,
+        );
+        let cast = their_cast(
+            Card::Flusterstorm,
+            Payment::mana(ManaPool::of(Color::U, 1)),
+            on_stack(0, Card::Brainstorm),
+        );
+        let next = apply(&state, &cast).unwrap();
+        assert_eq!(
+            next.stack.last(),
+            Some(&StackItem::Trigger {
+                source: Card::Flusterstorm,
+                kind: TriggerKind::Copies { count: 3 },
+                controller: Player::Opponent,
+            })
+        );
+        // Flusterstorm can't target the creature spell, and with no spells
+        // cast before it there is no trigger.
+        let quiet = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Flusterstorm],
+                vec![Permanent::untapped(Card::Island)],
+            ),
+            Card::ThassasOracle,
+        );
+        assert_eq!(legal_actions(&quiet), vec![Action::Pass]);
+        let quiet = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Flusterstorm],
+                vec![Permanent::untapped(Card::Island)],
+            ),
+            Card::Brainstorm,
+        );
+        let next = apply(&quiet, &cast).unwrap();
+        assert_eq!(next.stack.len(), 2);
     }
 }

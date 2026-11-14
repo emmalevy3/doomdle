@@ -32,12 +32,14 @@ pub enum Zone {
 /// What a spell targets, fixed when it is cast.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Target {
-    /// A card in the caster's graveyard (Unearth).
-    Card(Card),
+    /// A card in `owner`'s graveyard (Unearth, Surgical Extraction).
+    Graveyard { owner: Player, card: Card },
     /// An item on the stack: its index from the bottom, plus the card or
     /// ability source sitting there, so the action reads naturally and the
     /// engine can check it is still the item meant.
     Stack { index: usize, card: Card },
+    /// A permanent on `owner`'s battlefield (Swords, Snuff Out, the Blasts).
+    Permanent { owner: Player, card: Card },
 }
 
 /// A card on the battlefield. Which player controls it is given by which
@@ -92,6 +94,9 @@ pub enum StackItem {
         /// also for a targeted spell whose target has since left the stack:
         /// such a spell does nothing when it resolves.
         target: Option<Target>,
+        /// A storm or replicate copy: it resolves like the card but goes to
+        /// no zone afterwards.
+        copy: bool,
     },
     Trigger {
         source: Card,
@@ -150,6 +155,9 @@ pub enum ChoiceKind {
     /// "Counter target spell unless its controller pays {amount}" (Daze,
     /// Spell Pierce, Miscalculation): the target's controller decides.
     PayTax { amount: u8, target: Target },
+    /// A storm or replicate trigger is making `count` copies of the spell
+    /// directly below it; the caster picks a target for each.
+    CopyTargets { count: u8 },
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
@@ -513,7 +521,9 @@ impl fmt::Display for Permanent {
 impl fmt::Display for Target {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Target::Card(card) | Target::Stack { card, .. } => write!(f, "{card}"),
+            Target::Graveyard { card, .. }
+            | Target::Stack { card, .. }
+            | Target::Permanent { card, .. } => write!(f, "{card}"),
         }
     }
 }
@@ -525,7 +535,11 @@ impl fmt::Display for StackItem {
                 card,
                 controller,
                 target,
+                copy,
             } => {
+                if *copy {
+                    f.write_str("copy of ")?;
+                }
                 write!(f, "{card}")?;
                 if let Some(target) = target {
                     write!(f, " targeting {target}")?;
