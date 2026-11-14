@@ -104,13 +104,13 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {B} — Sorcery. Cycling {2}.
 - **Effect:** Return target creature card with mana value 3 or less from your graveyard to the battlefield. Cycling {2}
 - **Gotchas:** Legal targets in this pool: Thassa's Oracle, Laboratory Maniac, Thundertrap Trainer, Tamiyo (front face, mana value 1). Not Doom, Grief, Street Wraith, or Quantum Riddler. Oracle returned this way still triggers on entering. Ways to get Oracle into the graveyard after Doomsday: LED or Frantic Search discards, surveil (Consider, Sewers, Archive), Jace +1 mill. Cycling costs {2} and can't be done from the graveyard under Yawgmoth's Will.
-- **Simplifications:**
+- **Simplifications:** the target is chosen on cast; with no legal target in the graveyard, Unearth can't be cast (cycling it is still allowed). If the target has left the graveyard by the time Unearth resolves, the spell does nothing and still goes to the graveyard.
 
 ### Yawgmoth's Will
 - **Cost / type:** {2}{B} — Sorcery
 - **Effect:** Until end of turn, you may play lands and cast spells from your graveyard. If a card would be put into your graveyard from anywhere this turn, exile that card instead.
 - **Gotchas:** Order is everything. Cards that hit the graveyard *before* Will resolves are replayable. After it resolves, anything that would go to the graveyard, including discards and spells you recast, is exiled instead. Will exiles itself. Classic line: cast Will, hold priority, crack LED so your hand and LED go to the graveyard, then replay them from the graveyard. Lands from the graveyard use your land drop. Cycling and other "discard this card" abilities can't be used from the graveyard.
-- **Simplifications:**
+- **Simplifications:** Doomsday is never castable again, so Will doesn't offer a second pile choice from the graveyard. A puzzle may start with Will already active; Doomsday is then exiled when the pile is chosen instead of starting the graveyard.
 
 ---
 
@@ -150,7 +150,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {2}{U} — Instant
 - **Effect:** Draw two cards, then discard two cards. Untap up to three lands.
 - **Gotchas:** Free if you have three tapped lands. The draw and discard happen together, so you can draw Oracle and discard it for Unearth, or discard an instant and sorcery for Flow State. The discard can also fuel Cabal Ritual's threshold.
-- **Simplifications:**
+- **Simplifications:** the untap always untaps as many lands as it can (up to three of your tapped lands); untapping fewer is never offered.
 
 ### Meditate
 - **Cost / type:** {2}{U} — Instant
