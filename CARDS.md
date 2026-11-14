@@ -34,7 +34,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 
 ### Decisions
 1. **Shuffles (decided).** Ponder never shuffles. After any other shuffle (fetchlands, casting Edge of Autumn) or random bottom-of-library placement (Thundertrap Trainer), the library is marked unordered, and any later step that depends on library order counts as a failure. Order-independent lines, such as drawing the last card or Oracle with enough devotion, still work. An effect that covers the whole remaining library (drawing every card left, Ponder on three or fewer cards, scry or surveil that sees all of it) also still works, and because it places every card it makes the library ordered again. Searching the library (fetchlands, Edge of Autumn) never depends on order, so it is always legal on an unordered library; a shuffle that leaves one or zero cards behind doesn't mark the library unordered, since the order is trivially known.
-2. **Opponent interaction (decided).** The opponent responds but never acts proactively: whenever they get priority, they either pass or cast an instant or alternative-cost spell from their open hand (Force of Will, Daze, Stifle, etc.), and they make the choices on their own effects (Bowmasters' target, Daze's returned Island). A pile is valid only if there's a line that wins *against every opponent response*: an AND/OR search where any one of your choices may win, but every opponent choice must still lose. "Unless its controller pays" (Daze, Spell Pierce, Miscalculation, Flusterstorm) is your choice and a branch. Keep puzzles small: at most 3 cards in the opponent's hand and 3 opponent mana sources.
+2. **Opponent interaction (decided).** The opponent responds but never acts proactively: whenever they get priority, they either pass or cast an instant or alternative-cost spell from their open hand (Force of Will, Daze, Stifle, etc.), and they make the choices on their own effects (Bowmasters' target, Daze's returned Island). A pile is valid only if there's a line that wins *against every opponent response*: an AND/OR search where any one of your choices may win, but every opponent choice must still lose. "Unless its controller pays" (Daze, Spell Pierce, Miscalculation, Flusterstorm) is your choice and a branch. Keep puzzles small: at most 3 cards in the opponent's hand and 3 opponent mana sources. Engine defaults (decided): the opponent casts only *targeted* spells aimed at your stack items and never floats mana, tapping lands as part of casting or of paying a tax; they never cycle or play lands. Nobody targets their own stack items. A targeted spell whose target has left the stack by the time it resolves does nothing and still goes to the graveyard. You pay an "unless its controller pays" tax from mana already in your pool, so tap in response while the counter is on the stack. The opponent at 0 life (Force of Will, Phyrexian mana) loses: you win.
 3. **Board state at puzzle start.** Wizard's Rockets is only useful if it starts on the battlefield. Doctor Doom needs to start on the battlefield or get haste from Lightning Greaves or Skateboard. Cavern of Souls needs its creature type set in the puzzle file if it starts in play.
 4. **Turn history at puzzle start.** The puzzle file sets how many spells you've cast this turn *before* Doomsday (the engine adds Doomsday itself when the pile is chosen) and how many cards you've drawn this turn (including the draw step). Archon of Emeria, Narset, Tamiyo, Flusterstorm, and Mindbreak Trap all depend on these.
 5. **Puzzle start point (decided).** The puzzle starts with Doomsday resolving: the player picks 5 cards from library + graveyard and orders them. Doomsday has already been cast and paid for, and it can no longer be countered.
@@ -456,18 +456,18 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 - **Cost / type:** {1}{U} — Instant. Cycling {2}.
 - **Effect:** Counter target spell unless its controller pays {2}.
 - **Gotchas:** Cycling for {2} is a mana-costly draw on your side.
-- **Simplifications:**
+- **Simplifications:** the opponent never cycles it (that would be proactive). The {2} is paid from your floating mana, see Decisions.
 
 ### Daze
 - **Cost / type:** {1}{U} — Instant. Alt: return an Island you control to its owner's hand.
 - **Effect:** Counter target spell unless its controller pays {1}.
 - **Gotchas:** The returned land must be an Island: Island, Underground Sea, Tundra, Volcanic Island, Tropical Island, Undercity Sewers, Meticulous Archive. A returned land can be replayed only if a land drop remains. Leaving {1} open beats it.
-- **Simplifications:**
+- **Simplifications:** the {1} is paid from your floating mana: tap the land in response, then pay when Daze resolves (see Decisions). The opponent may tap lands on the spot to pay for your Daze.
 
 ### Pact of Negation
 - **Cost / type:** {0} — Instant
 - **Effect:** Counter target spell. At the beginning of your next upkeep, pay {3}{U}{U}. If you don't, you lose the game.
-- **Gotchas:** If you cast it on the turn you win, the upkeep cost never matters, so it's a free counter for you.
+- **Gotchas:** If you cast it on the turn you win, the upkeep cost never matters, so it's a free counter for you. It's blue (color indicator), so it can be pitched to Force of Will or Force of Negation.
 - **Simplifications:** ignore the upkeep trigger.
 
 ### Flusterstorm
@@ -479,7 +479,7 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 ### Spell Pierce
 - **Cost / type:** {U} — Instant
 - **Effect:** Counter target noncreature spell unless its controller pays {2}.
-- **Simplifications:**
+- **Simplifications:** the {2} is paid from your floating mana, see Decisions.
 
 ### Pyroblast
 - **Cost / type:** {R} — Instant
