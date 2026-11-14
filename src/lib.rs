@@ -15,9 +15,9 @@ pub use cards::{
     TriggerKind,
 };
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
-pub use mana::{Color, ManaCost, ManaPool, Payment};
+pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 pub use solver::{Step, Strategy, Verdict, solve, verify};
 pub use state::{
     ChoiceKind, LossReason, Outcome, PendingChoice, Permanent, Phase, Player, PlayerState, Puzzle,
-    StackItem, State, Zone,
+    StackItem, State, Target, Zone,
 };

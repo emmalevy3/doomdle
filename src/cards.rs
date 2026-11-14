@@ -1,16 +1,20 @@
 //! The card pool and every card-specific behavior, as `match` arms.
 //!
-//! Only cards from `CARDS.md` belong here. Stages 1–3 cover Thassa's Oracle,
+//! Only cards from `CARDS.md` belong here. Stages 1–4a cover Thassa's Oracle,
 //! Jace, Doctor Doom, Laboratory Maniac, Doomsday, the blue cantrips, Probe,
 //! Street Wraith, Edge of Autumn, the graveyard package (Unearth, Yawgmoth's
-//! Will, Flow State, Cabal Ritual, Frantic Search), the fast mana, and the
-//! basic, dual, fetch and surveil lands.
+//! Will, Flow State, Cabal Ritual, Frantic Search), the fast mana, the
+//! basic, dual, fetch and surveil lands, and the counterspells.
 
 use std::fmt;
 
-use crate::engine::{Choice, EngineError, ordered_selections, unordered_selections};
-use crate::mana::{Color, ManaCost};
-use crate::state::{ChoiceKind, LossReason, PendingChoice, Player, PlayerState, State};
+use crate::engine::{
+    Choice, EngineError, ordered_selections, pay_mana, tax_payments, unordered_selections,
+};
+use crate::mana::{AltCost, Color, ManaCost, Payment};
+use crate::state::{
+    ChoiceKind, LossReason, PendingChoice, Player, PlayerState, StackItem, State, Target,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Card {
@@ -24,6 +28,17 @@ pub enum Card {
     // Graveyard
     Unearth,
     YawgmothsWill,
+    // Counterspells (either player's)
+    Counterspell,
+    ForceOfWill,
+    ForceOfNegation,
+    Daze,
+    SpellPierce,
+    Miscalculation,
+    MentalMisstep,
+    SpellSnare,
+    Stifle,
+    PactOfNegation,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -188,6 +203,16 @@ impl Card {
             Card::Doomsday => "Doomsday",
             Card::Unearth => "Unearth",
             Card::YawgmothsWill => "Yawgmoth's Will",
+            Card::Counterspell => "Counterspell",
+            Card::ForceOfWill => "Force of Will",
+            Card::ForceOfNegation => "Force of Negation",
+            Card::Daze => "Daze",
+            Card::SpellPierce => "Spell Pierce",
+            Card::Miscalculation => "Miscalculation",
+            Card::MentalMisstep => "Mental Misstep",
+            Card::SpellSnare => "Spell Snare",
+            Card::Stifle => "Stifle",
+            Card::PactOfNegation => "Pact of Negation",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -247,7 +272,17 @@ impl Card {
             | Card::AncestralRecall
             | Card::FranticSearch
             | Card::DarkRitual
-            | Card::CabalRitual => CardKind::Instant,
+            | Card::CabalRitual
+            | Card::Counterspell
+            | Card::ForceOfWill
+            | Card::ForceOfNegation
+            | Card::Daze
+            | Card::SpellPierce
+            | Card::Miscalculation
+            | Card::MentalMisstep
+            | Card::SpellSnare
+            | Card::Stifle
+            | Card::PactOfNegation => CardKind::Instant,
             Card::LionsEyeDiamond
             | Card::BlackLotus
             | Card::LotusPetal
@@ -296,8 +331,21 @@ impl Card {
             Card::StreetWraith => ManaCost::colored(Color::B, 2).with_generic(3),
             Card::EdgeOfAutumn => ManaCost::colored(Color::G, 1).with_generic(1),
             Card::DarkRitual => ManaCost::colored(Color::B, 1),
+            Card::Counterspell => ManaCost::colored(Color::U, 2),
+            Card::ForceOfWill => ManaCost::colored(Color::U, 2).with_generic(3),
+            Card::ForceOfNegation => ManaCost::colored(Color::U, 2).with_generic(1),
+            Card::Daze | Card::Miscalculation => ManaCost::colored(Color::U, 1).with_generic(1),
+            Card::SpellPierce | Card::SpellSnare | Card::Stifle => ManaCost::colored(Color::U, 1),
+            Card::MentalMisstep => ManaCost::phyrexian(Color::U, 1),
             _ => ManaCost::FREE,
         }
+    }
+
+    /// Blue cards, for Force of Will's and Force of Negation's pitch. Pact of
+    /// Negation costs {0} but is blue by its color indicator.
+    pub fn is_blue(self) -> bool {
+        let cost = self.mana_cost();
+        cost.pip(Color::U) > 0 || cost.phyrexian_pip(Color::U) > 0 || self == Card::PactOfNegation
     }
 
     /// Whether the engine models casting this card at all. Street Wraith is
@@ -310,22 +358,102 @@ impl Card {
 
     /// For a targeted spell, every distinct legal target `player` could pick
     /// right now; `None` for spells without targets. A targeted spell with an
-    /// empty list can't be cast.
-    pub fn target_options(self, ps: &PlayerState) -> Option<Vec<Card>> {
+    /// empty list can't be cast. Counters only ever target the other player's
+    /// stack items.
+    pub fn target_options(self, state: &State, player: Player) -> Option<Vec<Target>> {
+        let stack_targets = |pred: &dyn Fn(&StackItem) -> bool| -> Vec<Target> {
+            state
+                .stack
+                .iter()
+                .enumerate()
+                .filter(|(_, item)| item.controller() != player && pred(item))
+                .map(|(index, item)| Target::Stack {
+                    index,
+                    card: item.card(),
+                })
+                .collect()
+        };
+        let spell_where = |pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
+            stack_targets(&|item| matches!(item, StackItem::Spell { card, .. } if pred(*card)))
+        };
         match self {
             // "Target creature card with mana value 3 or less from your graveyard."
             Card::Unearth => {
-                let mut targets: Vec<Card> = ps
+                let mut targets: Vec<Target> = state
+                    .player(player)
                     .graveyard
                     .iter()
                     .copied()
                     .filter(|c| c.kind() == CardKind::Creature && c.mana_cost().mana_value() <= 3)
+                    .map(Target::Card)
                     .collect();
                 targets.sort();
                 targets.dedup();
                 Some(targets)
             }
+            Card::Counterspell
+            | Card::ForceOfWill
+            | Card::Daze
+            | Card::Miscalculation
+            | Card::PactOfNegation => Some(spell_where(&|_| true)),
+            Card::SpellPierce | Card::ForceOfNegation => {
+                Some(spell_where(&|c| c.kind() != CardKind::Creature))
+            }
+            Card::MentalMisstep => Some(spell_where(&|c| c.mana_cost().mana_value() == 1)),
+            Card::SpellSnare => Some(spell_where(&|c| c.mana_cost().mana_value() == 2)),
+            Card::Stifle => Some(stack_targets(&|item| {
+                matches!(item, StackItem::Ability { .. } | StackItem::Trigger { .. })
+            })),
             _ => None,
+        }
+    }
+
+    /// Ways to cast this card other than paying its mana cost, as `player`
+    /// could pay them right now.
+    pub fn alternative_payments(self, state: &State, player: Player) -> Vec<Payment> {
+        let ps = state.player(player);
+        let pitches = |life: u8| -> Vec<Payment> {
+            // The spell itself is already on the stack when its cost is paid,
+            // so one copy in hand can't pitch itself, but a second copy can.
+            let mut hand = ps.hand.clone();
+            if let Some(pos) = hand.iter().position(|&c| c == self) {
+                hand.remove(pos);
+            }
+            hand.sort();
+            hand.dedup();
+            hand.into_iter()
+                .filter(|c| c.is_blue())
+                .map(|c| Payment {
+                    alt: Some(AltCost::Pitch(c)),
+                    ..Payment::life(life)
+                })
+                .collect()
+        };
+        match self {
+            // "Pay 1 life and exile a blue card from your hand."
+            Card::ForceOfWill if ps.life >= 1 => pitches(1),
+            // "Exile a blue card from your hand. Activate only if it's not
+            // your turn": it is always your turn, so only the opponent may.
+            Card::ForceOfNegation if player == Player::Opponent => pitches(0),
+            // "Return an Island you control to its owner's hand."
+            Card::Daze => {
+                let mut islands: Vec<Card> = ps
+                    .battlefield
+                    .iter()
+                    .map(|p| p.card)
+                    .filter(|c| c.land_types().contains(&LandType::Island))
+                    .collect();
+                islands.sort();
+                islands.dedup();
+                islands
+                    .into_iter()
+                    .map(|c| Payment {
+                        alt: Some(AltCost::ReturnIsland(c)),
+                        ..Payment::FREE
+                    })
+                    .collect()
+            }
+            _ => Vec::new(),
         }
     }
 
@@ -382,7 +510,9 @@ impl Card {
         match self {
             Card::StreetWraith => Some(CyclingCost::Life(2)),
             Card::EdgeOfAutumn => Some(CyclingCost::SacrificeLand),
-            Card::Unearth => Some(CyclingCost::Mana(ManaCost::FREE.with_generic(2))),
+            Card::Unearth | Card::Miscalculation => {
+                Some(CyclingCost::Mana(ManaCost::FREE.with_generic(2)))
+            }
             _ => None,
         }
     }
@@ -471,20 +601,29 @@ pub(crate) fn resolve_spell(
     state: &mut State,
     card: Card,
     controller: Player,
-    target: Option<Card>,
+    target: Option<Target>,
 ) -> Result<(), EngineError> {
     match card {
         Card::Unearth => {
-            let target = target.ok_or(EngineError::Internal("Unearth without a target"))?;
             // A target that left the graveyard makes the spell do nothing.
-            if state
-                .player_mut(controller)
-                .remove_from_graveyard(target)
-                .is_some()
+            if let Some(Target::Card(creature)) = target
+                && state
+                    .player_mut(controller)
+                    .remove_from_graveyard(creature)
+                    .is_some()
             {
-                state.enter_battlefield(controller, target, false);
+                state.enter_battlefield(controller, creature, false);
             }
         }
+        Card::Counterspell
+        | Card::ForceOfWill
+        | Card::MentalMisstep
+        | Card::SpellSnare
+        | Card::Stifle
+        | Card::PactOfNegation => counter(state, target, false),
+        Card::ForceOfNegation => counter(state, target, true),
+        Card::Daze => return tax(state, controller, card, target, 1),
+        Card::SpellPierce | Card::Miscalculation => return tax(state, controller, card, target, 2),
         Card::YawgmothsWill => {
             // Set first so Will itself is exiled below.
             state.player_mut(controller).yawgmoths_will = true;
@@ -573,16 +712,86 @@ fn look_at_top(state: &mut State, player: Player, n: usize) -> usize {
     k
 }
 
+/// Stops the resolution for a decision by `player`, who also owns `bin`.
 fn pause(
     state: &mut State,
     player: Player,
     bin: Option<Card>,
     kind: ChoiceKind,
 ) -> Result<(), EngineError> {
+    pause_for(state, player, player, bin, kind)
+}
+
+/// Stops the resolution for a decision by `player` about `bin_owner`'s spell.
+fn pause_for(
+    state: &mut State,
+    player: Player,
+    bin_owner: Player,
+    bin: Option<Card>,
+    kind: ChoiceKind,
+) -> Result<(), EngineError> {
     if state.pending.is_some() {
         return Err(EngineError::Internal("two choices pending at once"));
     }
-    state.pending = Some(PendingChoice { player, kind, bin });
+    state.pending = Some(PendingChoice {
+        player,
+        kind,
+        bin,
+        bin_owner,
+    });
+    Ok(())
+}
+
+/// Counters the stack item `target` points at, if it is still there: a spell
+/// goes to its controller's graveyard (or exile), an ability just vanishes.
+fn counter(state: &mut State, target: Option<Target>, exile: bool) {
+    let Some(Target::Stack { index, card }) = target else {
+        return;
+    };
+    // The target was fixed up or cleared whenever the stack changed, so a
+    // mismatch here is a bug rather than a fizzle; do nothing either way.
+    if state.stack.get(index).map(StackItem::card) != Some(card) {
+        return;
+    }
+    let item = crate::engine::remove_stack_item(state, index);
+    if let StackItem::Spell {
+        card, controller, ..
+    } = item
+    {
+        let ps = state.player_mut(controller);
+        if exile {
+            ps.exile.push(card);
+        } else {
+            ps.put_in_graveyard(card);
+        }
+    }
+}
+
+/// "Counter target spell unless its controller pays {amount}": the target's
+/// controller decides, and `card` is binned to its own controller's graveyard
+/// once they have.
+fn tax(
+    state: &mut State,
+    controller: Player,
+    card: Card,
+    target: Option<Target>,
+    amount: u8,
+) -> Result<(), EngineError> {
+    if let Some(target @ Target::Stack { index, card: hit }) = target
+        && let Some(item) = state.stack.get(index)
+        && item.card() == hit
+    {
+        let payer = item.controller();
+        return pause_for(
+            state,
+            payer,
+            controller,
+            Some(card),
+            ChoiceKind::PayTax { amount, target },
+        );
+    }
+    // The target is gone: the spell does nothing.
+    state.player_mut(controller).put_in_graveyard(card);
     Ok(())
 }
 
@@ -747,6 +956,16 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
                     .map(Choice::UntapLands),
             );
         }
+        ChoiceKind::PayTax { amount, .. } => {
+            // You pay from mana already in the pool (tap in response, not
+            // now); the opponent may tap lands on the spot.
+            out.extend(
+                tax_payments(state, pending.player, amount)
+                    .into_iter()
+                    .map(Choice::PayTax),
+            );
+            out.push(Choice::DeclineTax);
+        }
     }
     out
 }
@@ -887,10 +1106,19 @@ pub(crate) fn apply_choice(
                 ps.battlefield[idx].tapped = false;
             }
         }
+        (ChoiceKind::PayTax { amount, .. }, Choice::PayTax(mana)) => {
+            if !tax_payments(state, player, amount).contains(mana) {
+                return Err(illegal());
+            }
+            pay_mana(state.player_mut(player), mana).ok_or_else(illegal)?;
+        }
+        (ChoiceKind::PayTax { target, .. }, Choice::DeclineTax) => {
+            counter(state, Some(target), false);
+        }
         _ => return Err(illegal()),
     }
     if let Some(card) = pending.bin {
-        state.player_mut(player).put_in_graveyard(card);
+        state.player_mut(pending.bin_owner).put_in_graveyard(card);
     }
     Ok(())
 }
@@ -910,7 +1138,7 @@ mod tests {
     use crate::engine::{Action, apply, legal_actions};
     use crate::mana::ManaPool;
     use crate::state::test_support::main_phase;
-    use crate::state::{Outcome, Permanent, StackItem, Zone};
+    use crate::state::{Outcome, Permanent, Zone};
 
     /// Resolves the top of the stack with two passes.
     fn pass_twice(state: &State) -> State {
@@ -922,7 +1150,7 @@ mod tests {
         resolve_targeting(state, card, None)
     }
 
-    fn resolve_targeting(mut state: State, card: Card, target: Option<Card>) -> State {
+    fn resolve_targeting(mut state: State, card: Card, target: Option<Target>) -> State {
         state.stack.push(StackItem::Spell {
             card,
             controller: Player::You,
@@ -1579,7 +1807,7 @@ mod tests {
 
     #[test]
     fn unearth_targets_cheap_creatures_in_the_graveyard() {
-        let ps = PlayerState {
+        let state = main_phase(PlayerState {
             graveyard: vec![
                 Card::ThassasOracle,
                 Card::ThassasOracle,
@@ -1589,14 +1817,17 @@ mod tests {
                 Card::Brainstorm,
             ],
             ..PlayerState::default()
-        };
+        });
         assert_eq!(
-            Card::Unearth.target_options(&ps),
-            Some(vec![Card::ThassasOracle, Card::LaboratoryManiac])
+            Card::Unearth.target_options(&state, Player::You),
+            Some(vec![
+                Target::Card(Card::ThassasOracle),
+                Target::Card(Card::LaboratoryManiac)
+            ])
         );
-        assert_eq!(Card::Brainstorm.target_options(&ps), None);
+        assert_eq!(Card::Brainstorm.target_options(&state, Player::You), None);
         assert_eq!(
-            Card::Unearth.target_options(&PlayerState::default()),
+            Card::Unearth.target_options(&main_phase(PlayerState::default()), Player::You),
             Some(Vec::new())
         );
     }
@@ -1608,7 +1839,11 @@ mod tests {
             library: vec![Card::Island],
             ..PlayerState::default()
         });
-        let state = resolve_targeting(state, Card::Unearth, Some(Card::ThassasOracle));
+        let state = resolve_targeting(
+            state,
+            Card::Unearth,
+            Some(Target::Card(Card::ThassasOracle)),
+        );
         assert_eq!(
             state.you.battlefield,
             vec![Permanent::entering(Card::ThassasOracle, false)]
@@ -1631,7 +1866,11 @@ mod tests {
             graveyard: vec![Card::Doomsday],
             ..PlayerState::default()
         });
-        let state = resolve_targeting(state, Card::Unearth, Some(Card::ThassasOracle));
+        let state = resolve_targeting(
+            state,
+            Card::Unearth,
+            Some(Target::Card(Card::ThassasOracle)),
+        );
         assert!(state.you.battlefield.is_empty());
         assert!(state.stack.is_empty());
         assert_eq!(state.you.graveyard, vec![Card::Doomsday, Card::Unearth]);
@@ -1980,5 +2219,313 @@ mod tests {
         assert_eq!(after.outcome, None);
         assert!(!after.you.library_ordered);
         assert_eq!(after.you.library.len(), 3);
+    }
+
+    // ------------------------------------------------------------ stage 4a
+
+    fn on_stack(index: usize, card: Card) -> Target {
+        Target::Stack { index, card }
+    }
+
+    /// Your `spell` on the stack with the opponent's `counter` aimed at it,
+    /// you holding priority.
+    fn countered(you: PlayerState, spell: Card, counter: Card) -> State {
+        let mut state = main_phase(you);
+        state.stack.push(StackItem::Spell {
+            card: spell,
+            controller: Player::You,
+            target: None,
+        });
+        state.stack.push(StackItem::Spell {
+            card: counter,
+            controller: Player::Opponent,
+            target: Some(on_stack(0, spell)),
+        });
+        state
+    }
+
+    #[test]
+    fn counter_data() {
+        for card in [
+            Card::Counterspell,
+            Card::ForceOfWill,
+            Card::ForceOfNegation,
+            Card::Daze,
+            Card::SpellPierce,
+            Card::Miscalculation,
+            Card::MentalMisstep,
+            Card::SpellSnare,
+            Card::Stifle,
+            Card::PactOfNegation,
+        ] {
+            assert_eq!(card.kind(), CardKind::Instant, "{card}");
+            assert!(card.castable(), "{card}");
+            assert!(card.is_blue(), "{card}");
+        }
+        assert_eq!(Card::Counterspell.mana_cost().to_string(), "{U}{U}");
+        assert_eq!(Card::ForceOfWill.mana_cost().to_string(), "{3}{U}{U}");
+        assert_eq!(Card::ForceOfNegation.mana_cost().to_string(), "{1}{U}{U}");
+        assert_eq!(Card::Daze.mana_cost().to_string(), "{1}{U}");
+        assert_eq!(Card::Miscalculation.mana_cost().to_string(), "{1}{U}");
+        assert_eq!(Card::SpellPierce.mana_cost().to_string(), "{U}");
+        assert_eq!(Card::SpellSnare.mana_cost().to_string(), "{U}");
+        assert_eq!(Card::Stifle.mana_cost().to_string(), "{U}");
+        assert_eq!(Card::MentalMisstep.mana_cost().to_string(), "{U/P}");
+        assert_eq!(Card::PactOfNegation.mana_cost(), ManaCost::FREE);
+        assert_eq!(
+            Card::Miscalculation.cycling_cost(),
+            Some(CyclingCost::Mana(ManaCost::FREE.with_generic(2)))
+        );
+        // Blue is read off the cost, Phyrexian pips included.
+        assert!(Card::GitaxianProbe.is_blue());
+        assert!(Card::ThassasOracle.is_blue());
+        assert!(!Card::DarkRitual.is_blue());
+        assert!(!Card::Island.is_blue());
+        assert!(!Card::LionsEyeDiamond.is_blue());
+    }
+
+    #[test]
+    fn a_countered_spell_goes_to_its_controllers_graveyard() {
+        let state = countered(
+            PlayerState {
+                library: vec![Card::Island, Card::Swamp, Card::Plains],
+                ..PlayerState::default()
+            },
+            Card::Brainstorm,
+            Card::Counterspell,
+        );
+        let after = pass_twice(&state);
+        assert!(after.stack.is_empty());
+        assert_eq!(after.you.graveyard, vec![Card::Brainstorm]);
+        assert_eq!(after.opponent.graveyard, vec![Card::Counterspell]);
+        // Nothing was drawn.
+        assert_eq!(after.you.library.len(), 3);
+        assert!(after.you.hand.is_empty());
+        assert_eq!(after.outcome, None);
+    }
+
+    #[test]
+    fn a_countered_spell_is_exiled_under_yawgmoths_will() {
+        let state = countered(
+            PlayerState {
+                yawgmoths_will: true,
+                ..PlayerState::default()
+            },
+            Card::Brainstorm,
+            Card::Counterspell,
+        );
+        let after = pass_twice(&state);
+        assert!(after.you.graveyard.is_empty());
+        assert_eq!(after.you.exile, vec![Card::Brainstorm]);
+        // Will only replaces *your* graveyard.
+        assert_eq!(after.opponent.graveyard, vec![Card::Counterspell]);
+    }
+
+    #[test]
+    fn force_of_negation_exiles_what_it_counters() {
+        let after = pass_twice(&countered(
+            PlayerState::default(),
+            Card::Brainstorm,
+            Card::ForceOfNegation,
+        ));
+        assert!(after.you.graveyard.is_empty());
+        assert_eq!(after.you.exile, vec![Card::Brainstorm]);
+        assert_eq!(after.opponent.graveyard, vec![Card::ForceOfNegation]);
+    }
+
+    #[test]
+    fn hard_counters_resolve_the_same_way() {
+        for counter in [
+            Card::ForceOfWill,
+            Card::MentalMisstep,
+            Card::SpellSnare,
+            Card::PactOfNegation,
+        ] {
+            let after = pass_twice(&countered(
+                PlayerState::default(),
+                Card::Brainstorm,
+                counter,
+            ));
+            assert!(after.stack.is_empty(), "{counter}");
+            assert_eq!(after.you.graveyard, vec![Card::Brainstorm], "{counter}");
+            assert_eq!(after.opponent.graveyard, vec![counter], "{counter}");
+            assert_eq!(after.pending, None, "{counter}");
+        }
+    }
+
+    #[test]
+    fn a_counter_whose_target_is_gone_does_nothing() {
+        // Two Counterspells on one Brainstorm: the first counters it, the
+        // second finds no target and just goes to the graveyard.
+        let mut state = countered(PlayerState::default(), Card::Brainstorm, Card::Counterspell);
+        state.stack.push(StackItem::Spell {
+            card: Card::Counterspell,
+            controller: Player::Opponent,
+            target: Some(on_stack(0, Card::Brainstorm)),
+        });
+        let after_first = pass_twice(&state);
+        assert_eq!(
+            after_first.stack,
+            vec![StackItem::Spell {
+                card: Card::Counterspell,
+                controller: Player::Opponent,
+                target: None,
+            }]
+        );
+        let after_second = pass_twice(&after_first);
+        assert!(after_second.stack.is_empty());
+        assert_eq!(after_second.you.graveyard, vec![Card::Brainstorm]);
+        assert_eq!(
+            after_second.opponent.graveyard,
+            vec![Card::Counterspell, Card::Counterspell]
+        );
+    }
+
+    #[test]
+    fn stifle_counters_abilities_and_triggers_but_their_costs_stay_paid() {
+        // Oracle's trigger: no win, Oracle stays.
+        let mut state = with_trigger(
+            main_phase(PlayerState {
+                battlefield: vec![Permanent::untapped(Card::ThassasOracle)],
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            }),
+            Card::ThassasOracle,
+            TriggerKind::OracleEnters,
+        );
+        state.stack.push(StackItem::Spell {
+            card: Card::Stifle,
+            controller: Player::Opponent,
+            target: Some(on_stack(0, Card::ThassasOracle)),
+        });
+        let after = pass_twice(&state);
+        assert!(after.stack.is_empty());
+        assert_eq!(after.outcome, None);
+        assert_eq!(after.you.battlefield.len(), 1);
+        assert_eq!(after.opponent.graveyard, vec![Card::Stifle]);
+        // Cycling: the card is already discarded and no card is drawn.
+        let mut state = with_ability(
+            main_phase(PlayerState {
+                graveyard: vec![Card::StreetWraith],
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            }),
+            Card::StreetWraith,
+            AbilityKind::Cycling,
+        );
+        state.stack.push(StackItem::Spell {
+            card: Card::Stifle,
+            controller: Player::Opponent,
+            target: Some(on_stack(0, Card::StreetWraith)),
+        });
+        let after = pass_twice(&state);
+        assert!(after.stack.is_empty());
+        assert!(after.you.hand.is_empty());
+        assert_eq!(after.you.library, vec![Card::Island]);
+        assert_eq!(after.you.graveyard, vec![Card::StreetWraith]);
+    }
+
+    #[test]
+    fn daze_lets_you_pay_one_from_your_pool_or_lose_the_spell() {
+        let state = countered(
+            PlayerState {
+                mana_pool: ManaPool::of(Color::U, 1).with(Color::B, 1),
+                library: vec![Card::Island, Card::Swamp, Card::Plains],
+                ..PlayerState::default()
+            },
+            Card::Brainstorm,
+            Card::Daze,
+        );
+        let taxed = pass_twice(&state);
+        let pending = taxed.pending.expect("your decision");
+        assert_eq!(pending.player, Player::You);
+        assert_eq!(pending.bin_owner, Player::Opponent);
+        assert_eq!(
+            pending.kind,
+            ChoiceKind::PayTax {
+                amount: 1,
+                target: on_stack(0, Card::Brainstorm),
+            }
+        );
+        assert_eq!(
+            legal_actions(&taxed),
+            vec![
+                Action::Choose(Choice::PayTax(ManaPool::of(Color::B, 1))),
+                Action::Choose(Choice::PayTax(ManaPool::of(Color::U, 1))),
+                Action::Choose(Choice::DeclineTax),
+            ]
+        );
+        // Pay with the B: Brainstorm stays, Daze goes to the opponent's
+        // graveyard, you keep priority.
+        let paid = apply(
+            &taxed,
+            &Action::Choose(Choice::PayTax(ManaPool::of(Color::B, 1))),
+        )
+        .unwrap();
+        assert_eq!(paid.you.mana_pool, ManaPool::of(Color::U, 1));
+        assert_eq!(paid.stack.len(), 1);
+        assert!(paid.you.graveyard.is_empty());
+        assert_eq!(paid.opponent.graveyard, vec![Card::Daze]);
+        assert_eq!(paid.priority, Player::You);
+        assert_eq!(pass_twice(&paid).you.hand.len(), 3);
+        // Decline: Brainstorm is countered.
+        let declined = apply(&taxed, &Action::Choose(Choice::DeclineTax)).unwrap();
+        assert!(declined.stack.is_empty());
+        assert_eq!(declined.you.graveyard, vec![Card::Brainstorm]);
+        assert_eq!(declined.opponent.graveyard, vec![Card::Daze]);
+        assert_eq!(
+            declined.you.mana_pool,
+            ManaPool::of(Color::U, 1).with(Color::B, 1)
+        );
+    }
+
+    #[test]
+    fn spell_pierce_and_miscalculation_ask_for_two() {
+        for counter in [Card::SpellPierce, Card::Miscalculation] {
+            let state = countered(
+                PlayerState {
+                    mana_pool: ManaPool::of(Color::U, 2),
+                    ..PlayerState::default()
+                },
+                Card::Brainstorm,
+                counter,
+            );
+            let taxed = pass_twice(&state);
+            assert_eq!(
+                legal_actions(&taxed),
+                vec![
+                    Action::Choose(Choice::PayTax(ManaPool::of(Color::U, 2))),
+                    Action::Choose(Choice::DeclineTax),
+                ],
+                "{counter}"
+            );
+            // One mana short: only declining is left.
+            let short = countered(
+                PlayerState {
+                    mana_pool: ManaPool::of(Color::U, 1),
+                    ..PlayerState::default()
+                },
+                Card::Brainstorm,
+                counter,
+            );
+            assert_eq!(
+                legal_actions(&pass_twice(&short)),
+                vec![Action::Choose(Choice::DeclineTax)],
+                "{counter}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_tax_spell_whose_target_is_gone_asks_nothing() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack.push(StackItem::Spell {
+            card: Card::Daze,
+            controller: Player::Opponent,
+            target: None,
+        });
+        let after = pass_twice(&state);
+        assert_eq!(after.pending, None);
+        assert_eq!(after.opponent.graveyard, vec![Card::Daze]);
     }
 }

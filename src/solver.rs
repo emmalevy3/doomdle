@@ -63,6 +63,28 @@ impl Strategy {
         }
     }
 
+    /// The state at the end of every branch of the strategy.
+    pub fn outcomes(&self, start: &State) -> Result<Vec<State>, EngineError> {
+        let mut leaves = Vec::new();
+        self.collect_outcomes(start, &mut leaves)?;
+        Ok(leaves)
+    }
+
+    fn collect_outcomes(&self, state: &State, leaves: &mut Vec<State>) -> Result<(), EngineError> {
+        match self {
+            Strategy::Win => leaves.push(state.clone()),
+            Strategy::Mine { action, next } => {
+                next.collect_outcomes(&step(state, action)?.state, leaves)?;
+            }
+            Strategy::Theirs { branches } => {
+                for (action, next) in branches {
+                    next.collect_outcomes(&step(state, action)?.state, leaves)?;
+                }
+            }
+        }
+        Ok(())
+    }
+
     /// The strategy as a single sequence of steps. Fails if the opponent ever
     /// has more than one option, since the line then branches.
     pub fn line(&self, start: &State) -> Result<Vec<Step>, EngineError> {
@@ -230,7 +252,7 @@ mod tests {
     use super::*;
     use crate::engine::Choice;
     use crate::mana::{Color, ManaPool};
-    use crate::state::test_support::main_phase;
+    use crate::state::test_support::{main_phase, versus};
     use crate::state::{Permanent, PlayerState};
 
     #[test]
@@ -321,5 +343,40 @@ mod tests {
         )
         .unwrap();
         assert!(matches!(memo.get(&both), Some(Memo::Lost)));
+    }
+
+    #[test]
+    fn a_responding_opponent_branches_the_strategy() {
+        // Oracle on a one-card pile; the opponent holds Counterspell with two
+        // Islands, you hold Pact of Negation for it.
+        let start = versus(
+            PlayerState {
+                hand: vec![Card::ThassasOracle, Card::PactOfNegation],
+                mana_pool: ManaPool::of(Color::U, 2),
+                library: vec![Card::Swamp],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                hand: vec![Card::Counterspell],
+                battlefield: vec![
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::Island),
+                ],
+                ..PlayerState::default()
+            },
+        );
+        let strategy = solve(&start).expect("Pact answers Counterspell");
+        // The opponent's first decision has two branches, so no single line.
+        assert!(strategy.line(&start).is_err());
+        let leaves = strategy.outcomes(&start).unwrap();
+        assert!(leaves.len() >= 2);
+        assert!(leaves.iter().all(|s| s.outcome == Some(Outcome::Win)));
+        let text = strategy.to_string();
+        assert!(text.contains("If the opponent: Cast Counterspell"));
+        assert!(text.contains("Cast Pact of Negation"));
+        // Without the Pact the counter wins.
+        let mut unprotected = start.clone();
+        unprotected.you.hand = vec![Card::ThassasOracle];
+        assert_eq!(solve(&unprotected), None);
     }
 }

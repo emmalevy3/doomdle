@@ -6,8 +6,10 @@
 use std::fmt;
 
 use crate::cards::{self, AbilityKind, Card, CardKind, CyclingCost, LoyaltyAbility, ManaAbility};
-use crate::mana::{Color, Payment};
-use crate::state::{LossReason, Permanent, Phase, Player, PlayerState, StackItem, State, Zone};
+use crate::mana::{AltCost, Color, ManaPool, Payment};
+use crate::state::{
+    LossReason, Permanent, Phase, Player, PlayerState, StackItem, State, Target, Zone,
+};
 
 /// A player's answer to a [`crate::state::PendingChoice`].
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -32,6 +34,10 @@ pub enum Choice {
     Discard(Vec<Card>),
     /// Frantic Search: the tapped lands to untap.
     UntapLands(Vec<Card>),
+    /// Pay this mana so Daze, Spell Pierce or Miscalculation doesn't counter.
+    PayTax(ManaPool),
+    /// Don't pay: the spell is countered.
+    DeclineTax,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -40,11 +46,11 @@ pub enum Action {
     ChoosePile(Vec<Card>),
     Pass,
     /// Cast `card` from `from`, paying exactly `payment`. `target` is set for
-    /// targeted spells (Unearth) and `None` otherwise.
+    /// targeted spells (Unearth, the counters) and `None` otherwise.
     CastSpell {
         card: Card,
         payment: Payment,
-        target: Option<Card>,
+        target: Option<Target>,
         from: Zone,
     },
     PlayLand {
@@ -128,8 +134,7 @@ pub fn legal_actions(state: &State) -> Vec<Action> {
     }
     match state.priority {
         Player::You => your_actions(state),
-        // Stage 4 adds the opponent's responses.
-        Player::Opponent => vec![Action::Pass],
+        Player::Opponent => their_actions(state),
     }
 }
 
@@ -142,14 +147,28 @@ fn your_actions(state: &State) -> Vec<Action> {
     let mut out = vec![Action::Pass];
 
     for card in distinct(&you.hand) {
-        push_plays(&mut out, you, card, Zone::Hand, sorcery_speed);
+        push_plays(
+            &mut out,
+            state,
+            Player::You,
+            card,
+            Zone::Hand,
+            sorcery_speed,
+        );
         push_cycling(&mut out, you, card);
     }
     // Yawgmoth's Will: the graveyard is a second hand for casting and playing
     // (not for cycling, which is a discard).
     if you.yawgmoths_will {
         for card in distinct(&you.graveyard) {
-            push_plays(&mut out, you, card, Zone::Graveyard, sorcery_speed);
+            push_plays(
+                &mut out,
+                state,
+                Player::You,
+                card,
+                Zone::Graveyard,
+                sorcery_speed,
+            );
         }
     }
 
@@ -201,39 +220,57 @@ fn your_actions(state: &State) -> Vec<Action> {
     out
 }
 
+/// The opponent only responds: a targeted instant from hand aimed at something
+/// of yours on the stack, paid by tapping their lands as part of the cast, or
+/// a pass. Casts come first so the AND search meets the strongest branch
+/// early.
+fn their_actions(state: &State) -> Vec<Action> {
+    let mut out = Vec::new();
+    for card in distinct(&state.opponent.hand) {
+        if card.kind() == CardKind::Instant
+            && card.target_options(state, Player::Opponent).is_some()
+        {
+            push_casts(&mut out, state, Player::Opponent, card, Zone::Hand);
+        }
+    }
+    out.push(Action::Pass);
+    out
+}
+
 /// Casting or playing `card` from `from`, respecting timing.
 fn push_plays(
     out: &mut Vec<Action>,
-    you: &PlayerState,
+    state: &State,
+    player: Player,
     card: Card,
     from: Zone,
     sorcery_speed: bool,
 ) {
     match card.kind() {
         CardKind::Land => {
-            if sorcery_speed && you.land_drop_available {
+            if sorcery_speed && state.player(player).land_drop_available {
                 out.push(Action::PlayLand { card, from });
             }
         }
-        CardKind::Instant => push_casts(out, you, card, from),
+        CardKind::Instant => push_casts(out, state, player, card, from),
         CardKind::Sorcery | CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
             if sorcery_speed {
-                push_casts(out, you, card, from);
+                push_casts(out, state, player, card, from);
             }
         }
     }
 }
 
 /// One cast per way to pay, times one per legal target for targeted spells.
-fn push_casts(out: &mut Vec<Action>, you: &PlayerState, card: Card, from: Zone) {
+fn push_casts(out: &mut Vec<Action>, state: &State, player: Player, card: Card, from: Zone) {
     if !card.castable() {
         return;
     }
-    let targets: Vec<Option<Card>> = match card.target_options(you) {
+    let targets: Vec<Option<Target>> = match card.target_options(state, player) {
         None => vec![None],
         Some(targets) => targets.into_iter().map(Some).collect(),
     };
-    for payment in Payment::options(&you.mana_pool, &card.mana_cost(), you.life) {
+    for payment in cast_payments(state, player, card) {
         for &target in &targets {
             out.push(Action::CastSpell {
                 card,
@@ -243,6 +280,128 @@ fn push_casts(out: &mut Vec<Action>, you: &PlayerState, card: Card, from: Zone) 
             });
         }
     }
+}
+
+/// Every way `player` could pay for `card` right now: its mana cost from the
+/// pool (for the opponent, also from lands tapped on the spot), plus its
+/// alternative costs.
+fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
+    let ps = state.player(player);
+    let pools = match player {
+        Player::You => vec![ps.mana_pool],
+        Player::Opponent => reachable_pools(ps),
+    };
+    let mut out = Vec::new();
+    for pool in &pools {
+        for payment in Payment::options(pool, &card.mana_cost(), ps.life) {
+            if !out.contains(&payment) {
+                out.push(payment);
+            }
+        }
+    }
+    out.extend(card.alternative_payments(state, player));
+    out
+}
+
+/// Takes `mana` out of the pool, first tapping lands for any shortfall (the
+/// opponent pays that way; your own payments are only ever offered from mana
+/// already in the pool). `None` if it can't be paid.
+pub(crate) fn pay_mana(ps: &mut PlayerState, mana: &ManaPool) -> Option<()> {
+    if ps.mana_pool.minus(mana).is_none() {
+        for (idx, color) in tap_plan(ps, mana)? {
+            ps.battlefield[idx].tapped = true;
+            ps.mana_pool.add_mana(color, 1);
+        }
+    }
+    ps.mana_pool = ps.mana_pool.minus(mana)?;
+    Some(())
+}
+
+/// The ways `player` can pay a generic `amount` right now: you from your pool,
+/// the opponent also by tapping lands.
+pub(crate) fn tax_payments(state: &State, player: Player, amount: u8) -> Vec<ManaPool> {
+    let ps = state.player(player);
+    let cost = crate::mana::ManaCost::FREE.with_generic(amount);
+    let pools = match player {
+        Player::You => vec![ps.mana_pool],
+        Player::Opponent => reachable_pools(ps),
+    };
+    let mut out = Vec::new();
+    for pool in &pools {
+        for mana in pool.payments_for(&cost) {
+            if !out.contains(&mana) {
+                out.push(mana);
+            }
+        }
+    }
+    out
+}
+
+/// The untapped permanents of `ps` that tap for mana, as (index, colors).
+fn tap_sources(ps: &PlayerState) -> Vec<(usize, Vec<Color>)> {
+    ps.battlefield
+        .iter()
+        .enumerate()
+        .filter(|(_, p)| !p.tapped && p.card.mana_ability() == Some(ManaAbility::Tap))
+        .map(|(i, p)| (i, p.card.mana_colors()))
+        .collect()
+}
+
+/// Every pool `ps` can reach by tapping any of its mana sources for any of
+/// their colors, the current pool included. Used for the opponent, who taps
+/// lands only as part of casting.
+fn reachable_pools(ps: &PlayerState) -> Vec<ManaPool> {
+    let mut out = Vec::new();
+    for_each_tap_plan(&tap_sources(ps), &mut |taps| {
+        let pool = pool_after(ps, taps);
+        if !out.contains(&pool) {
+            out.push(pool);
+        }
+    });
+    out
+}
+
+/// The fewest taps that give `ps` a pool covering `needed`, in the same
+/// enumeration order as [`reachable_pools`] so the two always agree.
+fn tap_plan(ps: &PlayerState, needed: &ManaPool) -> Option<Vec<(usize, Color)>> {
+    let mut best: Option<Vec<(usize, Color)>> = None;
+    for_each_tap_plan(&tap_sources(ps), &mut |taps| {
+        let covers = pool_after(ps, taps).minus(needed).is_some();
+        if covers && best.as_ref().is_none_or(|b| taps.len() < b.len()) {
+            best = Some(taps.to_vec());
+        }
+    });
+    best
+}
+
+fn pool_after(ps: &PlayerState, taps: &[(usize, Color)]) -> ManaPool {
+    let mut pool = ps.mana_pool;
+    for &(_, color) in taps {
+        pool.add_mana(color, 1);
+    }
+    pool
+}
+
+/// Calls `visit` with every way to tap a subset of `sources`, each for one of
+/// its colors (the empty plan included).
+fn for_each_tap_plan(sources: &[(usize, Vec<Color>)], visit: &mut impl FnMut(&[(usize, Color)])) {
+    fn go(
+        sources: &[(usize, Vec<Color>)],
+        acc: &mut Vec<(usize, Color)>,
+        visit: &mut impl FnMut(&[(usize, Color)]),
+    ) {
+        let Some(((idx, colors), rest)) = sources.split_first() else {
+            visit(acc);
+            return;
+        };
+        go(rest, acc, visit);
+        for &color in colors {
+            acc.push((*idx, color));
+            go(rest, acc, visit);
+            acc.pop();
+        }
+    }
+    go(sources, &mut Vec::new(), visit);
 }
 
 fn push_cycling(out: &mut Vec<Action>, you: &PlayerState, card: Card) {
@@ -472,7 +631,7 @@ fn cast(
     player: Player,
     card: Card,
     payment: &Payment,
-    target: Option<Card>,
+    target: Option<Target>,
     from: Zone,
 ) -> Result<(), EngineError> {
     let illegal = || {
@@ -483,13 +642,10 @@ fn cast(
             from,
         })
     };
-    let ps = state.player_mut(player);
-    if !card.castable()
-        || !Payment::options(&ps.mana_pool, &card.mana_cost(), ps.life).contains(payment)
-    {
+    if !card.castable() || !cast_payments(state, player, card).contains(payment) {
         return Err(illegal());
     }
-    let target_ok = match (card.target_options(ps), target) {
+    let target_ok = match (card.target_options(state, player), target) {
         (None, None) => true,
         (Some(options), Some(target)) => options.contains(&target),
         _ => false,
@@ -497,9 +653,26 @@ fn cast(
     if !target_ok {
         return Err(illegal());
     }
-    ps.mana_pool = ps.mana_pool.minus(&payment.mana).ok_or_else(illegal)?;
+    let ps = state.player_mut(player);
+    pay_mana(ps, &payment.mana).ok_or_else(illegal)?;
     ps.life -= i16::from(payment.life);
     take_from_zone(ps, card, from).ok_or_else(illegal)?;
+    match payment.alt {
+        Some(AltCost::Pitch(pitched)) => {
+            ps.remove_from_hand(pitched).ok_or_else(illegal)?;
+            ps.exile.push(pitched);
+        }
+        Some(AltCost::ReturnIsland(island)) => {
+            let idx = ps
+                .battlefield
+                .iter()
+                .position(|p| p.card == island)
+                .ok_or_else(illegal)?;
+            ps.battlefield.remove(idx);
+            ps.hand.push(island);
+        }
+        None => {}
+    }
     ps.spells_cast_this_turn += 1;
     state.stack.push(StackItem::Spell {
         card,
@@ -508,6 +681,29 @@ fn cast(
     });
     acted(state, player);
     Ok(())
+}
+
+/// Removes the stack item at `index` and keeps every other item's stack
+/// target pointing at the same item: indices above shift down, and a target
+/// on the removed item itself is cleared so that spell fizzles.
+pub(crate) fn remove_stack_item(state: &mut State, index: usize) -> StackItem {
+    let removed = state.stack.remove(index);
+    for item in &mut state.stack {
+        if let StackItem::Spell {
+            target: Some(Target::Stack { index: i, .. }),
+            ..
+        } = item
+        {
+            if *i == index {
+                if let StackItem::Spell { target, .. } = item {
+                    *target = None;
+                }
+            } else if *i > index {
+                *i -= 1;
+            }
+        }
+    }
+    removed
 }
 
 /// Removes one copy of `card` from `from`, if it is there and that zone may
@@ -765,6 +961,8 @@ impl fmt::Display for Choice {
             }
             Choice::Discard(cards) => write!(f, "Discard {}", list(cards)),
             Choice::UntapLands(cards) => write!(f, "Untap {}", list(cards)),
+            Choice::PayTax(mana) => write!(f, "Pay {mana} to keep the spell"),
+            Choice::DeclineTax => write!(f, "Don't pay: let the spell be countered"),
         }
     }
 }
@@ -870,7 +1068,7 @@ mod tests {
     use super::*;
     use crate::cards::TriggerKind;
     use crate::mana::ManaPool;
-    use crate::state::test_support::main_phase;
+    use crate::state::test_support::{main_phase, versus};
     use crate::state::{ChoiceKind, Outcome, PendingChoice, PlayerState, Puzzle};
 
     fn cast_action(card: Card, payment: ManaPool) -> Action {
@@ -1653,6 +1851,7 @@ mod tests {
             player: Player::You,
             kind: ChoiceKind::BrainstormPutBack,
             bin: Some(Card::Brainstorm),
+            bin_owner: Player::You,
         });
         let actions = legal_actions(&state);
         assert!(!actions.is_empty());
@@ -1840,7 +2039,7 @@ mod tests {
         let cast = |target| Action::CastSpell {
             card: Card::Unearth,
             payment: ManaPool::of(Color::B, 1).into(),
-            target: Some(target),
+            target: Some(Target::Card(target)),
             from: Zone::Hand,
         };
         let casts: Vec<Action> = legal_actions(&state)
@@ -1857,7 +2056,7 @@ mod tests {
             vec![StackItem::Spell {
                 card: Card::Unearth,
                 controller: Player::You,
-                target: Some(Card::ThassasOracle),
+                target: Some(Target::Card(Card::ThassasOracle)),
             }]
         );
         assert!(matches!(
@@ -2093,5 +2292,580 @@ mod tests {
             ]
         );
         assert_eq!(ordered_selections(&[], 0), vec![Vec::<Card>::new()]);
+    }
+
+    // ------------------------------------------------------------ stage 4a
+
+    fn opponent_with(hand: Vec<Card>, battlefield: Vec<Permanent>) -> PlayerState {
+        PlayerState {
+            hand,
+            battlefield,
+            ..PlayerState::default()
+        }
+    }
+
+    fn your_spell(card: Card) -> StackItem {
+        StackItem::Spell {
+            card,
+            controller: Player::You,
+            target: None,
+        }
+    }
+
+    fn their_spell(card: Card, target: Option<Target>) -> StackItem {
+        StackItem::Spell {
+            card,
+            controller: Player::Opponent,
+            target,
+        }
+    }
+
+    fn on_stack(index: usize, card: Card) -> Target {
+        Target::Stack { index, card }
+    }
+
+    /// You have cast `spell` and passed priority to the opponent.
+    fn facing(you: PlayerState, opponent: PlayerState, spell: Card) -> State {
+        let mut state = versus(you, opponent);
+        state.stack.push(your_spell(spell));
+        apply(&state, &Action::Pass).unwrap()
+    }
+
+    fn their_cast(card: Card, payment: Payment, target: Target) -> Action {
+        Action::CastSpell {
+            card,
+            payment,
+            target: Some(target),
+            from: Zone::Hand,
+        }
+    }
+
+    #[test]
+    fn opponent_with_nothing_to_cast_can_only_pass() {
+        let state = facing(
+            PlayerState::default(),
+            PlayerState::default(),
+            Card::Brainstorm,
+        );
+        assert_eq!(legal_actions(&state), vec![Action::Pass]);
+        // A counter with nothing of yours on the stack is uncastable.
+        let mut idle = versus(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Counterspell],
+                vec![Permanent::untapped(Card::Island); 2],
+            ),
+        );
+        idle.priority = Player::Opponent;
+        assert_eq!(legal_actions(&idle), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn opponent_counterspell_taps_two_islands_as_part_of_casting() {
+        let islands = vec![Permanent::untapped(Card::Island); 2];
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(vec![Card::Counterspell], islands),
+            Card::Brainstorm,
+        );
+        let counter = their_cast(
+            Card::Counterspell,
+            Payment::mana(ManaPool::of(Color::U, 2)),
+            on_stack(0, Card::Brainstorm),
+        );
+        assert_eq!(legal_actions(&state), vec![counter.clone(), Action::Pass]);
+        let next = apply(&state, &counter).unwrap();
+        assert_eq!(
+            next.opponent.battlefield,
+            vec![Permanent::tapped(Card::Island); 2]
+        );
+        assert!(next.opponent.mana_pool.is_empty());
+        assert!(next.opponent.hand.is_empty());
+        assert_eq!(next.opponent.spells_cast_this_turn, 1);
+        assert_eq!(
+            next.stack,
+            vec![
+                your_spell(Card::Brainstorm),
+                their_spell(Card::Counterspell, Some(on_stack(0, Card::Brainstorm))),
+            ]
+        );
+        // The caster keeps priority.
+        assert_eq!(next.priority, Player::Opponent);
+        assert!(!next.passed_in_succession);
+    }
+
+    #[test]
+    fn opponent_cannot_cast_what_their_lands_cannot_pay() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Counterspell],
+                vec![Permanent::untapped(Card::Island)],
+            ),
+            Card::Brainstorm,
+        );
+        assert_eq!(legal_actions(&state), vec![Action::Pass]);
+        // A tapped land is no help either.
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Counterspell],
+                vec![
+                    Permanent::untapped(Card::Island),
+                    Permanent::tapped(Card::Island),
+                ],
+            ),
+            Card::Brainstorm,
+        );
+        assert_eq!(legal_actions(&state), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn opponent_only_ever_casts_instants_in_response() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![
+                    Card::Island,
+                    Card::Miscalculation,
+                    Card::Unearth,
+                    Card::Brainstorm,
+                    Card::ThassasOracle,
+                ],
+                vec![
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::MoxSapphire),
+                ],
+            ),
+            Card::Brainstorm,
+        );
+        // Miscalculation from Island + Mox; no land play, tap, cycle, or
+        // Brainstorm (nothing to target) and no sorcery-speed spells.
+        assert_eq!(
+            legal_actions(&state),
+            vec![
+                their_cast(
+                    Card::Miscalculation,
+                    Payment::mana(ManaPool::of(Color::U, 2)),
+                    on_stack(0, Card::Brainstorm),
+                ),
+                Action::Pass,
+            ]
+        );
+    }
+
+    #[test]
+    fn reachable_pools_and_tap_plan_agree() {
+        let ps = PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Tundra),
+                Permanent::tapped(Card::Swamp),
+            ],
+            ..PlayerState::default()
+        };
+        let pools = reachable_pools(&ps);
+        let u = |n| ManaPool::of(Color::U, n);
+        for pool in [
+            ManaPool::EMPTY,
+            u(1),
+            u(2),
+            u(3),
+            ManaPool::of(Color::W, 1),
+            u(2).with(Color::W, 1),
+        ] {
+            assert!(pools.contains(&pool), "{pool} should be reachable");
+        }
+        assert!(!pools.contains(&ManaPool::of(Color::B, 1)));
+        assert!(!pools.contains(&u(4)));
+        // Fewest taps: UU needs two lands, W just the Tundra.
+        assert_eq!(tap_plan(&ps, &u(2)).unwrap().len(), 2);
+        assert_eq!(
+            tap_plan(&ps, &ManaPool::of(Color::W, 1)),
+            Some(vec![(2, Color::W)])
+        );
+        assert_eq!(tap_plan(&ps, &u(4)), None);
+        // Mana already floating counts.
+        let floating = PlayerState {
+            mana_pool: u(1),
+            ..ps
+        };
+        assert_eq!(tap_plan(&floating, &u(2)).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn nobody_targets_their_own_stack_items() {
+        let mut state = versus(
+            PlayerState {
+                hand: vec![Card::PactOfNegation],
+                ..PlayerState::default()
+            },
+            opponent_with(vec![Card::Stifle], vec![Permanent::untapped(Card::Island)]),
+        );
+        state.stack.push(your_spell(Card::Brainstorm));
+        state.stack.push(their_spell(
+            Card::Counterspell,
+            Some(on_stack(0, Card::Brainstorm)),
+        ));
+        state.stack.push(StackItem::Trigger {
+            source: Card::ThassasOracle,
+            kind: TriggerKind::OracleEnters,
+            controller: Player::You,
+        });
+        assert_eq!(
+            Card::PactOfNegation.target_options(&state, Player::You),
+            Some(vec![on_stack(1, Card::Counterspell)])
+        );
+        assert_eq!(
+            Card::Stifle.target_options(&state, Player::Opponent),
+            Some(vec![on_stack(2, Card::ThassasOracle)])
+        );
+        assert_eq!(
+            Card::Stifle.target_options(&state, Player::You),
+            Some(vec![])
+        );
+        // Your Pact is a real action for free.
+        assert!(legal_actions(&state).contains(&Action::CastSpell {
+            card: Card::PactOfNegation,
+            payment: Payment::FREE,
+            target: Some(on_stack(1, Card::Counterspell)),
+            from: Zone::Hand,
+        }));
+    }
+
+    #[test]
+    fn counter_filters_follow_the_oracle_text() {
+        let mut state = main_phase(PlayerState::default());
+        for card in [
+            Card::ThassasOracle,
+            Card::Brainstorm,
+            Card::FlowState,
+            Card::LionsEyeDiamond,
+            Card::GitaxianProbe,
+        ] {
+            state.stack.push(your_spell(card));
+        }
+        state.stack.push(StackItem::Trigger {
+            source: Card::ThassasOracle,
+            kind: TriggerKind::OracleEnters,
+            controller: Player::You,
+        });
+        state.stack.push(StackItem::Ability {
+            source: Card::Unearth,
+            kind: AbilityKind::Cycling,
+            controller: Player::You,
+        });
+        let targets = |card: Card| -> Vec<Card> {
+            card.target_options(&state, Player::Opponent)
+                .unwrap()
+                .into_iter()
+                .map(|t| match t {
+                    Target::Stack { card, .. } => card,
+                    Target::Card(card) => card,
+                })
+                .collect()
+        };
+        let all_spells = vec![
+            Card::ThassasOracle,
+            Card::Brainstorm,
+            Card::FlowState,
+            Card::LionsEyeDiamond,
+            Card::GitaxianProbe,
+        ];
+        for any in [
+            Card::Counterspell,
+            Card::ForceOfWill,
+            Card::Daze,
+            Card::Miscalculation,
+            Card::PactOfNegation,
+        ] {
+            assert_eq!(targets(any), all_spells, "{any}");
+        }
+        for noncreature in [Card::SpellPierce, Card::ForceOfNegation] {
+            assert_eq!(targets(noncreature), all_spells[1..], "{noncreature}");
+        }
+        // Probe is {U/P}: mana value 1 however it is paid.
+        assert_eq!(
+            targets(Card::MentalMisstep),
+            vec![Card::Brainstorm, Card::GitaxianProbe]
+        );
+        // Oracle is {U}{U}: Spell Snare's one creature target in this pool.
+        assert_eq!(
+            targets(Card::SpellSnare),
+            vec![Card::ThassasOracle, Card::FlowState]
+        );
+        assert_eq!(
+            targets(Card::Stifle),
+            vec![Card::ThassasOracle, Card::Unearth]
+        );
+    }
+
+    #[test]
+    fn force_of_will_pitches_a_blue_card_for_one_life() {
+        let hand = vec![
+            Card::ForceOfWill,
+            Card::ForceOfWill,
+            Card::Brainstorm,
+            Card::Swamp,
+        ];
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(hand, Vec::new()),
+            Card::ThassasOracle,
+        );
+        let pitch = |card| {
+            their_cast(
+                Card::ForceOfWill,
+                Payment {
+                    alt: Some(AltCost::Pitch(card)),
+                    ..Payment::life(1)
+                },
+                on_stack(0, Card::ThassasOracle),
+            )
+        };
+        // Another Force or Brainstorm, never the Swamp, never itself twice.
+        assert_eq!(
+            legal_actions(&state),
+            vec![
+                pitch(Card::ForceOfWill),
+                pitch(Card::Brainstorm),
+                Action::Pass
+            ]
+        );
+        let next = apply(&state, &pitch(Card::Brainstorm)).unwrap();
+        assert_eq!(next.opponent.life, 19);
+        assert_eq!(next.opponent.exile, vec![Card::Brainstorm]);
+        assert_eq!(next.opponent.hand, vec![Card::ForceOfWill, Card::Swamp]);
+        assert_eq!(
+            next.stack[1],
+            their_spell(Card::ForceOfWill, Some(on_stack(0, Card::ThassasOracle)))
+        );
+        // No blue card left: no Force.
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(vec![Card::ForceOfWill, Card::Swamp], Vec::new()),
+            Card::ThassasOracle,
+        );
+        assert_eq!(legal_actions(&state), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn force_of_will_at_one_life_kills_the_opponent() {
+        let state = facing(
+            PlayerState::default(),
+            PlayerState {
+                life: 1,
+                ..opponent_with(vec![Card::ForceOfWill, Card::Brainstorm], Vec::new())
+            },
+            Card::ThassasOracle,
+        );
+        let force = their_cast(
+            Card::ForceOfWill,
+            Payment {
+                alt: Some(AltCost::Pitch(Card::Brainstorm)),
+                ..Payment::life(1)
+            },
+            on_stack(0, Card::ThassasOracle),
+        );
+        assert!(legal_actions(&state).contains(&force));
+        let next = apply(&state, &force).unwrap();
+        assert_eq!(next.opponent.life, 0);
+        assert_eq!(next.outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn force_of_negation_is_free_only_for_the_opponent() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(vec![Card::ForceOfNegation, Card::Ponder], Vec::new()),
+            Card::Brainstorm,
+        );
+        let pitch = their_cast(
+            Card::ForceOfNegation,
+            Payment {
+                alt: Some(AltCost::Pitch(Card::Ponder)),
+                ..Payment::FREE
+            },
+            on_stack(0, Card::Brainstorm),
+        );
+        assert_eq!(legal_actions(&state), vec![pitch, Action::Pass]);
+        // On your turn you pay 1UU for it, and it can't hit a creature.
+        let mut mine = versus(
+            PlayerState {
+                hand: vec![Card::ForceOfNegation, Card::Ponder],
+                mana_pool: ManaPool::of(Color::U, 3),
+                ..PlayerState::default()
+            },
+            PlayerState::default(),
+        );
+        mine.stack.push(their_spell(Card::Counterspell, None));
+        let casts: Vec<Action> = legal_actions(&mine)
+            .into_iter()
+            .filter(|a| matches!(a, Action::CastSpell { .. }))
+            .collect();
+        assert_eq!(
+            casts,
+            vec![Action::CastSpell {
+                card: Card::ForceOfNegation,
+                payment: Payment::mana(ManaPool::of(Color::U, 3)),
+                target: Some(on_stack(0, Card::Counterspell)),
+                from: Zone::Hand,
+            }]
+        );
+    }
+
+    #[test]
+    fn daze_returns_an_island_to_hand_instead_of_paying() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Daze],
+                vec![
+                    Permanent::tapped(Card::Island),
+                    Permanent::untapped(Card::UndergroundSea),
+                    Permanent::untapped(Card::Swamp),
+                ],
+            ),
+            Card::Brainstorm,
+        );
+        let bounce = |land| {
+            their_cast(
+                Card::Daze,
+                Payment {
+                    alt: Some(AltCost::ReturnIsland(land)),
+                    ..Payment::FREE
+                },
+                on_stack(0, Card::Brainstorm),
+            )
+        };
+        // Hard cast from Sea + Swamp, or bounce either Island-typed land
+        // (tapped or not); the Swamp is not an Island.
+        assert_eq!(
+            legal_actions(&state),
+            vec![
+                their_cast(
+                    Card::Daze,
+                    Payment::mana(ManaPool::of(Color::U, 1).with(Color::B, 1)),
+                    on_stack(0, Card::Brainstorm),
+                ),
+                bounce(Card::Island),
+                bounce(Card::UndergroundSea),
+                Action::Pass,
+            ]
+        );
+        let next = apply(&state, &bounce(Card::UndergroundSea)).unwrap();
+        assert_eq!(next.opponent.hand, vec![Card::UndergroundSea]);
+        assert_eq!(
+            next.opponent.battlefield,
+            vec![
+                Permanent::tapped(Card::Island),
+                Permanent::untapped(Card::Swamp),
+            ]
+        );
+        assert!(next.opponent.mana_pool.is_empty());
+    }
+
+    #[test]
+    fn your_daze_bounces_your_island_for_a_replay() {
+        let mut state = versus(
+            PlayerState {
+                hand: vec![Card::Daze],
+                battlefield: vec![Permanent::tapped(Card::Island)],
+                ..PlayerState::default()
+            },
+            PlayerState::default(),
+        );
+        state.stack.push(their_spell(Card::Counterspell, None));
+        let daze = Action::CastSpell {
+            card: Card::Daze,
+            payment: Payment {
+                alt: Some(AltCost::ReturnIsland(Card::Island)),
+                ..Payment::FREE
+            },
+            target: Some(on_stack(0, Card::Counterspell)),
+            from: Zone::Hand,
+        };
+        assert!(legal_actions(&state).contains(&daze));
+        let next = apply(&state, &daze).unwrap();
+        assert_eq!(next.you.hand, vec![Card::Island]);
+        assert!(next.you.battlefield.is_empty());
+        // Daze resolves: the opponent has no mana, so they can only let
+        // Counterspell be countered. The Island is then playable again with
+        // the land drop.
+        let taxed = pass_twice(&next);
+        assert_eq!(taxed.pending.map(|p| p.player), Some(Player::Opponent));
+        assert_eq!(
+            legal_actions(&taxed),
+            vec![Action::Choose(Choice::DeclineTax)]
+        );
+        let after = apply(&taxed, &Action::Choose(Choice::DeclineTax)).unwrap();
+        assert!(after.stack.is_empty());
+        assert_eq!(after.opponent.graveyard, vec![Card::Counterspell]);
+        assert_eq!(after.you.graveyard, vec![Card::Daze]);
+        assert!(legal_actions(&after).contains(&play_land_action(Card::Island)));
+    }
+
+    #[test]
+    fn a_taxed_opponent_may_tap_lands_to_pay() {
+        let mut state = versus(
+            PlayerState {
+                hand: vec![Card::SpellPierce],
+                mana_pool: ManaPool::of(Color::U, 1),
+                ..PlayerState::default()
+            },
+            opponent_with(Vec::new(), vec![Permanent::untapped(Card::Island); 2]),
+        );
+        state.stack.push(their_spell(Card::Counterspell, None));
+        let pierce = Action::CastSpell {
+            card: Card::SpellPierce,
+            payment: Payment::mana(ManaPool::of(Color::U, 1)),
+            target: Some(on_stack(0, Card::Counterspell)),
+            from: Zone::Hand,
+        };
+        let taxed = pass_twice(&apply(&state, &pierce).unwrap());
+        assert_eq!(
+            legal_actions(&taxed),
+            vec![
+                Action::Choose(Choice::PayTax(ManaPool::of(Color::U, 2))),
+                Action::Choose(Choice::DeclineTax),
+            ]
+        );
+        let paid = apply(
+            &taxed,
+            &Action::Choose(Choice::PayTax(ManaPool::of(Color::U, 2))),
+        )
+        .unwrap();
+        assert_eq!(
+            paid.opponent.battlefield,
+            vec![Permanent::tapped(Card::Island); 2]
+        );
+        assert!(paid.opponent.mana_pool.is_empty());
+        assert_eq!(paid.stack, vec![their_spell(Card::Counterspell, None)]);
+    }
+
+    #[test]
+    fn removing_a_stack_item_shifts_targets_above_it() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack.push(your_spell(Card::Brainstorm));
+        state.stack.push(your_spell(Card::DarkRitual));
+        state
+            .stack
+            .push(their_spell(Card::Daze, Some(on_stack(1, Card::DarkRitual))));
+        state.stack.push(their_spell(
+            Card::Counterspell,
+            Some(on_stack(0, Card::Brainstorm)),
+        ));
+        let removed = remove_stack_item(&mut state, 0);
+        assert_eq!(removed, your_spell(Card::Brainstorm));
+        assert_eq!(
+            state.stack,
+            vec![
+                your_spell(Card::DarkRitual),
+                their_spell(Card::Daze, Some(on_stack(0, Card::DarkRitual))),
+                // Its target is gone: it will fizzle.
+                their_spell(Card::Counterspell, None),
+            ]
+        );
     }
 }

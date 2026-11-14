@@ -3,6 +3,8 @@
 
 use std::fmt;
 
+use crate::cards::Card;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Color {
     W,
@@ -282,33 +284,50 @@ impl fmt::Display for ManaCost {
     }
 }
 
-/// What a player hands over for a spell or ability: mana from the pool and
-/// life (Phyrexian mana, Street Wraith's cycling).
+/// The non-mana part of an alternative cost.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum AltCost {
+    /// Exile this blue card from hand (Force of Will, Force of Negation).
+    Pitch(Card),
+    /// Return this Island you control to hand (Daze).
+    ReturnIsland(Card),
+}
+
+/// What a player hands over for a spell or ability: mana from the pool, life
+/// (Phyrexian mana, Street Wraith's cycling, Force of Will) and, for an
+/// alternative cost, the card it pitches or bounces.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Payment {
     pub mana: ManaPool,
     pub life: u8,
+    pub alt: Option<AltCost>,
 }
 
 impl Payment {
     pub const FREE: Payment = Payment {
         mana: ManaPool::EMPTY,
         life: 0,
+        alt: None,
     };
 
     pub const fn mana(mana: ManaPool) -> Payment {
-        Payment { mana, life: 0 }
+        Payment {
+            mana,
+            life: 0,
+            alt: None,
+        }
     }
 
     pub const fn life(life: u8) -> Payment {
         Payment {
             mana: ManaPool::EMPTY,
             life,
+            alt: None,
         }
     }
 
     pub fn is_free(&self) -> bool {
-        self.mana.is_empty() && self.life == 0
+        self.mana.is_empty() && self.life == 0 && self.alt.is_none()
     }
 
     /// Every distinct way to pay `cost` from `pool` with `life` to spare. Each
@@ -327,6 +346,7 @@ impl Payment {
                 let payment = Payment {
                     mana,
                     life: life_cost,
+                    alt: None,
                 };
                 if !out.contains(&payment) {
                     out.push(payment);
@@ -364,11 +384,22 @@ impl From<ManaPool> for Payment {
 
 impl fmt::Display for Payment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (self.mana.is_empty(), self.life) {
-            (true, 0) => write!(f, "nothing"),
-            (false, 0) => write!(f, "{}", self.mana),
-            (true, life) => write!(f, "{life} life"),
-            (false, life) => write!(f, "{} and {life} life", self.mana),
+        let mut parts = Vec::new();
+        if !self.mana.is_empty() {
+            parts.push(self.mana.to_string());
+        }
+        if self.life > 0 {
+            parts.push(format!("{} life", self.life));
+        }
+        match self.alt {
+            Some(AltCost::Pitch(card)) => parts.push(format!("exiling {card} from hand")),
+            Some(AltCost::ReturnIsland(card)) => parts.push(format!("returning {card} to hand")),
+            None => {}
+        }
+        if parts.is_empty() {
+            f.write_str("nothing")
+        } else {
+            f.write_str(&parts.join(" and "))
         }
     }
 }
@@ -471,6 +502,7 @@ mod tests {
             Payment {
                 mana: ManaPool::of(Color::U, 1),
                 life: 2,
+                alt: None,
             },
             Payment::life(4),
         ];
@@ -506,10 +538,25 @@ mod tests {
         assert_eq!(
             Payment {
                 mana: ManaPool::of(Color::U, 1),
-                life: 2
+                life: 2,
+                alt: None,
             }
             .to_string(),
             "U and 2 life"
+        );
+        let pitch = Payment {
+            alt: Some(AltCost::Pitch(Card::Brainstorm)),
+            ..Payment::life(1)
+        };
+        assert!(!pitch.is_free());
+        assert_eq!(pitch.to_string(), "1 life and exiling Brainstorm from hand");
+        assert_eq!(
+            Payment {
+                alt: Some(AltCost::ReturnIsland(Card::Island)),
+                ..Payment::FREE
+            }
+            .to_string(),
+            "returning Island to hand"
         );
     }
 }

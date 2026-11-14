@@ -29,6 +29,17 @@ pub enum Zone {
     Graveyard,
 }
 
+/// What a spell targets, fixed when it is cast.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Target {
+    /// A card in the caster's graveyard (Unearth).
+    Card(Card),
+    /// An item on the stack: its index from the bottom, plus the card or
+    /// ability source sitting there, so the action reads naturally and the
+    /// engine can check it is still the item meant.
+    Stack { index: usize, card: Card },
+}
+
 /// A card on the battlefield. Which player controls it is given by which
 /// battlefield it sits on. `loyalty` and `loyalty_used` are only meaningful
 /// for planeswalkers and stay 0/false otherwise.
@@ -77,9 +88,10 @@ pub enum StackItem {
     Spell {
         card: Card,
         controller: Player,
-        /// The card targeted on casting (Unearth), checked again on
-        /// resolution so a spell whose target is gone does nothing.
-        target: Option<Card>,
+        /// The target chosen on casting. `None` for untargeted spells, and
+        /// also for a targeted spell whose target has since left the stack:
+        /// such a spell does nothing when it resolves.
+        target: Option<Target>,
     },
     Trigger {
         source: Card,
@@ -92,6 +104,24 @@ pub enum StackItem {
         kind: AbilityKind,
         controller: Player,
     },
+}
+
+impl StackItem {
+    pub fn controller(&self) -> Player {
+        match self {
+            StackItem::Spell { controller, .. }
+            | StackItem::Trigger { controller, .. }
+            | StackItem::Ability { controller, .. } => *controller,
+        }
+    }
+
+    /// The spell's card, or the source of a trigger or ability.
+    pub fn card(&self) -> Card {
+        match self {
+            StackItem::Spell { card, .. } => *card,
+            StackItem::Trigger { source, .. } | StackItem::Ability { source, .. } => *source,
+        }
+    }
 }
 
 /// Which decision a paused resolution is waiting on.
@@ -117,16 +147,21 @@ pub enum ChoiceKind {
     FranticDiscard,
     /// Frantic Search: untap up to three lands.
     UntapLands,
+    /// "Counter target spell unless its controller pays {amount}" (Daze,
+    /// Spell Pierce, Miscalculation): the target's controller decides.
+    PayTax { amount: u8, target: Target },
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
 /// until the decision is made; `bin` is the spell being resolved, if any, and
-/// goes to the graveyard once the choice is applied.
+/// goes to `bin_owner`'s graveyard once the choice is applied (the opponent's
+/// Daze is binned while *you* decide whether to pay).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PendingChoice {
     pub player: Player,
     pub kind: ChoiceKind,
     pub bin: Option<Card>,
+    pub bin_owner: Player,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -428,6 +463,11 @@ impl State {
         if self.you.life <= 0 {
             self.lose(LossReason::LifeZero);
         }
+        // The opponent only loses life by paying it (Force of Will, Phyrexian
+        // mana); at 0 they lose.
+        if self.opponent.life <= 0 {
+            self.win(Player::You);
+        }
         if self.you.drew_from_empty {
             self.lose(LossReason::DrewFromEmptyLibrary);
         }
@@ -467,6 +507,14 @@ impl fmt::Display for Permanent {
             }
         }
         Ok(())
+    }
+}
+
+impl fmt::Display for Target {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Target::Card(card) | Target::Stack { card, .. } => write!(f, "{card}"),
+        }
     }
 }
 
@@ -572,6 +620,11 @@ pub(crate) mod test_support {
 
     /// A main-phase state with you holding priority and an empty stack.
     pub(crate) fn main_phase(you: PlayerState) -> State {
+        versus(you, PlayerState::default())
+    }
+
+    /// A main-phase state against a real opponent; you hold priority.
+    pub(crate) fn versus(you: PlayerState, opponent: PlayerState) -> State {
         let mut state = State {
             phase: Phase::Main,
             priority: Player::You,
@@ -579,7 +632,7 @@ pub(crate) mod test_support {
             stack: Vec::new(),
             pending: None,
             you,
-            opponent: PlayerState::default(),
+            opponent,
             outcome: None,
         };
         state.normalize();

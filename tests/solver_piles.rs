@@ -2,7 +2,8 @@
 //! that must fail.
 
 use doomdle::{
-    Action, Card, Outcome, Permanent, PlayerState, Puzzle, State, Verdict, Zone, solve, verify,
+    Action, Card, Outcome, Permanent, PlayerState, Puzzle, State, Target, Verdict, Zone, solve,
+    verify,
 };
 
 fn puzzle(hand: Vec<Card>, battlefield: Vec<Permanent>, candidates: Vec<Card>) -> Puzzle {
@@ -591,7 +592,7 @@ fn unearth_returns_a_surveilled_oracle() {
         a,
         Action::CastSpell {
             card: Card::Unearth,
-            target: Some(Card::ThassasOracle),
+            target: Some(Target::Card(Card::ThassasOracle)),
             ..
         }
     )));
@@ -770,4 +771,249 @@ fn cabal_ritual_pays_for_lab_man_before_frantic_search() {
     )));
     // One land fewer: five mana can't pay for Lab Man and Frantic Search.
     assert_fails(puzzle(hand, lands(2), one.to_vec()), &one);
+}
+
+// --------------------------------------------------------------- stage 4a
+
+fn opponent(hand: Vec<Card>, lands: usize) -> PlayerState {
+    PlayerState {
+        hand,
+        battlefield: vec![Permanent::untapped(Card::Island); lands],
+        ..PlayerState::default()
+    }
+}
+
+fn puzzle_vs(
+    hand: Vec<Card>,
+    battlefield: Vec<Permanent>,
+    candidates: Vec<Card>,
+    opponent: PlayerState,
+) -> Puzzle {
+    Puzzle {
+        opponent,
+        ..puzzle(hand, battlefield, candidates)
+    }
+}
+
+/// Like `assert_wins`, but the opponent may branch: every branch must end in
+/// a win. Returns every step of every branch.
+fn assert_wins_vs(puzzle: Puzzle, pile: &[Card]) -> Vec<doomdle::Step> {
+    match verify(puzzle, pile).expect("legal pile") {
+        Verdict::Wins { start, strategy } => {
+            let leaves = strategy.outcomes(&start).expect("strategy replays");
+            assert!(!leaves.is_empty());
+            assert!(leaves.iter().all(|s| s.outcome == Some(Outcome::Win)));
+            let mut steps = Vec::new();
+            strategy
+                .walk(&start, &mut |_, step| steps.push(step.clone()))
+                .expect("strategy replays");
+            steps
+        }
+        Verdict::Fails => panic!("expected the pile {pile:?} to win against the opponent"),
+    }
+}
+
+fn islands(n: usize) -> Vec<Permanent> {
+    vec![Permanent::untapped(Card::Island); n]
+}
+
+/// Pair 15: Counterspell. Oracle alone loses to it; Pact of Negation answers
+/// it; with one Island the opponent can't cast it at all.
+#[test]
+fn counterspell_is_beaten_by_pact_of_negation() {
+    let one = [Card::Swamp];
+    let counterspell = || opponent(vec![Card::Counterspell], 2);
+    assert_wins(
+        puzzle(vec![Card::ThassasOracle], islands(2), one.to_vec()),
+        &one,
+    );
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle, Card::PactOfNegation],
+            islands(2),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Counterspell,
+            ..
+        }
+    )));
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::PactOfNegation,
+            target: Some(Target::Stack {
+                card: Card::Counterspell,
+                ..
+            }),
+            ..
+        }
+    )));
+    // One Island: Counterspell is never castable, so the plain pile wins.
+    assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            opponent(vec![Card::Counterspell], 1),
+        ),
+        &one,
+    );
+}
+
+/// Pair 16: Daze. Spending every mana on Oracle loses to it; a third Island
+/// is tapped in response and pays the {1}.
+#[test]
+fn daze_is_beaten_by_leaving_one_open() {
+    let one = [Card::Swamp];
+    let daze = || opponent(vec![Card::Daze], 1);
+    assert_fails(
+        puzzle_vs(vec![Card::ThassasOracle], islands(2), one.to_vec(), daze()),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(vec![Card::ThassasOracle], islands(3), one.to_vec(), daze()),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Daze,
+            payment: doomdle::Payment {
+                alt: Some(doomdle::AltCost::ReturnIsland(Card::Island)),
+                ..
+            },
+            ..
+        }
+    )));
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::PayTax(_))
+    )));
+}
+
+/// Pair 17: Force of Will. One Oracle loses to it; a second Oracle gets
+/// through; without a blue card to pitch (and no lands) Force is dead.
+#[test]
+fn force_of_will_is_beaten_by_a_second_oracle() {
+    let one = [Card::Swamp];
+    let force = || opponent(vec![Card::ForceOfWill, Card::Brainstorm], 0);
+    assert_fails(
+        puzzle_vs(vec![Card::ThassasOracle], islands(2), one.to_vec(), force()),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle, Card::ThassasOracle],
+            islands(4),
+            one.to_vec(),
+            force(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::ForceOfWill,
+            payment: doomdle::Payment {
+                alt: Some(doomdle::AltCost::Pitch(Card::Brainstorm)),
+                life: 1,
+                ..
+            },
+            ..
+        }
+    )));
+    assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            opponent(vec![Card::ForceOfWill, Card::Swamp], 0),
+        ),
+        &one,
+    );
+}
+
+/// Pair 18: Stifle. Oracle's trigger is stifled; Laboratory Maniac wins
+/// through a replacement effect Stifle can't touch.
+#[test]
+fn stifle_is_beaten_by_lab_man() {
+    let one = [Card::Swamp];
+    let stifle = || opponent(vec![Card::Stifle], 1);
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            stifle(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::LaboratoryManiac, Card::Brainstorm],
+            islands(4),
+            one.to_vec(),
+            stifle(),
+        ),
+        &one,
+    );
+    // Nothing of yours is an ability, so Stifle never even gets cast.
+    assert!(!has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Stifle,
+            ..
+        }
+    )));
+}
+
+/// Pair 19: Spell Pierce can't touch Oracle, but it hits the Brainstorm that
+/// finds it unless {2} is left open.
+#[test]
+fn spell_pierce_on_the_cantrip_needs_two_open() {
+    let pile = [Card::ThassasOracle, Card::Swamp, Card::Plains];
+    let pierce = || opponent(vec![Card::SpellPierce], 1);
+    assert_wins(
+        puzzle(vec![Card::Brainstorm], islands(3), pile.to_vec()),
+        &pile,
+    );
+    assert_fails(
+        puzzle_vs(vec![Card::Brainstorm], islands(3), pile.to_vec(), pierce()),
+        &pile,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(vec![Card::Brainstorm], islands(5), pile.to_vec(), pierce()),
+        &pile,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::PayTax(mana)) if mana.total() == 2
+    )));
+    // Oracle is never a Spell Pierce target.
+    assert!(!has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::SpellPierce,
+            target: Some(Target::Stack {
+                card: Card::ThassasOracle,
+                ..
+            }),
+            ..
+        }
+    )));
 }
