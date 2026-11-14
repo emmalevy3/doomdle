@@ -1,15 +1,16 @@
 //! The card pool and every card-specific behavior, as `match` arms.
 //!
-//! Only cards from `CARDS.md` belong here. Stages 1 and 2 cover Thassa's
-//! Oracle, Jace, Doctor Doom, Laboratory Maniac, Doomsday, the blue cantrips,
-//! Probe, Street Wraith, Edge of Autumn, the fast mana, and the basic, dual,
-//! fetch and surveil lands.
+//! Only cards from `CARDS.md` belong here. Stages 1–3 cover Thassa's Oracle,
+//! Jace, Doctor Doom, Laboratory Maniac, Doomsday, the blue cantrips, Probe,
+//! Street Wraith, Edge of Autumn, the graveyard package (Unearth, Yawgmoth's
+//! Will, Flow State, Cabal Ritual, Frantic Search), the fast mana, and the
+//! basic, dual, fetch and surveil lands.
 
 use std::fmt;
 
-use crate::engine::{Choice, EngineError, ordered_selections};
+use crate::engine::{Choice, EngineError, ordered_selections, unordered_selections};
 use crate::mana::{Color, ManaCost};
-use crate::state::{ChoiceKind, LossReason, PendingChoice, Player, State};
+use crate::state::{ChoiceKind, LossReason, PendingChoice, Player, PlayerState, State};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Card {
@@ -20,6 +21,9 @@ pub enum Card {
     LaboratoryManiac,
     // Doomsday
     Doomsday,
+    // Graveyard
+    Unearth,
+    YawgmothsWill,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -29,8 +33,11 @@ pub enum Card {
     GitaxianProbe,
     StreetWraith,
     EdgeOfAutumn,
+    FlowState,
+    FranticSearch,
     // Mana
     DarkRitual,
+    CabalRitual,
     LionsEyeDiamond,
     BlackLotus,
     LotusPetal,
@@ -179,6 +186,8 @@ impl Card {
             Card::DoctorDoom => "Doctor Doom, Unrivaled",
             Card::LaboratoryManiac => "Laboratory Maniac",
             Card::Doomsday => "Doomsday",
+            Card::Unearth => "Unearth",
+            Card::YawgmothsWill => "Yawgmoth's Will",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -187,7 +196,10 @@ impl Card {
             Card::GitaxianProbe => "Gitaxian Probe",
             Card::StreetWraith => "Street Wraith",
             Card::EdgeOfAutumn => "Edge of Autumn",
+            Card::FlowState => "Flow State",
+            Card::FranticSearch => "Frantic Search",
             Card::DarkRitual => "Dark Ritual",
+            Card::CabalRitual => "Cabal Ritual",
             Card::LionsEyeDiamond => "Lion's Eye Diamond",
             Card::BlackLotus => "Black Lotus",
             Card::LotusPetal => "Lotus Petal",
@@ -223,13 +235,19 @@ impl Card {
             | Card::StreetWraith => CardKind::Creature,
             Card::JaceWielderOfMysteries => CardKind::Planeswalker,
             Card::Doomsday
+            | Card::Unearth
+            | Card::YawgmothsWill
             | Card::Ponder
             | Card::Preordain
             | Card::GitaxianProbe
-            | Card::EdgeOfAutumn => CardKind::Sorcery,
-            Card::Brainstorm | Card::Consider | Card::AncestralRecall | Card::DarkRitual => {
-                CardKind::Instant
-            }
+            | Card::EdgeOfAutumn
+            | Card::FlowState => CardKind::Sorcery,
+            Card::Brainstorm
+            | Card::Consider
+            | Card::AncestralRecall
+            | Card::FranticSearch
+            | Card::DarkRitual
+            | Card::CabalRitual => CardKind::Instant,
             Card::LionsEyeDiamond
             | Card::BlackLotus
             | Card::LotusPetal
@@ -264,6 +282,11 @@ impl Card {
             Card::DoctorDoom => ManaCost::colored(Color::B, 2).with_generic(2),
             Card::LaboratoryManiac => ManaCost::colored(Color::U, 1).with_generic(2),
             Card::Doomsday => ManaCost::colored(Color::B, 3),
+            Card::Unearth => ManaCost::colored(Color::B, 1),
+            Card::YawgmothsWill => ManaCost::colored(Color::B, 1).with_generic(2),
+            Card::FlowState => ManaCost::colored(Color::U, 1).with_generic(1),
+            Card::FranticSearch => ManaCost::colored(Color::U, 1).with_generic(2),
+            Card::CabalRitual => ManaCost::colored(Color::B, 1).with_generic(1),
             Card::Brainstorm
             | Card::Ponder
             | Card::Preordain
@@ -278,9 +301,32 @@ impl Card {
     }
 
     /// Whether the engine models casting this card at all. Street Wraith is
-    /// cycling-only per CARDS.md.
+    /// cycling-only per CARDS.md; Doomsday is only ever the spell the puzzle
+    /// starts with (a second Doomsday from the graveyard under Yawgmoth's Will
+    /// is out of scope for now).
     pub fn castable(self) -> bool {
-        self != Card::StreetWraith
+        !matches!(self, Card::StreetWraith | Card::Doomsday)
+    }
+
+    /// For a targeted spell, every distinct legal target `player` could pick
+    /// right now; `None` for spells without targets. A targeted spell with an
+    /// empty list can't be cast.
+    pub fn target_options(self, ps: &PlayerState) -> Option<Vec<Card>> {
+        match self {
+            // "Target creature card with mana value 3 or less from your graveyard."
+            Card::Unearth => {
+                let mut targets: Vec<Card> = ps
+                    .graveyard
+                    .iter()
+                    .copied()
+                    .filter(|c| c.kind() == CardKind::Creature && c.mana_cost().mana_value() <= 3)
+                    .collect();
+                targets.sort();
+                targets.dedup();
+                Some(targets)
+            }
+            _ => None,
+        }
     }
 
     /// {U} pips in the mana cost, for Thassa's Oracle.
@@ -336,6 +382,7 @@ impl Card {
         match self {
             Card::StreetWraith => Some(CyclingCost::Life(2)),
             Card::EdgeOfAutumn => Some(CyclingCost::SacrificeLand),
+            Card::Unearth => Some(CyclingCost::Mana(ManaCost::FREE.with_generic(2))),
             _ => None,
         }
     }
@@ -424,8 +471,52 @@ pub(crate) fn resolve_spell(
     state: &mut State,
     card: Card,
     controller: Player,
+    target: Option<Card>,
 ) -> Result<(), EngineError> {
     match card {
+        Card::Unearth => {
+            let target = target.ok_or(EngineError::Internal("Unearth without a target"))?;
+            // A target that left the graveyard makes the spell do nothing.
+            if state
+                .player_mut(controller)
+                .remove_from_graveyard(target)
+                .is_some()
+            {
+                state.enter_battlefield(controller, target, false);
+            }
+        }
+        Card::YawgmothsWill => {
+            // Set first so Will itself is exiled below.
+            state.player_mut(controller).yawgmoths_will = true;
+        }
+        Card::FlowState => {
+            let k = look_at_top(state, controller, 3);
+            if k > 0 {
+                let ps = state.player(controller);
+                let both =
+                    ps.graveyard_has(CardKind::Instant) && ps.graveyard_has(CardKind::Sorcery);
+                let take = (if both { 2 } else { 1 }).min(k);
+                return pause(
+                    state,
+                    controller,
+                    Some(card),
+                    ChoiceKind::FlowState { take },
+                );
+            }
+        }
+        Card::CabalRitual => {
+            // Threshold is checked on resolution; Cabal Ritual itself is still
+            // on the stack and doesn't count.
+            let ps = state.player_mut(controller);
+            let amount = if ps.graveyard.len() >= 7 { 5 } else { 3 };
+            ps.mana_pool.add_mana(Color::B, amount);
+        }
+        Card::FranticSearch => {
+            state.draw(controller, 2);
+            if state.outcome.is_none() {
+                return pause(state, controller, Some(card), ChoiceKind::FranticDiscard);
+            }
+        }
         Card::Brainstorm => {
             state.draw(controller, 3);
             if state.outcome.is_none() {
@@ -466,7 +557,7 @@ pub(crate) fn resolve_spell(
         Card::DarkRitual => state.player_mut(controller).mana_pool.add_mana(Color::B, 3),
         _ => return Err(EngineError::Internal("not an instant or sorcery")),
     }
-    state.player_mut(controller).graveyard.push(card);
+    state.player_mut(controller).put_in_graveyard(card);
     Ok(())
 }
 
@@ -621,8 +712,52 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
             out.extend(found.into_iter().map(|c| Choice::SearchLand(Some(c))));
             out.push(Choice::SearchLand(None));
         }
+        ChoiceKind::FlowState { take } => {
+            let k = ps.library.len().min(3);
+            let looked = &ps.library[..k];
+            for to_hand in unordered_selections(looked, take) {
+                let mut rest = looked.to_vec();
+                for card in &to_hand {
+                    if let Some(pos) = rest.iter().position(|c| c == card) {
+                        rest.remove(pos);
+                    }
+                }
+                for bottom in ordered_selections(&rest, rest.len()) {
+                    out.push(Choice::FlowState {
+                        to_hand: to_hand.clone(),
+                        bottom,
+                    });
+                }
+            }
+        }
+        ChoiceKind::FranticDiscard => {
+            let k = ps.hand.len().min(2);
+            out.extend(
+                unordered_selections(&ps.hand, k)
+                    .into_iter()
+                    .map(Choice::Discard),
+            );
+        }
+        ChoiceKind::UntapLands => {
+            let tapped = tapped_lands(ps);
+            let k = tapped.len().min(3);
+            out.extend(
+                unordered_selections(&tapped, k)
+                    .into_iter()
+                    .map(Choice::UntapLands),
+            );
+        }
     }
     out
+}
+
+/// The tapped lands `ps` controls, one entry per permanent.
+fn tapped_lands(ps: &PlayerState) -> Vec<Card> {
+    ps.battlefield
+        .iter()
+        .filter(|p| p.tapped && p.card.kind() == CardKind::Land)
+        .map(|p| p.card)
+        .collect()
 }
 
 /// Finishes a paused resolution with the player's answer.
@@ -704,10 +839,58 @@ pub(crate) fn apply_choice(
                 state.enter_battlefield(player, *card, tapped);
             }
         }
+        (ChoiceKind::FlowState { take }, Choice::FlowState { to_hand, bottom }) => {
+            let ps = state.player_mut(player);
+            let k = ps.library.len().min(3);
+            let mut chosen = to_hand.clone();
+            chosen.extend(bottom);
+            if to_hand.len() != take || chosen.len() != k || !same_cards(&chosen, &ps.library[..k])
+            {
+                return Err(illegal());
+            }
+            let rest = ps.library.split_off(k);
+            if rest.is_empty() {
+                // Every card was looked at and placed, so the order is known again.
+                ps.library_ordered = true;
+            }
+            // Putting a card into hand this way is not a draw.
+            ps.hand.extend(to_hand);
+            ps.library = rest;
+            ps.library.extend(bottom);
+        }
+        (ChoiceKind::FranticDiscard, Choice::Discard(cards)) => {
+            let ps = state.player_mut(player);
+            if cards.len() != ps.hand.len().min(2) {
+                return Err(illegal());
+            }
+            for &card in cards {
+                ps.remove_from_hand(card).ok_or_else(illegal)?;
+                ps.put_in_graveyard(card);
+            }
+            if !tapped_lands(ps).is_empty() {
+                // The untap step is a second decision; the spell is binned
+                // once that one is answered.
+                return pause(state, player, pending.bin, ChoiceKind::UntapLands);
+            }
+        }
+        (ChoiceKind::UntapLands, Choice::UntapLands(cards)) => {
+            let ps = state.player_mut(player);
+            if cards.len() != tapped_lands(ps).len().min(3) {
+                return Err(illegal());
+            }
+            for &card in cards {
+                let idx = ps
+                    .battlefield
+                    .iter()
+                    .position(|p| p.card == card && p.tapped && card.kind() == CardKind::Land)
+                    .ok_or_else(illegal)?;
+                ps.battlefield[idx].tapped = false;
+            }
+        }
         _ => return Err(illegal()),
     }
     if let Some(card) = pending.bin {
-        state.player_mut(player).graveyard.push(card);
+        state.player_mut(player).put_in_graveyard(card);
     }
     Ok(())
 }
@@ -727,7 +910,7 @@ mod tests {
     use crate::engine::{Action, apply, legal_actions};
     use crate::mana::ManaPool;
     use crate::state::test_support::main_phase;
-    use crate::state::{Outcome, Permanent, PlayerState, StackItem};
+    use crate::state::{Outcome, Permanent, StackItem, Zone};
 
     /// Resolves the top of the stack with two passes.
     fn pass_twice(state: &State) -> State {
@@ -735,10 +918,15 @@ mod tests {
     }
 
     /// Puts `card` on the stack as your spell and resolves it with two passes.
-    fn resolve(mut state: State, card: Card) -> State {
+    fn resolve(state: State, card: Card) -> State {
+        resolve_targeting(state, card, None)
+    }
+
+    fn resolve_targeting(mut state: State, card: Card, target: Option<Card>) -> State {
         state.stack.push(StackItem::Spell {
             card,
             controller: Player::You,
+            target,
         });
         pass_twice(&state)
     }
@@ -1321,6 +1509,8 @@ mod tests {
             &Action::CastSpell {
                 card: Card::ThassasOracle,
                 payment: ManaPool::of(Color::U, 2).into(),
+                target: None,
+                from: Zone::Hand,
             },
         )
         .unwrap();
@@ -1354,6 +1544,425 @@ mod tests {
             TriggerKind::OracleEnters,
         );
         assert_eq!(pass_twice(&state).outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn stage_three_card_data() {
+        assert_eq!(Card::Unearth.kind(), CardKind::Sorcery);
+        assert_eq!(Card::YawgmothsWill.kind(), CardKind::Sorcery);
+        assert_eq!(Card::FlowState.kind(), CardKind::Sorcery);
+        assert_eq!(Card::CabalRitual.kind(), CardKind::Instant);
+        assert_eq!(Card::FranticSearch.kind(), CardKind::Instant);
+        assert_eq!(Card::Unearth.mana_cost(), ManaCost::colored(Color::B, 1));
+        assert_eq!(
+            Card::YawgmothsWill.mana_cost(),
+            ManaCost::colored(Color::B, 1).with_generic(2)
+        );
+        assert_eq!(
+            Card::FlowState.mana_cost(),
+            ManaCost::colored(Color::U, 1).with_generic(1)
+        );
+        assert_eq!(
+            Card::FranticSearch.mana_cost(),
+            ManaCost::colored(Color::U, 1).with_generic(2)
+        );
+        assert_eq!(
+            Card::CabalRitual.mana_cost(),
+            ManaCost::colored(Color::B, 1).with_generic(1)
+        );
+        assert_eq!(
+            Card::Unearth.cycling_cost(),
+            Some(CyclingCost::Mana(ManaCost::FREE.with_generic(2)))
+        );
+        assert!(!Card::Doomsday.castable());
+    }
+
+    #[test]
+    fn unearth_targets_cheap_creatures_in_the_graveyard() {
+        let ps = PlayerState {
+            graveyard: vec![
+                Card::ThassasOracle,
+                Card::ThassasOracle,
+                Card::LaboratoryManiac,
+                Card::DoctorDoom,
+                Card::StreetWraith,
+                Card::Brainstorm,
+            ],
+            ..PlayerState::default()
+        };
+        assert_eq!(
+            Card::Unearth.target_options(&ps),
+            Some(vec![Card::ThassasOracle, Card::LaboratoryManiac])
+        );
+        assert_eq!(Card::Brainstorm.target_options(&ps), None);
+        assert_eq!(
+            Card::Unearth.target_options(&PlayerState::default()),
+            Some(Vec::new())
+        );
+    }
+
+    #[test]
+    fn unearth_returns_the_target_and_oracle_triggers() {
+        let state = main_phase(PlayerState {
+            graveyard: vec![Card::Doomsday, Card::ThassasOracle],
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        let state = resolve_targeting(state, Card::Unearth, Some(Card::ThassasOracle));
+        assert_eq!(
+            state.you.battlefield,
+            vec![Permanent::entering(Card::ThassasOracle, false)]
+        );
+        assert_eq!(state.you.graveyard, vec![Card::Doomsday, Card::Unearth]);
+        assert!(matches!(
+            state.stack.as_slice(),
+            [StackItem::Trigger {
+                kind: TriggerKind::OracleEnters,
+                ..
+            }]
+        ));
+        // Devotion 2 against one card: the trigger wins.
+        assert_eq!(pass_twice(&state).outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn unearth_does_nothing_when_its_target_has_left_the_graveyard() {
+        let state = main_phase(PlayerState {
+            graveyard: vec![Card::Doomsday],
+            ..PlayerState::default()
+        });
+        let state = resolve_targeting(state, Card::Unearth, Some(Card::ThassasOracle));
+        assert!(state.you.battlefield.is_empty());
+        assert!(state.stack.is_empty());
+        assert_eq!(state.you.graveyard, vec![Card::Doomsday, Card::Unearth]);
+    }
+
+    #[test]
+    fn yawgmoths_will_exiles_itself_and_everything_after_it() {
+        let state = main_phase(PlayerState {
+            graveyard: vec![Card::Doomsday, Card::Brainstorm],
+            library: vec![Card::Island, Card::Swamp, Card::Plains],
+            battlefield: vec![Permanent::untapped(Card::JaceWielderOfMysteries)],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::YawgmothsWill);
+        assert!(state.you.yawgmoths_will);
+        assert_eq!(
+            state.you.graveyard,
+            vec![Card::Doomsday, Card::Brainstorm],
+            "what was already there stays"
+        );
+        assert_eq!(state.you.exile, vec![Card::YawgmothsWill]);
+
+        // A resolved spell and a mill both go to exile now.
+        let state = resolve(state, Card::DarkRitual);
+        assert_eq!(state.you.exile, vec![Card::YawgmothsWill, Card::DarkRitual]);
+        let state = pass_twice(&with_ability(
+            state,
+            Card::JaceWielderOfMysteries,
+            AbilityKind::JacePlusOne {
+                target: Player::You,
+            },
+        ));
+        assert_eq!(state.you.hand, vec![Card::Plains]);
+        assert_eq!(state.you.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
+        assert_eq!(
+            state.you.exile,
+            vec![
+                Card::YawgmothsWill,
+                Card::DarkRitual,
+                Card::Island,
+                Card::Swamp
+            ]
+        );
+    }
+
+    #[test]
+    fn flow_state_takes_one_card_without_an_instant_in_the_graveyard() {
+        let state = main_phase(PlayerState {
+            // A sorcery and an artifact: artifacts don't count.
+            graveyard: vec![Card::Doomsday, Card::LotusPetal],
+            library: vec![Card::Island, Card::Swamp, Card::ThassasOracle, Card::Forest],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FlowState);
+        assert_eq!(
+            state.pending.unwrap().kind,
+            ChoiceKind::FlowState { take: 1 }
+        );
+        // Three picks, two orders for the rest.
+        assert_eq!(legal_actions(&state).len(), 6);
+        let next = apply(
+            &state,
+            &Action::Choose(Choice::FlowState {
+                to_hand: vec![Card::ThassasOracle],
+                bottom: vec![Card::Swamp, Card::Island],
+            }),
+        )
+        .unwrap();
+        assert_eq!(next.you.hand, vec![Card::ThassasOracle]);
+        assert_eq!(
+            next.you.library,
+            vec![Card::Forest, Card::Swamp, Card::Island]
+        );
+        assert!(next.you.library_ordered);
+        assert_eq!(next.you.cards_drawn_this_turn, 0, "not a draw");
+        assert_eq!(
+            next.you.graveyard,
+            vec![Card::Doomsday, Card::FlowState, Card::LotusPetal]
+        );
+        assert_eq!(next.pending, None);
+    }
+
+    #[test]
+    fn flow_state_takes_two_with_an_instant_and_a_sorcery_in_the_graveyard() {
+        let state = main_phase(PlayerState {
+            graveyard: vec![Card::Doomsday, Card::DarkRitual],
+            library: vec![Card::Island, Card::Swamp, Card::ThassasOracle, Card::Forest],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FlowState);
+        assert_eq!(
+            state.pending.unwrap().kind,
+            ChoiceKind::FlowState { take: 2 }
+        );
+        // Three pairs, one card left for the bottom.
+        assert_eq!(legal_actions(&state).len(), 3);
+        let next = apply(
+            &state,
+            &Action::Choose(Choice::FlowState {
+                to_hand: vec![Card::ThassasOracle, Card::Island],
+                bottom: vec![Card::Swamp],
+            }),
+        )
+        .unwrap();
+        assert_eq!(next.you.hand, vec![Card::ThassasOracle, Card::Island]);
+        assert_eq!(next.you.library, vec![Card::Forest, Card::Swamp]);
+    }
+
+    #[test]
+    fn flow_state_with_a_short_or_empty_library() {
+        let state = main_phase(PlayerState {
+            graveyard: vec![Card::Doomsday, Card::Brainstorm],
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FlowState);
+        assert_eq!(
+            state.pending.unwrap().kind,
+            ChoiceKind::FlowState { take: 1 },
+            "two-card mode takes what there is"
+        );
+        let next = apply(
+            &state,
+            &Action::Choose(Choice::FlowState {
+                to_hand: vec![Card::Island],
+                bottom: vec![],
+            }),
+        )
+        .unwrap();
+        assert_eq!(next.you.hand, vec![Card::Island]);
+        assert!(next.you.library.is_empty());
+
+        let empty = resolve(
+            main_phase(PlayerState {
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                ..PlayerState::default()
+            }),
+            Card::FlowState,
+        );
+        assert_eq!(empty.pending, None);
+        assert_eq!(empty.outcome, None, "looking at nothing is not a draw");
+        assert_eq!(empty.you.graveyard, vec![Card::FlowState]);
+    }
+
+    #[test]
+    fn flow_state_on_an_unordered_library() {
+        let partial = main_phase(PlayerState {
+            library: vec![Card::Island, Card::Swamp, Card::Plains, Card::Forest],
+            library_ordered: false,
+            ..PlayerState::default()
+        });
+        assert_eq!(
+            resolve(partial, Card::FlowState).outcome,
+            Some(Outcome::Loss(LossReason::LibraryUnordered))
+        );
+
+        let whole = main_phase(PlayerState {
+            library: vec![Card::Island, Card::Swamp, Card::Plains],
+            library_ordered: false,
+            ..PlayerState::default()
+        });
+        let state = resolve(whole, Card::FlowState);
+        assert_eq!(state.outcome, None);
+        let next = apply(
+            &state,
+            &Action::Choose(Choice::FlowState {
+                to_hand: vec![Card::Plains],
+                bottom: vec![Card::Island, Card::Swamp],
+            }),
+        )
+        .unwrap();
+        assert!(next.you.library_ordered);
+        assert_eq!(next.you.library, vec![Card::Island, Card::Swamp]);
+    }
+
+    #[test]
+    fn cabal_ritual_adds_three_or_five_with_threshold() {
+        let six = main_phase(PlayerState {
+            graveyard: vec![
+                Card::Doomsday,
+                Card::Island,
+                Card::Island,
+                Card::Swamp,
+                Card::Swamp,
+                Card::Plains,
+            ],
+            ..PlayerState::default()
+        });
+        let state = resolve(six.clone(), Card::CabalRitual);
+        assert_eq!(state.you.mana_pool, ManaPool::of(Color::B, 3));
+        assert_eq!(
+            state.you.graveyard.len(),
+            7,
+            "Cabal Ritual itself arrives after the check"
+        );
+
+        let mut seven = six;
+        seven.you.graveyard.push(Card::Forest);
+        let state = resolve(seven, Card::CabalRitual);
+        assert_eq!(state.you.mana_pool, ManaPool::of(Color::B, 5));
+    }
+
+    #[test]
+    fn frantic_search_draws_two_then_discards_two_then_untaps_up_to_three_lands() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::Plains],
+            library: vec![Card::ThassasOracle, Card::Swamp, Card::Forest],
+            battlefield: vec![
+                Permanent::tapped(Card::Island),
+                Permanent::tapped(Card::Island),
+                Permanent::tapped(Card::UndergroundSea),
+                Permanent::tapped(Card::Bayou),
+                Permanent::untapped(Card::Swamp),
+                Permanent::tapped(Card::MoxSapphire),
+            ],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FranticSearch);
+        assert_eq!(
+            state.you.hand,
+            vec![Card::ThassasOracle, Card::Plains, Card::Swamp]
+        );
+        assert_eq!(state.you.cards_drawn_this_turn, 2);
+        assert_eq!(state.pending.unwrap().kind, ChoiceKind::FranticDiscard);
+        // Pairs from {Oracle, Plains, Swamp}.
+        assert_eq!(legal_actions(&state).len(), 3);
+
+        let discarded = apply(
+            &state,
+            &Action::Choose(Choice::Discard(vec![Card::Plains, Card::Swamp])),
+        )
+        .unwrap();
+        assert_eq!(discarded.you.hand, vec![Card::ThassasOracle]);
+        assert_eq!(
+            discarded.you.graveyard,
+            vec![Card::Plains, Card::Swamp],
+            "Frantic Search waits for the untap"
+        );
+        assert_eq!(discarded.pending.unwrap().kind, ChoiceKind::UntapLands);
+        // Three of {Island, Island, Sea, Bayou}; the Mox and the untapped
+        // Swamp are never offered.
+        let options = legal_actions(&discarded);
+        assert_eq!(options.len(), 3);
+        assert!(!options.iter().any(|a| matches!(
+            a,
+            Action::Choose(Choice::UntapLands(c))
+                if c.contains(&Card::MoxSapphire) || c.contains(&Card::Swamp)
+        )));
+
+        let untapped = apply(
+            &discarded,
+            &Action::Choose(Choice::UntapLands(vec![
+                Card::Island,
+                Card::UndergroundSea,
+                Card::Bayou,
+            ])),
+        )
+        .unwrap();
+        assert_eq!(untapped.pending, None);
+        assert_eq!(
+            untapped.you.graveyard,
+            vec![Card::FranticSearch, Card::Plains, Card::Swamp]
+        );
+        let still_tapped: Vec<Card> = untapped
+            .you
+            .battlefield
+            .iter()
+            .filter(|p| p.tapped)
+            .map(|p| p.card)
+            .collect();
+        assert_eq!(still_tapped, vec![Card::MoxSapphire, Card::Island]);
+    }
+
+    #[test]
+    fn frantic_search_with_a_small_hand_and_nothing_tapped() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island, Card::Swamp],
+            battlefield: vec![Permanent::untapped(Card::Forest)],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FranticSearch);
+        assert_eq!(
+            legal_actions(&state),
+            vec![Action::Choose(Choice::Discard(vec![
+                Card::Island,
+                Card::Swamp
+            ]))]
+        );
+        let next = apply(
+            &state,
+            &Action::Choose(Choice::Discard(vec![Card::Island, Card::Swamp])),
+        )
+        .unwrap();
+        assert_eq!(next.pending, None, "no untap step without a tapped land");
+        assert!(next.you.hand.is_empty());
+        assert_eq!(
+            next.you.graveyard,
+            vec![Card::FranticSearch, Card::Island, Card::Swamp]
+        );
+    }
+
+    #[test]
+    fn frantic_search_second_draw_into_lab_man_wins_without_a_choice() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FranticSearch);
+        assert_eq!(state.outcome, Some(Outcome::Win));
+        assert_eq!(state.pending, None);
+    }
+
+    #[test]
+    fn frantic_search_discards_are_exiled_under_yawgmoths_will() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island, Card::Swamp],
+            yawgmoths_will: true,
+            ..PlayerState::default()
+        });
+        let state = resolve(state, Card::FranticSearch);
+        let next = apply(
+            &state,
+            &Action::Choose(Choice::Discard(vec![Card::Island, Card::Swamp])),
+        )
+        .unwrap();
+        assert!(next.you.graveyard.is_empty());
+        assert_eq!(
+            next.you.exile,
+            vec![Card::FranticSearch, Card::Island, Card::Swamp]
+        );
     }
 
     #[test]

@@ -7,7 +7,7 @@ use std::fmt;
 
 use crate::cards::{self, AbilityKind, Card, CardKind, CyclingCost, LoyaltyAbility, ManaAbility};
 use crate::mana::{Color, Payment};
-use crate::state::{LossReason, Permanent, Phase, Player, StackItem, State};
+use crate::state::{LossReason, Permanent, Phase, Player, PlayerState, StackItem, State, Zone};
 
 /// A player's answer to a [`crate::state::PendingChoice`].
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -22,6 +22,16 @@ pub enum Choice {
     Surveil { to_graveyard: bool },
     /// The land found by a search, or `None` to find nothing.
     SearchLand(Option<Card>),
+    /// Flow State: the looked-at cards going to hand, and the rest in the
+    /// order they go to the bottom (first element ends up highest).
+    FlowState {
+        to_hand: Vec<Card>,
+        bottom: Vec<Card>,
+    },
+    /// Frantic Search: the cards discarded from hand.
+    Discard(Vec<Card>),
+    /// Frantic Search: the tapped lands to untap.
+    UntapLands(Vec<Card>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -29,12 +39,18 @@ pub enum Action {
     /// Doomsday's pile, top first. Only legal in [`Phase::ChoosingPile`].
     ChoosePile(Vec<Card>),
     Pass,
-    /// Cast `card` from hand, paying exactly `payment`.
+    /// Cast `card` from `from`, paying exactly `payment`. `target` is set for
+    /// targeted spells (Unearth) and `None` otherwise.
     CastSpell {
         card: Card,
         payment: Payment,
+        target: Option<Card>,
+        from: Zone,
     },
-    PlayLand(Card),
+    PlayLand {
+        card: Card,
+        from: Zone,
+    },
     /// Cycle `card` from hand. `sacrifice` names the land for Edge of Autumn.
     Cycle {
         card: Card,
@@ -126,23 +142,15 @@ fn your_actions(state: &State) -> Vec<Action> {
     let mut out = vec![Action::Pass];
 
     for card in distinct(&you.hand) {
-        match card.kind() {
-            CardKind::Land => {
-                if sorcery_speed && you.land_drop_available {
-                    out.push(Action::PlayLand(card));
-                }
-            }
-            CardKind::Instant => push_casts(&mut out, you, card),
-            CardKind::Sorcery
-            | CardKind::Creature
-            | CardKind::Artifact
-            | CardKind::Planeswalker => {
-                if sorcery_speed {
-                    push_casts(&mut out, you, card);
-                }
-            }
-        }
+        push_plays(&mut out, you, card, Zone::Hand, sorcery_speed);
         push_cycling(&mut out, you, card);
+    }
+    // Yawgmoth's Will: the graveyard is a second hand for casting and playing
+    // (not for cycling, which is a discard).
+    if you.yawgmoths_will {
+        for card in distinct(&you.graveyard) {
+            push_plays(&mut out, you, card, Zone::Graveyard, sorcery_speed);
+        }
     }
 
     for perm in distinct(&you.battlefield) {
@@ -193,16 +201,51 @@ fn your_actions(state: &State) -> Vec<Action> {
     out
 }
 
-fn push_casts(out: &mut Vec<Action>, you: &crate::state::PlayerState, card: Card) {
-    if !card.castable() {
-        return;
-    }
-    for payment in Payment::options(&you.mana_pool, &card.mana_cost(), you.life) {
-        out.push(Action::CastSpell { card, payment });
+/// Casting or playing `card` from `from`, respecting timing.
+fn push_plays(
+    out: &mut Vec<Action>,
+    you: &PlayerState,
+    card: Card,
+    from: Zone,
+    sorcery_speed: bool,
+) {
+    match card.kind() {
+        CardKind::Land => {
+            if sorcery_speed && you.land_drop_available {
+                out.push(Action::PlayLand { card, from });
+            }
+        }
+        CardKind::Instant => push_casts(out, you, card, from),
+        CardKind::Sorcery | CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
+            if sorcery_speed {
+                push_casts(out, you, card, from);
+            }
+        }
     }
 }
 
-fn push_cycling(out: &mut Vec<Action>, you: &crate::state::PlayerState, card: Card) {
+/// One cast per way to pay, times one per legal target for targeted spells.
+fn push_casts(out: &mut Vec<Action>, you: &PlayerState, card: Card, from: Zone) {
+    if !card.castable() {
+        return;
+    }
+    let targets: Vec<Option<Card>> = match card.target_options(you) {
+        None => vec![None],
+        Some(targets) => targets.into_iter().map(Some).collect(),
+    };
+    for payment in Payment::options(&you.mana_pool, &card.mana_cost(), you.life) {
+        for &target in &targets {
+            out.push(Action::CastSpell {
+                card,
+                payment,
+                target,
+                from,
+            });
+        }
+    }
+}
+
+fn push_cycling(out: &mut Vec<Action>, you: &PlayerState, card: Card) {
     match card.cycling_cost() {
         None => {}
         Some(CyclingCost::Mana(cost)) => {
@@ -247,6 +290,21 @@ fn distinct<T: Ord + Clone>(items: &[T]) -> Vec<T> {
     v.sort();
     v.dedup();
     v
+}
+
+/// Every distinct unordered selection of `k` items from a multiset, each
+/// returned sorted.
+pub(crate) fn unordered_selections(items: &[Card], k: usize) -> Vec<Vec<Card>> {
+    let mut out: Vec<Vec<Card>> = ordered_selections(items, k)
+        .into_iter()
+        .map(|mut sel| {
+            sel.sort();
+            sel
+        })
+        .collect();
+    out.sort();
+    out.dedup();
+    out
 }
 
 /// Every distinct ordered selection of `k` items from a multiset.
@@ -298,8 +356,13 @@ pub fn apply(state: &State, action: &Action) -> Result<State, EngineError> {
         match action {
             Action::ChoosePile(_) => unreachable!("handled above"),
             Action::Pass => pass(&mut next)?,
-            Action::CastSpell { card, payment } => cast(&mut next, actor, *card, payment)?,
-            Action::PlayLand(card) => play_land(&mut next, actor, *card)?,
+            Action::CastSpell {
+                card,
+                payment,
+                target,
+                from,
+            } => cast(&mut next, actor, *card, payment, *target, *from)?,
+            Action::PlayLand { card, from } => play_land(&mut next, actor, *card, *from)?,
             Action::Cycle {
                 card,
                 payment,
@@ -346,7 +409,10 @@ fn choose_pile(state: &mut State, pile: &[Card]) -> Result<(), EngineError> {
     you.library = pile.to_vec();
     you.library_ordered = true;
     you.exile.extend(rest);
-    you.graveyard = vec![Card::Doomsday];
+    // Doomsday goes to the graveyard after resolving (or to exile, if
+    // Yawgmoth's Will was already active).
+    you.graveyard.clear();
+    you.put_in_graveyard(Card::Doomsday);
     you.life -= (you.life.max(0) + 1) / 2;
     // Doomsday itself was cast this turn; the puzzle only lists the spells
     // cast before it.
@@ -376,12 +442,18 @@ fn pass(state: &mut State) -> Result<(), EngineError> {
 
 fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
     match item {
-        StackItem::Spell { card, controller } => match card.kind() {
+        StackItem::Spell {
+            card,
+            controller,
+            target,
+        } => match card.kind() {
             CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
                 state.enter_battlefield(controller, card, false);
                 Ok(())
             }
-            CardKind::Instant | CardKind::Sorcery => cards::resolve_spell(state, card, controller),
+            CardKind::Instant | CardKind::Sorcery => {
+                cards::resolve_spell(state, card, controller, target)
+            }
             CardKind::Land => Err(EngineError::Internal("a land can't be on the stack")),
         },
         StackItem::Trigger {
@@ -400,11 +472,15 @@ fn cast(
     player: Player,
     card: Card,
     payment: &Payment,
+    target: Option<Card>,
+    from: Zone,
 ) -> Result<(), EngineError> {
     let illegal = || {
         EngineError::IllegalAction(Action::CastSpell {
             card,
             payment: *payment,
+            target,
+            from,
         })
     };
     let ps = state.player_mut(player);
@@ -413,25 +489,44 @@ fn cast(
     {
         return Err(illegal());
     }
+    let target_ok = match (card.target_options(ps), target) {
+        (None, None) => true,
+        (Some(options), Some(target)) => options.contains(&target),
+        _ => false,
+    };
+    if !target_ok {
+        return Err(illegal());
+    }
     ps.mana_pool = ps.mana_pool.minus(&payment.mana).ok_or_else(illegal)?;
     ps.life -= i16::from(payment.life);
-    ps.remove_from_hand(card).ok_or_else(illegal)?;
+    take_from_zone(ps, card, from).ok_or_else(illegal)?;
     ps.spells_cast_this_turn += 1;
     state.stack.push(StackItem::Spell {
         card,
         controller: player,
+        target,
     });
     acted(state, player);
     Ok(())
 }
 
-fn play_land(state: &mut State, player: Player, card: Card) -> Result<(), EngineError> {
+/// Removes one copy of `card` from `from`, if it is there and that zone may
+/// be cast or played from right now.
+fn take_from_zone(ps: &mut PlayerState, card: Card, from: Zone) -> Option<Card> {
+    match from {
+        Zone::Hand => ps.remove_from_hand(card),
+        Zone::Graveyard if ps.yawgmoths_will => ps.remove_from_graveyard(card),
+        Zone::Graveyard => None,
+    }
+}
+
+fn play_land(state: &mut State, player: Player, card: Card, from: Zone) -> Result<(), EngineError> {
+    let illegal = || EngineError::IllegalAction(Action::PlayLand { card, from });
     let ps = state.player_mut(player);
     if !ps.land_drop_available || card.kind() != CardKind::Land {
-        return Err(EngineError::IllegalAction(Action::PlayLand(card)));
+        return Err(illegal());
     }
-    ps.remove_from_hand(card)
-        .ok_or(EngineError::IllegalAction(Action::PlayLand(card)))?;
+    take_from_zone(ps, card, from).ok_or_else(illegal)?;
     ps.land_drop_available = false;
     state.enter_battlefield(player, card, card.enters_tapped());
     acted(state, player);
@@ -477,13 +572,13 @@ fn cycle(
             let idx = find_permanent(state, player, land, |_| true).ok_or_else(illegal)?;
             let ps = state.player_mut(player);
             ps.battlefield.remove(idx);
-            ps.graveyard.push(land);
+            ps.put_in_graveyard(land);
         }
         _ => return Err(illegal()),
     }
     let ps = state.player_mut(player);
     ps.remove_from_hand(card).ok_or_else(illegal)?;
-    ps.graveyard.push(card);
+    ps.put_in_graveyard(card);
     state.stack.push(StackItem::Ability {
         source: card,
         kind: AbilityKind::Cycling,
@@ -502,7 +597,7 @@ fn activate_fetch(state: &mut State, player: Player, source: Card) -> Result<(),
     let ps = state.player_mut(player);
     ps.life -= 1;
     ps.battlefield.remove(idx);
-    ps.graveyard.push(source);
+    ps.put_in_graveyard(source);
     state.stack.push(StackItem::Ability {
         source,
         kind: AbilityKind::Fetch,
@@ -595,7 +690,7 @@ fn sacrifice_for_mana(
     let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
     let ps = state.player_mut(player);
     ps.battlefield.remove(idx);
-    ps.graveyard.push(source);
+    ps.put_in_graveyard(source);
     ps.mana_pool.add_mana(color, amount);
     acted(state, player);
     Ok(())
@@ -608,8 +703,10 @@ fn activate_led(state: &mut State, player: Player, color: Color) -> Result<(), E
     let ps = state.player_mut(player);
     ps.battlefield.remove(idx);
     let discarded = std::mem::take(&mut ps.hand);
-    ps.graveyard.extend(discarded);
-    ps.graveyard.push(source);
+    for card in discarded {
+        ps.put_in_graveyard(card);
+    }
+    ps.put_in_graveyard(source);
     ps.mana_pool.add_mana(color, 3);
     acted(state, player);
     Ok(())
@@ -658,6 +755,25 @@ impl fmt::Display for Choice {
             }
             Choice::SearchLand(Some(card)) => write!(f, "Find {card}"),
             Choice::SearchLand(None) => write!(f, "Find nothing"),
+            Choice::FlowState { to_hand, bottom } => {
+                write!(
+                    f,
+                    "Flow State: take {} into hand, {} to the bottom",
+                    list(to_hand),
+                    list(bottom)
+                )
+            }
+            Choice::Discard(cards) => write!(f, "Discard {}", list(cards)),
+            Choice::UntapLands(cards) => write!(f, "Untap {}", list(cards)),
+        }
+    }
+}
+
+impl fmt::Display for Zone {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Zone::Hand => f.write_str("hand"),
+            Zone::Graveyard => f.write_str("graveyard"),
         }
     }
 }
@@ -680,14 +796,32 @@ impl fmt::Display for Action {
         match self {
             Action::ChoosePile(pile) => write!(f, "Doomsday pile (top first): {}", list(pile)),
             Action::Pass => write!(f, "Pass priority"),
-            Action::CastSpell { card, payment } => {
+            Action::CastSpell {
+                card,
+                payment,
+                target,
+                from,
+            } => {
+                write!(f, "Cast {card}")?;
+                if *from != Zone::Hand {
+                    write!(f, " from {from}")?;
+                }
+                if let Some(target) = target {
+                    write!(f, " targeting {target}")?;
+                }
                 if payment.is_free() {
-                    write!(f, "Cast {card} for free")
+                    write!(f, " for free")
                 } else {
-                    write!(f, "Cast {card} paying {payment}")
+                    write!(f, " paying {payment}")
                 }
             }
-            Action::PlayLand(card) => write!(f, "Play {card}"),
+            Action::PlayLand { card, from } => {
+                write!(f, "Play {card}")?;
+                if *from != Zone::Hand {
+                    write!(f, " from {from}")?;
+                }
+                Ok(())
+            }
             Action::Cycle {
                 card,
                 payment,
@@ -743,6 +877,15 @@ mod tests {
         Action::CastSpell {
             card,
             payment: payment.into(),
+            target: None,
+            from: Zone::Hand,
+        }
+    }
+
+    fn play_land_action(card: Card) -> Action {
+        Action::PlayLand {
+            card,
+            from: Zone::Hand,
         }
     }
 
@@ -765,6 +908,7 @@ mod tests {
             vec![StackItem::Spell {
                 card: Card::Brainstorm,
                 controller: Player::You,
+                target: None,
             }]
         );
         assert!(next.you.hand.is_empty());
@@ -782,6 +926,7 @@ mod tests {
         state.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
             controller: Player::You,
+            target: None,
         });
         let after_mine = apply(&state, &Action::Pass).unwrap();
         assert_eq!(after_mine.priority, Player::Opponent);
@@ -803,6 +948,7 @@ mod tests {
         state.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
             controller: Player::You,
+            target: None,
         });
         // Opponent passes first (we fake it by handing them priority).
         state.priority = Player::Opponent;
@@ -856,6 +1002,7 @@ mod tests {
         state.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
             controller: Player::You,
+            target: None,
         });
         let busy = legal_actions(&state);
         assert!(busy.contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1))));
@@ -914,6 +1061,8 @@ mod tests {
         let for_life = Action::CastSpell {
             card: Card::GitaxianProbe,
             payment: Payment::life(2),
+            target: None,
+            from: Zone::Hand,
         };
         let next = apply(&state, &for_life).unwrap();
         assert_eq!(next.you.life, 8);
@@ -945,6 +1094,8 @@ mod tests {
             &Action::CastSpell {
                 card: Card::GitaxianProbe,
                 payment: Payment::life(2),
+                target: None,
+                from: Zone::Hand,
             },
         )
         .unwrap();
@@ -999,6 +1150,7 @@ mod tests {
         state.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
             controller: Player::You,
+            target: None,
         });
         assert!(
             legal_actions(&state)
@@ -1151,7 +1303,7 @@ mod tests {
             library: vec![Card::Island, Card::Swamp],
             ..PlayerState::default()
         });
-        let played = apply(&state, &Action::PlayLand(Card::UndercitySewers)).unwrap();
+        let played = apply(&state, &play_land_action(Card::UndercitySewers)).unwrap();
         assert_eq!(
             played.you.battlefield,
             vec![Permanent::tapped(Card::UndercitySewers)]
@@ -1288,6 +1440,7 @@ mod tests {
         busy.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
             controller: Player::You,
+            target: None,
         });
         assert!(
             !legal_actions(&busy)
@@ -1324,21 +1477,22 @@ mod tests {
             hand: vec![Card::Island, Card::Swamp],
             ..PlayerState::default()
         });
-        assert!(legal_actions(&state).contains(&Action::PlayLand(Card::Island)));
-        let played = apply(&state, &Action::PlayLand(Card::Island)).unwrap();
+        assert!(legal_actions(&state).contains(&play_land_action(Card::Island)));
+        let played = apply(&state, &play_land_action(Card::Island)).unwrap();
         assert_eq!(
             played.you.battlefield,
             vec![Permanent::untapped(Card::Island)]
         );
         assert!(!played.you.land_drop_available);
-        assert!(!legal_actions(&played).contains(&Action::PlayLand(Card::Swamp)));
+        assert!(!legal_actions(&played).contains(&play_land_action(Card::Swamp)));
 
         let mut busy = state.clone();
         busy.stack.push(StackItem::Spell {
             card: Card::DarkRitual,
             controller: Player::You,
+            target: None,
         });
-        assert!(!legal_actions(&busy).contains(&Action::PlayLand(Card::Island)));
+        assert!(!legal_actions(&busy).contains(&play_land_action(Card::Island)));
     }
 
     #[test]
@@ -1462,6 +1616,7 @@ mod tests {
         state.stack.push(StackItem::Spell {
             card: Card::Brainstorm,
             controller: Player::You,
+            target: None,
         });
         let action = Action::ActivateLed { color: Color::U };
         assert!(legal_actions(&state).contains(&action));
@@ -1659,6 +1814,271 @@ mod tests {
         // 6 candidates with a duplicate: 6!/1! orderings minus the repeats.
         let choices = legal_actions(&State::new(puzzle));
         assert_eq!(choices.len(), 720 - 360);
+    }
+
+    #[test]
+    fn unearth_needs_a_target_and_offers_one_cast_per_target() {
+        let no_target = main_phase(PlayerState {
+            hand: vec![Card::Unearth],
+            mana_pool: ManaPool::of(Color::B, 1),
+            graveyard: vec![Card::Doomsday],
+            ..PlayerState::default()
+        });
+        assert!(
+            !legal_actions(&no_target)
+                .iter()
+                .any(|a| matches!(a, Action::CastSpell { .. }))
+        );
+
+        let mut state = no_target;
+        state.you.graveyard = vec![
+            Card::Doomsday,
+            Card::ThassasOracle,
+            Card::LaboratoryManiac,
+            Card::DoctorDoom,
+        ];
+        let cast = |target| Action::CastSpell {
+            card: Card::Unearth,
+            payment: ManaPool::of(Color::B, 1).into(),
+            target: Some(target),
+            from: Zone::Hand,
+        };
+        let casts: Vec<Action> = legal_actions(&state)
+            .into_iter()
+            .filter(|a| matches!(a, Action::CastSpell { .. }))
+            .collect();
+        assert_eq!(
+            casts,
+            vec![cast(Card::ThassasOracle), cast(Card::LaboratoryManiac)]
+        );
+        let next = apply(&state, &casts[0]).unwrap();
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Spell {
+                card: Card::Unearth,
+                controller: Player::You,
+                target: Some(Card::ThassasOracle),
+            }]
+        );
+        assert!(matches!(
+            apply(&state, &cast(Card::DoctorDoom)),
+            Err(EngineError::IllegalAction(_))
+        ));
+    }
+
+    #[test]
+    fn unearth_cycles_for_two_generic_at_instant_speed() {
+        let mut state = main_phase(PlayerState {
+            hand: vec![Card::Unearth],
+            mana_pool: ManaPool::of(Color::U, 1).with(Color::G, 1),
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        state.stack.push(StackItem::Spell {
+            card: Card::DarkRitual,
+            controller: Player::You,
+            target: None,
+        });
+        let cycle = Action::Cycle {
+            card: Card::Unearth,
+            payment: Payment::mana(ManaPool::of(Color::U, 1).with(Color::G, 1)),
+            sacrifice: None,
+        };
+        assert!(legal_actions(&state).contains(&cycle));
+        let next = apply(&state, &cycle).unwrap();
+        assert!(next.you.mana_pool.is_empty());
+        assert_eq!(next.you.graveyard, vec![Card::Unearth]);
+        assert_eq!(next.stack.len(), 2);
+
+        let poor = main_phase(PlayerState {
+            hand: vec![Card::Unearth],
+            mana_pool: ManaPool::of(Color::B, 1),
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        assert!(
+            !legal_actions(&poor)
+                .iter()
+                .any(|a| matches!(a, Action::Cycle { .. }))
+        );
+    }
+
+    #[test]
+    fn yawgmoths_will_lets_you_cast_and_play_from_the_graveyard() {
+        let state = main_phase(PlayerState {
+            yawgmoths_will: true,
+            graveyard: vec![
+                Card::Brainstorm,
+                Card::Ponder,
+                Card::Island,
+                Card::StreetWraith,
+                Card::Doomsday,
+            ],
+            mana_pool: ManaPool::of(Color::U, 2).with(Color::B, 3),
+            ..PlayerState::default()
+        });
+        let from_graveyard = |card| Action::CastSpell {
+            card,
+            payment: ManaPool::of(Color::U, 1).into(),
+            target: None,
+            from: Zone::Graveyard,
+        };
+        let island = Action::PlayLand {
+            card: Card::Island,
+            from: Zone::Graveyard,
+        };
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&from_graveyard(Card::Brainstorm)));
+        assert!(actions.contains(&from_graveyard(Card::Ponder)));
+        assert!(actions.contains(&island));
+        // No cycling from the graveyard, no second Doomsday, and nothing
+        // "from hand" when the hand is empty.
+        assert!(!actions.iter().any(|a| matches!(a, Action::Cycle { .. })));
+        assert!(!actions.iter().any(|a| matches!(
+            a,
+            Action::CastSpell {
+                card: Card::Doomsday,
+                ..
+            }
+        )));
+        assert!(!actions.iter().any(|a| matches!(
+            a,
+            Action::CastSpell {
+                from: Zone::Hand,
+                ..
+            } | Action::PlayLand {
+                from: Zone::Hand,
+                ..
+            }
+        )));
+
+        let cast = apply(&state, &from_graveyard(Card::Ponder)).unwrap();
+        assert_eq!(
+            cast.you.graveyard,
+            vec![
+                Card::Doomsday,
+                Card::Brainstorm,
+                Card::StreetWraith,
+                Card::Island
+            ]
+        );
+        assert_eq!(cast.you.spells_cast_this_turn, 1);
+        // Timing still applies: an instant yes, a land drop no.
+        let busy = legal_actions(&cast);
+        assert!(busy.contains(&from_graveyard(Card::Brainstorm)));
+        assert!(!busy.contains(&island));
+
+        let played = apply(&state, &island).unwrap();
+        assert_eq!(
+            played.you.battlefield,
+            vec![Permanent::untapped(Card::Island)]
+        );
+        assert!(!played.you.land_drop_available);
+    }
+
+    #[test]
+    fn the_graveyard_zone_is_illegal_without_yawgmoths_will() {
+        let state = main_phase(PlayerState {
+            graveyard: vec![Card::Brainstorm],
+            mana_pool: ManaPool::of(Color::U, 1),
+            ..PlayerState::default()
+        });
+        let action = Action::CastSpell {
+            card: Card::Brainstorm,
+            payment: ManaPool::of(Color::U, 1).into(),
+            target: None,
+            from: Zone::Graveyard,
+        };
+        assert!(!legal_actions(&state).contains(&action));
+        assert_eq!(
+            apply(&state, &action),
+            Err(EngineError::IllegalAction(action.clone()))
+        );
+        // And a card that is only in the graveyard can't be cast "from hand".
+        let mut will = state;
+        will.you.yawgmoths_will = true;
+        assert!(
+            !legal_actions(&will)
+                .contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1)))
+        );
+    }
+
+    #[test]
+    fn classic_will_line_recasts_led_and_the_discarded_hand() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::YawgmothsWill, Card::ThassasOracle],
+            battlefield: vec![Permanent::untapped(Card::LionsEyeDiamond)],
+            mana_pool: ManaPool::of(Color::B, 3),
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        let state = apply(
+            &state,
+            &cast_action(Card::YawgmothsWill, ManaPool::of(Color::B, 3)),
+        )
+        .unwrap();
+        // Hold priority and crack LED: Oracle and LED hit the graveyard first.
+        let state = apply(&state, &Action::ActivateLed { color: Color::U }).unwrap();
+        assert_eq!(
+            state.you.graveyard,
+            vec![Card::ThassasOracle, Card::LionsEyeDiamond]
+        );
+        let state = pass_twice(&state);
+        assert!(state.you.yawgmoths_will);
+        assert_eq!(state.you.exile, vec![Card::YawgmothsWill]);
+
+        let recast_led = Action::CastSpell {
+            card: Card::LionsEyeDiamond,
+            payment: Payment::FREE,
+            target: None,
+            from: Zone::Graveyard,
+        };
+        let state = pass_twice(&apply(&state, &recast_led).unwrap());
+        assert_eq!(
+            state.you.battlefield,
+            vec![Permanent::entering(Card::LionsEyeDiamond, false)]
+        );
+        let state = apply(&state, &Action::ActivateLed { color: Color::U }).unwrap();
+        assert_eq!(state.you.mana_pool, ManaPool::of(Color::U, 6));
+        assert_eq!(
+            state.you.exile,
+            vec![Card::YawgmothsWill, Card::LionsEyeDiamond],
+            "the second LED is exiled, not binned"
+        );
+
+        let oracle = Action::CastSpell {
+            card: Card::ThassasOracle,
+            payment: ManaPool::of(Color::U, 2).into(),
+            target: None,
+            from: Zone::Graveyard,
+        };
+        let state = pass_twice(&pass_twice(&apply(&state, &oracle).unwrap()));
+        assert_eq!(state.outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn will_before_doomsday_exiles_doomsday_itself() {
+        let mut puzzle = puzzle_with_candidates(vec![Card::ThassasOracle], vec![], 20);
+        puzzle.you.yawgmoths_will = true;
+        let state = State::with_pile(puzzle, &[Card::ThassasOracle]).unwrap();
+        assert!(state.you.graveyard.is_empty());
+        assert_eq!(state.you.exile, vec![Card::Doomsday]);
+    }
+
+    #[test]
+    fn unordered_selections_dedupe_and_sort() {
+        assert_eq!(
+            unordered_selections(&[Card::Island, Card::Island, Card::Swamp], 2),
+            vec![
+                vec![Card::Island, Card::Island],
+                vec![Card::Island, Card::Swamp],
+            ]
+        );
+        assert_eq!(
+            unordered_selections(&[Card::Swamp, Card::Island], 1),
+            vec![vec![Card::Island], vec![Card::Swamp]]
+        );
+        assert_eq!(unordered_selections(&[], 0), vec![Vec::<Card>::new()]);
     }
 
     #[test]

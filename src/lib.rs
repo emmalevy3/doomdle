@@ -19,5 +19,5 @@ pub use mana::{Color, ManaCost, ManaPool, Payment};
 pub use solver::{Step, Strategy, Verdict, solve, verify};
 pub use state::{
     ChoiceKind, LossReason, Outcome, PendingChoice, Permanent, Phase, Player, PlayerState, Puzzle,
-    StackItem, State,
+    StackItem, State, Zone,
 };

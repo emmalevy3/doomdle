@@ -21,6 +21,14 @@ impl Player {
     }
 }
 
+/// Where a card is cast or played from. Normally the hand; the graveyard
+/// under Yawgmoth's Will.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Zone {
+    Hand,
+    Graveyard,
+}
+
 /// A card on the battlefield. Which player controls it is given by which
 /// battlefield it sits on. `loyalty` and `loyalty_used` are only meaningful
 /// for planeswalkers and stay 0/false otherwise.
@@ -69,6 +77,9 @@ pub enum StackItem {
     Spell {
         card: Card,
         controller: Player,
+        /// The card targeted on casting (Unearth), checked again on
+        /// resolution so a spell whose target is gone does nothing.
+        target: Option<Card>,
     },
     Trigger {
         source: Card,
@@ -98,6 +109,14 @@ pub enum ChoiceKind {
     Surveil,
     /// Search the library for a land matching the filter, or find nothing.
     SearchLand(LandFilter),
+    /// Flow State: the top (up to) three cards are being looked at; put
+    /// `take` of them into hand and the rest on the bottom in any order.
+    FlowState { take: usize },
+    /// Frantic Search has drawn two; discard two (or the whole hand if
+    /// smaller).
+    FranticDiscard,
+    /// Frantic Search: untap up to three lands.
+    UntapLands,
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
@@ -165,6 +184,10 @@ pub struct PlayerState {
     /// applied by the next state-based check, so a win in the same resolution
     /// (Doctor Doom) still counts.
     pub drew_from_empty: bool,
+    /// Yawgmoth's Will has resolved this turn: spells and lands may be cast or
+    /// played from the graveyard, and anything that would go to the graveyard
+    /// is exiled instead.
+    pub yawgmoths_will: bool,
 }
 
 impl Default for PlayerState {
@@ -182,6 +205,7 @@ impl Default for PlayerState {
             cards_drawn_this_turn: 0,
             land_drop_available: true,
             drew_from_empty: false,
+            yawgmoths_will: false,
         }
     }
 }
@@ -222,11 +246,35 @@ impl PlayerState {
         Some(self.hand.remove(pos))
     }
 
+    /// The one way a card reaches the graveyard, so Yawgmoth's Will's
+    /// "exile it instead" applies everywhere: resolved spells, discards,
+    /// sacrifices, mills and surveils alike.
+    pub(crate) fn put_in_graveyard(&mut self, card: Card) {
+        if self.yawgmoths_will {
+            self.exile.push(card);
+        } else {
+            self.graveyard.push(card);
+        }
+    }
+
+    /// Removes one copy of `card` from the graveyard.
+    pub(crate) fn remove_from_graveyard(&mut self, card: Card) -> Option<Card> {
+        let pos = self.graveyard.iter().position(|&c| c == card)?;
+        Some(self.graveyard.remove(pos))
+    }
+
+    /// Whether the graveyard holds a card of this kind (Flow State).
+    pub fn graveyard_has(&self, kind: CardKind) -> bool {
+        self.graveyard.iter().any(|c| c.kind() == kind)
+    }
+
     /// Mills the top `n` cards (fewer if the library is smaller).
     pub(crate) fn mill(&mut self, n: usize) {
         let k = n.min(self.library.len());
         let milled: Vec<Card> = self.library.drain(..k).collect();
-        self.graveyard.extend(milled);
+        for card in milled {
+            self.put_in_graveyard(card);
+        }
     }
 
     /// The library was shuffled: its order is unknown unless at most one card
@@ -425,7 +473,17 @@ impl fmt::Display for Permanent {
 impl fmt::Display for StackItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            StackItem::Spell { card, controller } => write!(f, "{card} ({controller:?})"),
+            StackItem::Spell {
+                card,
+                controller,
+                target,
+            } => {
+                write!(f, "{card}")?;
+                if let Some(target) = target {
+                    write!(f, " targeting {target}")?;
+                }
+                write!(f, " ({controller:?})")
+            }
             StackItem::Trigger {
                 source, controller, ..
             } => write!(f, "{source} trigger ({controller:?})"),
@@ -457,6 +515,9 @@ impl fmt::Display for Outcome {
 impl fmt::Display for PlayerState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "  life {}, mana pool {}", self.life, self.mana_pool)?;
+        if self.yawgmoths_will {
+            writeln!(f, "  Yawgmoth's Will active")?;
+        }
         writeln!(f, "  hand: {}", list_cards(&self.hand))?;
         let battlefield = if self.battlefield.is_empty() {
             "-".to_string()
@@ -653,6 +714,36 @@ mod tests {
         assert_eq!(ps.graveyard, vec![Card::Island, Card::Swamp]);
         ps.mill(5);
         assert!(ps.library.is_empty());
+    }
+
+    #[test]
+    fn yawgmoths_will_sends_graveyard_bound_cards_to_exile() {
+        let mut ps = PlayerState {
+            library: vec![Card::Island, Card::Swamp],
+            graveyard: vec![Card::Doomsday],
+            ..PlayerState::default()
+        };
+        assert!(!PlayerState::default().yawgmoths_will);
+        ps.put_in_graveyard(Card::Brainstorm);
+        assert_eq!(ps.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
+
+        ps.yawgmoths_will = true;
+        ps.put_in_graveyard(Card::Ponder);
+        ps.mill(1);
+        assert_eq!(ps.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
+        assert_eq!(ps.exile, vec![Card::Ponder, Card::Island]);
+        assert_eq!(ps.library, vec![Card::Swamp]);
+    }
+
+    #[test]
+    fn graveyard_has_checks_card_kinds() {
+        let ps = PlayerState {
+            graveyard: vec![Card::Doomsday, Card::LotusPetal],
+            ..PlayerState::default()
+        };
+        assert!(ps.graveyard_has(CardKind::Sorcery));
+        assert!(ps.graveyard_has(CardKind::Artifact));
+        assert!(!ps.graveyard_has(CardKind::Instant));
     }
 
     #[test]

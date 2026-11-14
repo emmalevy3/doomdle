@@ -2,7 +2,7 @@
 //! that must fail.
 
 use doomdle::{
-    Action, Card, Outcome, Permanent, PlayerState, Puzzle, State, Verdict, solve, verify,
+    Action, Card, Outcome, Permanent, PlayerState, Puzzle, State, Verdict, Zone, solve, verify,
 };
 
 fn puzzle(hand: Vec<Card>, battlefield: Vec<Permanent>, candidates: Vec<Card>) -> Puzzle {
@@ -238,6 +238,7 @@ fn probe_for_life_wins() {
         Action::CastSpell {
             card: Card::GitaxianProbe,
             payment,
+            ..
         } if payment.life == 2
     )));
 }
@@ -327,7 +328,10 @@ fn surveil_land_shrinks_the_pile() {
     );
     assert!(has_action(&steps, |a| matches!(
         a,
-        Action::PlayLand(Card::UndercitySewers)
+        Action::PlayLand {
+            card: Card::UndercitySewers,
+            ..
+        }
     )));
     assert!(has_action(&steps, |a| matches!(
         a,
@@ -556,4 +560,214 @@ fn edge_of_autumn_cast_pulls_a_basic_out_of_the_pile() {
         ),
         &four,
     );
+}
+
+// ---------------------------------------------------------------- stage 3
+
+/// Pair 10: Consider bins Oracle, Unearth brings it back, devotion covers the
+/// two cards left.
+#[test]
+fn unearth_returns_a_surveilled_oracle() {
+    let lands = vec![
+        Permanent::untapped(Card::UndergroundSea),
+        Permanent::untapped(Card::Island),
+        Permanent::untapped(Card::Swamp),
+    ];
+    let pile = [
+        Card::ThassasOracle,
+        Card::Plains,
+        Card::Plains,
+        Card::Plains,
+    ];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::Consider, Card::Unearth],
+            lands.clone(),
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Unearth,
+            target: Some(Card::ThassasOracle),
+            ..
+        }
+    )));
+    // One card more and three remain after Consider.
+    let five = [
+        Card::ThassasOracle,
+        Card::Plains,
+        Card::Plains,
+        Card::Plains,
+        Card::Plains,
+    ];
+    assert_fails(
+        puzzle(
+            vec![Card::Consider, Card::Unearth],
+            lands.clone(),
+            five.to_vec(),
+        ),
+        &five,
+    );
+    // Without Consider, Oracle never reaches the graveyard: no target.
+    assert_fails(puzzle(vec![Card::Unearth], lands, pile.to_vec()), &pile);
+}
+
+/// Pair 11: Yawgmoth's Will with LED cracked in response, then LED and the
+/// discarded Oracle recast from the graveyard.
+#[test]
+fn yawgmoths_will_recasts_led_and_oracle_from_the_graveyard() {
+    let board = vec![
+        Permanent::untapped(Card::LionsEyeDiamond),
+        Permanent::untapped(Card::Swamp),
+        Permanent::untapped(Card::Swamp),
+        Permanent::untapped(Card::Swamp),
+    ];
+    let two = [Card::Island, Card::Island];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::YawgmothsWill, Card::ThassasOracle],
+            board.clone(),
+            two.to_vec(),
+        ),
+        &two,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::ThassasOracle,
+            from: Zone::Graveyard,
+            ..
+        }
+    )));
+    // Without Will, LED's discard just loses Oracle.
+    assert_fails(
+        puzzle(vec![Card::ThassasOracle], board.clone(), two.to_vec()),
+        &two,
+    );
+    // Three cards in the pile is one too many for devotion 2.
+    let three = [Card::Island, Card::Island, Card::Island];
+    assert_fails(
+        puzzle(
+            vec![Card::YawgmothsWill, Card::ThassasOracle],
+            board,
+            three.to_vec(),
+        ),
+        &three,
+    );
+}
+
+/// Pair 12: Dark Ritual puts an instant next to Doomsday, so Flow State takes
+/// both mana rocks and Oracle wins on the two cards left.
+#[test]
+fn flow_state_two_card_mode_finds_both_rocks() {
+    let pile = [
+        Card::LotusPetal,
+        Card::MoxSapphire,
+        Card::Swamp,
+        Card::Swamp,
+    ];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::DarkRitual, Card::FlowState, Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::UndergroundSea),
+                Permanent::untapped(Card::Island),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::FlowState { to_hand, .. }) if to_hand.len() == 2
+    )));
+    // Same mana without the instant: one-card mode leaves three in the pile.
+    assert_fails(
+        puzzle(
+            vec![Card::FlowState, Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::UndergroundSea),
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Swamp),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+}
+
+/// Pair 13: Frantic Search is free with three lands to untap; the untapped
+/// Islands then pay for Oracle.
+#[test]
+fn frantic_search_untaps_the_lands_that_pay_for_oracle() {
+    let pile = [Card::Plains, Card::Plains, Card::Plains, Card::Plains];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::FranticSearch, Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::UndergroundSea),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+    // Both chained choices are replayed in the line.
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::Discard(_))
+    )));
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::UntapLands(lands)) if lands.len() == 3
+    )));
+    // Two lands can't cast Frantic Search at all.
+    assert_fails(
+        puzzle(
+            vec![Card::FranticSearch, Card::ThassasOracle],
+            vec![
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::UndergroundSea),
+            ],
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+}
+
+/// Pair 14: Cabal Ritual's net mana lets Lab Man come down before Frantic
+/// Search draws the last card and then one more.
+#[test]
+fn cabal_ritual_pays_for_lab_man_before_frantic_search() {
+    let lands = |swamps: usize| {
+        let mut v = vec![
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+        ];
+        v.extend(std::iter::repeat_n(
+            Permanent::untapped(Card::Swamp),
+            swamps,
+        ));
+        v
+    };
+    let hand = vec![
+        Card::CabalRitual,
+        Card::LaboratoryManiac,
+        Card::FranticSearch,
+    ];
+    let one = [Card::Plains];
+    let steps = assert_wins(puzzle(hand.clone(), lands(3), one.to_vec()), &one);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::CabalRitual,
+            ..
+        }
+    )));
+    // One land fewer: five mana can't pay for Lab Man and Frantic Search.
+    assert_fails(puzzle(hand, lands(2), one.to_vec()), &one);
 }
