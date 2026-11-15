@@ -84,6 +84,17 @@ impl Permanent {
     }
 }
 
+/// How a spell on the stack came to be there.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum SpellMode {
+    /// Cast from a card; the card goes to the graveyard after resolving.
+    Normal,
+    /// A storm or replicate copy: resolves like the card, then goes nowhere.
+    Copy,
+    /// Cast for its evoke cost: the creature is sacrificed as it enters.
+    Evoked,
+}
+
 /// Something waiting to resolve. The top of the stack is the last element.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum StackItem {
@@ -94,9 +105,7 @@ pub enum StackItem {
         /// also for a targeted spell whose target has since left the stack:
         /// such a spell does nothing when it resolves.
         target: Option<Target>,
-        /// A storm or replicate copy: it resolves like the card but goes to
-        /// no zone afterwards.
-        copy: bool,
+        mode: SpellMode,
     },
     Trigger {
         source: Card,
@@ -126,6 +135,17 @@ impl StackItem {
             StackItem::Spell { card, .. } => *card,
             StackItem::Trigger { source, .. } | StackItem::Ability { source, .. } => *source,
         }
+    }
+
+    /// A storm or replicate copy (which goes to no zone when it leaves).
+    pub fn is_copy(&self) -> bool {
+        matches!(
+            self,
+            StackItem::Spell {
+                mode: SpellMode::Copy,
+                ..
+            }
+        )
     }
 }
 
@@ -158,6 +178,9 @@ pub enum ChoiceKind {
     /// A storm or replicate trigger is making `count` copies of the spell
     /// directly below it; the caster picks a target for each.
     CopyTargets { count: u8 },
+    /// Thoughtseize, Duress, Grief: pick a nonland card (a noncreature one
+    /// unless `creatures`) from `victim`'s hand for them to discard.
+    DiscardFrom { victim: Player, creatures: bool },
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
@@ -231,6 +254,17 @@ pub struct PlayerState {
     /// played from the graveyard, and anything that would go to the graveyard
     /// is exiled instead.
     pub yawgmoths_will: bool,
+    /// Silence resolved against this player: they can't cast spells this turn.
+    pub silenced: bool,
+    /// Veil of Summer resolved for this player: their spells can't be
+    /// countered and their permanents can't be targeted by the other player's
+    /// blue or black spells.
+    pub veiled: bool,
+    /// Teferi's +1: sorceries may be cast whenever this player has priority.
+    pub sorceries_have_flash: bool,
+    /// Whether this player has cast a blue or black spell this turn (Veil of
+    /// Summer's draw).
+    pub cast_blue_or_black_this_turn: bool,
 }
 
 impl Default for PlayerState {
@@ -249,6 +283,10 @@ impl Default for PlayerState {
             land_drop_available: true,
             drew_from_empty: false,
             yawgmoths_will: false,
+            silenced: false,
+            veiled: false,
+            sorceries_have_flash: false,
+            cast_blue_or_black_this_turn: false,
         }
     }
 }
@@ -535,10 +573,12 @@ impl fmt::Display for StackItem {
                 card,
                 controller,
                 target,
-                copy,
+                mode,
             } => {
-                if *copy {
-                    f.write_str("copy of ")?;
+                match mode {
+                    SpellMode::Normal => {}
+                    SpellMode::Copy => f.write_str("copy of ")?,
+                    SpellMode::Evoked => f.write_str("evoked ")?,
                 }
                 write!(f, "{card}")?;
                 if let Some(target) = target {
@@ -577,8 +617,15 @@ impl fmt::Display for Outcome {
 impl fmt::Display for PlayerState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "  life {}, mana pool {}", self.life, self.mana_pool)?;
-        if self.yawgmoths_will {
-            writeln!(f, "  Yawgmoth's Will active")?;
+        for (flag, text) in [
+            (self.yawgmoths_will, "Yawgmoth's Will active"),
+            (self.silenced, "can't cast spells (Silence)"),
+            (self.veiled, "Veil of Summer active"),
+            (self.sorceries_have_flash, "sorceries have flash (Teferi)"),
+        ] {
+            if flag {
+                writeln!(f, "  {text}")?;
+            }
         }
         writeln!(f, "  hand: {}", list_cards(&self.hand))?;
         let battlefield = if self.battlefield.is_empty() {

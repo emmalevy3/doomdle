@@ -14,7 +14,7 @@ use crate::engine::{
 };
 use crate::mana::{AltCost, Color, ManaCost, Payment};
 use crate::state::{
-    ChoiceKind, LossReason, PendingChoice, Player, PlayerState, StackItem, State, Target,
+    ChoiceKind, LossReason, PendingChoice, Player, PlayerState, SpellMode, StackItem, State, Target,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -49,6 +49,14 @@ pub enum Card {
     SwordsToPlowshares,
     SnuffOut,
     SurgicalExtraction,
+    // Your protection and discard
+    Silence,
+    VeilOfSummer,
+    Teferi,
+    DefenseGrid,
+    Thoughtseize,
+    Duress,
+    Grief,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -170,6 +178,8 @@ pub enum TriggerKind {
     /// Storm (Flusterstorm) or replicate (Consign to Memory): put `count`
     /// copies of the spell directly below this trigger onto the stack.
     Copies { count: u8 },
+    /// Grief enters: the opponent discards a nonland card of your choice.
+    GriefEnters,
 }
 
 /// An activated ability on the stack, costs already paid.
@@ -183,25 +193,35 @@ pub enum AbilityKind {
     DoomDraw,
     /// Jace +1: target player mills two, then you draw.
     JacePlusOne { target: Player },
+    /// Teferi +1: your sorceries have flash until your next turn.
+    TeferiPlusOne,
+    /// Teferi −3: return up to one target artifact, creature or enchantment
+    /// to its owner's hand, then draw a card.
+    TeferiMinusThree { target: Option<Target> },
 }
 
 /// A loyalty ability a planeswalker can activate.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum LoyaltyAbility {
     JacePlusOne { target: Player },
+    TeferiPlusOne,
+    TeferiMinusThree { target: Option<Target> },
 }
 
 impl LoyaltyAbility {
     /// Loyalty added (or, negative, removed) as the cost.
     pub fn loyalty_change(self) -> i8 {
         match self {
-            LoyaltyAbility::JacePlusOne { .. } => 1,
+            LoyaltyAbility::JacePlusOne { .. } | LoyaltyAbility::TeferiPlusOne => 1,
+            LoyaltyAbility::TeferiMinusThree { .. } => -3,
         }
     }
 
     pub fn ability(self) -> AbilityKind {
         match self {
             LoyaltyAbility::JacePlusOne { target } => AbilityKind::JacePlusOne { target },
+            LoyaltyAbility::TeferiPlusOne => AbilityKind::TeferiPlusOne,
+            LoyaltyAbility::TeferiMinusThree { target } => AbilityKind::TeferiMinusThree { target },
         }
     }
 }
@@ -234,6 +254,13 @@ impl Card {
             Card::SwordsToPlowshares => "Swords to Plowshares",
             Card::SnuffOut => "Snuff Out",
             Card::SurgicalExtraction => "Surgical Extraction",
+            Card::Silence => "Silence",
+            Card::VeilOfSummer => "Veil of Summer",
+            Card::Teferi => "Teferi, Time Raveler",
+            Card::DefenseGrid => "Defense Grid",
+            Card::Thoughtseize => "Thoughtseize",
+            Card::Duress => "Duress",
+            Card::Grief => "Grief",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -278,8 +305,9 @@ impl Card {
             Card::ThassasOracle
             | Card::DoctorDoom
             | Card::LaboratoryManiac
-            | Card::StreetWraith => CardKind::Creature,
-            Card::JaceWielderOfMysteries => CardKind::Planeswalker,
+            | Card::StreetWraith
+            | Card::Grief => CardKind::Creature,
+            Card::JaceWielderOfMysteries | Card::Teferi => CardKind::Planeswalker,
             Card::Doomsday
             | Card::Unearth
             | Card::YawgmothsWill
@@ -287,7 +315,9 @@ impl Card {
             | Card::Preordain
             | Card::GitaxianProbe
             | Card::EdgeOfAutumn
-            | Card::FlowState => CardKind::Sorcery,
+            | Card::FlowState
+            | Card::Thoughtseize
+            | Card::Duress => CardKind::Sorcery,
             Card::Brainstorm
             | Card::Consider
             | Card::AncestralRecall
@@ -311,12 +341,15 @@ impl Card {
             | Card::Hydroblast
             | Card::SwordsToPlowshares
             | Card::SnuffOut
-            | Card::SurgicalExtraction => CardKind::Instant,
+            | Card::SurgicalExtraction
+            | Card::Silence
+            | Card::VeilOfSummer => CardKind::Instant,
             Card::LionsEyeDiamond
             | Card::BlackLotus
             | Card::LotusPetal
             | Card::MoxSapphire
-            | Card::MoxJet => CardKind::Artifact,
+            | Card::MoxJet
+            | Card::DefenseGrid => CardKind::Artifact,
             Card::Plains
             | Card::Island
             | Card::Swamp
@@ -374,7 +407,24 @@ impl Card {
             Card::SwordsToPlowshares => ManaCost::colored(Color::W, 1),
             Card::SnuffOut => ManaCost::colored(Color::B, 1).with_generic(3),
             Card::SurgicalExtraction => ManaCost::phyrexian(Color::B, 1),
+            Card::Silence => ManaCost::colored(Color::W, 1),
+            Card::VeilOfSummer => ManaCost::colored(Color::G, 1),
+            Card::Teferi => ManaCost::colored(Color::W, 1)
+                .with(Color::U, 1)
+                .with_generic(1),
+            Card::DefenseGrid => ManaCost::FREE.with_generic(2),
+            Card::Thoughtseize | Card::Duress => ManaCost::colored(Color::B, 1),
+            Card::Grief => ManaCost::colored(Color::B, 2).with_generic(2),
             _ => ManaCost::FREE,
+        }
+    }
+
+    /// Evoke: the color of card that may be exiled from hand instead of
+    /// paying the mana cost; the creature is then sacrificed as it enters.
+    pub fn evoke_pitch(self) -> Option<fn(Card) -> bool> {
+        match self {
+            Card::Grief => Some(Card::is_black),
+            _ => None,
         }
     }
 
@@ -446,11 +496,20 @@ impl Card {
                 })
                 .collect()
         };
+        // Spells to counter. A veiled player's spells can't be countered, so
+        // they are not offered (same outcome, fewer dead branches).
         let spell_where = |pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
+            if state.player(other).veiled {
+                return Vec::new();
+            }
             stack_targets(&|item| matches!(item, StackItem::Spell { card, .. } if pred(*card)))
         };
         // Distinct cards among `owner`'s permanents or graveyard that pass.
+        // Veil of Summer gives hexproof from blue and from black.
         let permanents_where = |owner: Player, pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
+            if owner != player && hexproof_blocks(state, owner, self) {
+                return Vec::new();
+            }
             let mut cards: Vec<Card> = state
                 .player(owner)
                 .battlefield
@@ -508,7 +567,13 @@ impl Card {
             })),
             // "Any number of target spells": modeled as every spell the other
             // player controls, so the one target recorded is their topmost.
-            Card::MindbreakTrap => Some(spell_where(&|_| true).pop().into_iter().collect()),
+            // Exiling isn't countering, so Veil doesn't protect against it.
+            Card::MindbreakTrap => Some(
+                stack_targets(&|item| matches!(item, StackItem::Spell { .. }))
+                    .pop()
+                    .into_iter()
+                    .collect(),
+            ),
             // "If it's blue/red": only blue/red things are ever offered.
             Card::Pyroblast => {
                 let mut targets = spell_where(&Card::is_blue);
@@ -533,7 +598,7 @@ impl Card {
     /// could pay them right now.
     pub fn alternative_payments(self, state: &State, player: Player) -> Vec<Payment> {
         let ps = state.player(player);
-        let pitches = |life: u8| -> Vec<Payment> {
+        let pitches = |life: u8, color: fn(Card) -> bool| -> Vec<Payment> {
             // The spell itself is already on the stack when its cost is paid,
             // so one copy in hand can't pitch itself, but a second copy can.
             let mut hand = ps.hand.clone();
@@ -543,7 +608,7 @@ impl Card {
             hand.sort();
             hand.dedup();
             hand.into_iter()
-                .filter(|c| c.is_blue())
+                .filter(|&c| color(c))
                 .map(|c| Payment {
                     alt: Some(AltCost::Pitch(c)),
                     ..Payment::life(life)
@@ -552,10 +617,12 @@ impl Card {
         };
         match self {
             // "Pay 1 life and exile a blue card from your hand."
-            Card::ForceOfWill if ps.life >= 1 => pitches(1),
+            Card::ForceOfWill if ps.life >= 1 => pitches(1, Card::is_blue),
             // "Exile a blue card from your hand. Activate only if it's not
             // your turn": it is always your turn, so only the opponent may.
-            Card::ForceOfNegation if player == Player::Opponent => pitches(0),
+            Card::ForceOfNegation if player == Player::Opponent => pitches(0, Card::is_blue),
+            // Evoke: exile a card of the right color from hand.
+            Card::Grief => pitches(0, Card::is_black),
             // "Return an Island you control to its owner's hand."
             Card::Daze => {
                 let mut islands: Vec<Card> = ps
@@ -681,6 +748,7 @@ impl Card {
         match self {
             Card::ThassasOracle => Some(TriggerKind::OracleEnters),
             Card::UndercitySewers | Card::MeticulousArchive => Some(TriggerKind::Surveil),
+            Card::Grief => Some(TriggerKind::GriefEnters),
             _ => None,
         }
     }
@@ -688,12 +756,14 @@ impl Card {
     /// Loyalty a planeswalker enters with (0 for everything else).
     pub fn starting_loyalty(self) -> u8 {
         match self {
-            Card::JaceWielderOfMysteries => 4,
+            Card::JaceWielderOfMysteries | Card::Teferi => 4,
             _ => 0,
         }
     }
 
-    pub fn loyalty_abilities(self) -> Vec<LoyaltyAbility> {
+    /// The loyalty abilities `player` could activate on this planeswalker
+    /// right now, with their targets (loyalty itself is checked on activation).
+    pub fn loyalty_abilities(self, state: &State, player: Player) -> Vec<LoyaltyAbility> {
         match self {
             Card::JaceWielderOfMysteries => vec![
                 LoyaltyAbility::JacePlusOne {
@@ -703,6 +773,33 @@ impl Card {
                     target: Player::Opponent,
                 },
             ],
+            Card::Teferi => {
+                let mut out = vec![
+                    LoyaltyAbility::TeferiPlusOne,
+                    LoyaltyAbility::TeferiMinusThree { target: None },
+                ];
+                // "Up to one target artifact, creature, or enchantment",
+                // either player's.
+                for owner in [player, player.other()] {
+                    let mut cards: Vec<Card> = state
+                        .player(owner)
+                        .battlefield
+                        .iter()
+                        .map(|p| p.card)
+                        .filter(|c| matches!(c.kind(), CardKind::Artifact | CardKind::Creature))
+                        .collect();
+                    cards.sort();
+                    cards.dedup();
+                    out.extend(
+                        cards
+                            .into_iter()
+                            .map(|card| LoyaltyAbility::TeferiMinusThree {
+                                target: Some(Target::Permanent { owner, card }),
+                            }),
+                    );
+                }
+                out
+            }
             _ => Vec::new(),
         }
     }
@@ -727,6 +824,9 @@ impl fmt::Display for AbilityKind {
             AbilityKind::Fetch => f.write_str("fetch"),
             AbilityKind::DoomDraw => f.write_str("draw ability"),
             AbilityKind::JacePlusOne { target } => write!(f, "+1 targeting {target:?}"),
+            AbilityKind::TeferiPlusOne => f.write_str("+1"),
+            AbilityKind::TeferiMinusThree { target: Some(t) } => write!(f, "-3 targeting {t}"),
+            AbilityKind::TeferiMinusThree { target: None } => f.write_str("-3 with no target"),
         }
     }
 }
@@ -766,11 +866,28 @@ pub(crate) fn resolve_spell(
         Card::SpellPierce | Card::Miscalculation => return tax(state, controller, bin, target, 2),
         // Counter mode on a spell, destroy mode on a permanent.
         Card::Pyroblast | Card::Hydroblast => match target {
-            Some(Target::Permanent { .. }) => remove_permanent(state, target, false),
+            Some(Target::Permanent { .. }) => remove_permanent(state, card, target, false),
             _ => counter(state, target, false),
         },
-        Card::SwordsToPlowshares => remove_permanent(state, target, true),
-        Card::SnuffOut => remove_permanent(state, target, false),
+        Card::SwordsToPlowshares => remove_permanent(state, card, target, true),
+        Card::SnuffOut => remove_permanent(state, card, target, false),
+        Card::Silence => state.player_mut(controller.other()).silenced = true,
+        Card::VeilOfSummer => {
+            // "Draw a card if an opponent has cast a blue or black spell this
+            // turn", then the protections for the rest of the turn.
+            if state
+                .player(controller.other())
+                .cast_blue_or_black_this_turn
+            {
+                state.draw(controller, 1);
+            }
+            state.player_mut(controller).veiled = true;
+        }
+        Card::Thoughtseize => {
+            state.player_mut(controller).life -= 2;
+            return discard_from(state, controller, bin, true);
+        }
+        Card::Duress => return discard_from(state, controller, bin, false),
         Card::SurgicalExtraction => {
             if let Some(Target::Graveyard { owner, card: named }) = target {
                 surgical(state, owner, named);
@@ -785,12 +902,11 @@ pub(crate) fn resolve_spell(
                     state.stack[index],
                     StackItem::Spell { controller, .. } if controller == victim
                 );
-                if theirs
-                    && let StackItem::Spell {
-                        card, copy: false, ..
-                    } = crate::engine::remove_stack_item(state, index)
-                {
-                    state.player_mut(victim).exile.push(card);
+                if theirs {
+                    let item = crate::engine::remove_stack_item(state, index);
+                    if !item.is_copy() {
+                        state.player_mut(victim).exile.push(item.card());
+                    }
                 }
             }
         }
@@ -867,12 +983,22 @@ pub(crate) fn resolve_spell(
     Ok(())
 }
 
+/// Whether `owner`'s Veil of Summer stops `spell` (cast by the other player)
+/// from targeting their permanents: hexproof from blue and from black.
+fn hexproof_blocks(state: &State, owner: Player, spell: Card) -> bool {
+    state.player(owner).veiled && (spell.is_blue() || spell.is_black())
+}
+
 /// Destroys (or exiles) the permanent `target` points at, if it is still
-/// there.
-fn remove_permanent(state: &mut State, target: Option<Target>, exile: bool) {
+/// there and `spell` may still target it.
+fn remove_permanent(state: &mut State, spell: Card, target: Option<Target>, exile: bool) {
     let Some(Target::Permanent { owner, card }) = target else {
         return;
     };
+    // A Veil cast in response makes the target illegal: the spell fizzles.
+    if hexproof_blocks(state, owner, spell) {
+        return;
+    }
     let ps = state.player_mut(owner);
     if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
         ps.battlefield.remove(idx);
@@ -882,6 +1008,43 @@ fn remove_permanent(state: &mut State, target: Option<Target>, exile: bool) {
             ps.put_in_graveyard(card);
         }
     }
+}
+
+/// Thoughtseize, Duress and Grief: the other player discards a nonland card
+/// of `controller`'s choice. Nothing to choose means nothing happens.
+fn discard_from(
+    state: &mut State,
+    controller: Player,
+    bin: Option<Card>,
+    creatures: bool,
+) -> Result<(), EngineError> {
+    let victim = controller.other();
+    let kind = ChoiceKind::DiscardFrom { victim, creatures };
+    if discard_candidates(state, kind).is_empty() {
+        if let Some(bin) = bin {
+            state.player_mut(controller).put_in_graveyard(bin);
+        }
+        return Ok(());
+    }
+    pause(state, controller, bin, kind)
+}
+
+/// The distinct cards in the victim's hand a [`ChoiceKind::DiscardFrom`] may
+/// pick.
+fn discard_candidates(state: &State, kind: ChoiceKind) -> Vec<Card> {
+    let ChoiceKind::DiscardFrom { victim, creatures } = kind else {
+        return Vec::new();
+    };
+    let mut cards: Vec<Card> = state
+        .player(victim)
+        .hand
+        .iter()
+        .copied()
+        .filter(|c| c.kind() != CardKind::Land && (creatures || c.kind() != CardKind::Creature))
+        .collect();
+    cards.sort();
+    cards.dedup();
+    cards
 }
 
 /// Surgical Extraction on `named` in `owner`'s graveyard: exile every copy
@@ -950,17 +1113,18 @@ fn counter(state: &mut State, target: Option<Target>, exile: bool) {
     };
     // The target was fixed up or cleared whenever the stack changed, so a
     // mismatch here is a bug rather than a fizzle; do nothing either way.
-    if state.stack.get(index).map(StackItem::card) != Some(card) {
+    let Some(item) = state.stack.get(index) else {
+        return;
+    };
+    if item.card() != card || cant_be_countered(state, item) {
         return;
     }
     let item = crate::engine::remove_stack_item(state, index);
     // A countered copy just ceases to exist.
-    if let StackItem::Spell {
-        card,
-        controller,
-        copy: false,
-        ..
-    } = item
+    if !item.is_copy()
+        && let StackItem::Spell {
+            card, controller, ..
+        } = item
     {
         let ps = state.player_mut(controller);
         if exile {
@@ -969,6 +1133,11 @@ fn counter(state: &mut State, target: Option<Target>, exile: bool) {
             ps.put_in_graveyard(card);
         }
     }
+}
+
+/// Veil of Summer: "spells you control can't be countered this turn".
+fn cant_be_countered(state: &State, item: &StackItem) -> bool {
+    matches!(item, StackItem::Spell { controller, .. } if state.player(*controller).veiled)
 }
 
 /// "Counter target spell unless its controller pays {amount}": the target's
@@ -984,6 +1153,7 @@ fn tax(
     if let Some(target @ Target::Stack { index, card: hit }) = target
         && let Some(item) = state.stack.get(index)
         && item.card() == hit
+        && !cant_be_countered(state, item)
     {
         let payer = item.controller();
         return pause_for(
@@ -1015,7 +1185,7 @@ fn push_copies(state: &mut State, original: StackItem, targets: &[Target], count
             card,
             controller,
             target: targets.get(i).copied(),
-            copy: true,
+            mode: SpellMode::Copy,
         });
     }
 }
@@ -1064,6 +1234,7 @@ pub(crate) fn resolve_trigger(
                 _ => return pause(state, controller, None, ChoiceKind::CopyTargets { count }),
             }
         }
+        TriggerKind::GriefEnters => return discard_from(state, controller, None, true),
     }
     Ok(())
 }
@@ -1103,6 +1274,19 @@ pub(crate) fn resolve_ability(
                 return Ok(());
             }
             state.player_mut(target).mill(k);
+            state.draw(controller, 1);
+        }
+        AbilityKind::TeferiPlusOne => {
+            state.player_mut(controller).sorceries_have_flash = true;
+        }
+        AbilityKind::TeferiMinusThree { target } => {
+            if let Some(Target::Permanent { owner, card }) = target {
+                let ps = state.player_mut(owner);
+                if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
+                    ps.battlefield.remove(idx);
+                    ps.hand.push(card);
+                }
+            }
             state.draw(controller, 1);
         }
     }
@@ -1226,6 +1410,13 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
                         .map(Choice::CopyTargets),
                 );
             }
+        }
+        kind @ ChoiceKind::DiscardFrom { .. } => {
+            out.extend(
+                discard_candidates(state, kind)
+                    .into_iter()
+                    .map(|c| Choice::Discard(vec![c])),
+            );
         }
     }
     out
@@ -1387,6 +1578,17 @@ pub(crate) fn apply_choice(
             }
             push_copies(state, original, targets, count);
         }
+        (kind @ ChoiceKind::DiscardFrom { victim, .. }, Choice::Discard(cards)) => {
+            let [card] = cards.as_slice() else {
+                return Err(illegal());
+            };
+            if !discard_candidates(state, kind).contains(card) {
+                return Err(illegal());
+            }
+            let ps = state.player_mut(victim);
+            ps.remove_from_hand(*card).ok_or_else(illegal)?;
+            ps.put_in_graveyard(*card);
+        }
         _ => return Err(illegal()),
     }
     if let Some(card) = pending.bin {
@@ -1427,7 +1629,7 @@ mod tests {
             card,
             controller: Player::You,
             target,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         pass_twice(&state)
     }
@@ -2520,13 +2722,13 @@ mod tests {
             card: spell,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         state.stack.push(StackItem::Spell {
             card: counter,
             controller: Player::Opponent,
             target: Some(on_stack(0, spell)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         state
     }
@@ -2649,7 +2851,7 @@ mod tests {
             card: Card::Counterspell,
             controller: Player::Opponent,
             target: Some(on_stack(0, Card::Brainstorm)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after_first = pass_twice(&state);
         assert_eq!(
@@ -2658,7 +2860,7 @@ mod tests {
                 card: Card::Counterspell,
                 controller: Player::Opponent,
                 target: None,
-                copy: false,
+                mode: SpellMode::Normal,
             }]
         );
         let after_second = pass_twice(&after_first);
@@ -2686,7 +2888,7 @@ mod tests {
             card: Card::Stifle,
             controller: Player::Opponent,
             target: Some(on_stack(0, Card::ThassasOracle)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after = pass_twice(&state);
         assert!(after.stack.is_empty());
@@ -2707,7 +2909,7 @@ mod tests {
             card: Card::Stifle,
             controller: Player::Opponent,
             target: Some(on_stack(0, Card::StreetWraith)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after = pass_twice(&state);
         assert!(after.stack.is_empty());
@@ -2814,7 +3016,7 @@ mod tests {
             card: Card::Daze,
             controller: Player::Opponent,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after = pass_twice(&state);
         assert_eq!(after.pending, None);
@@ -2828,7 +3030,7 @@ mod tests {
             card,
             controller: Player::Opponent,
             target,
-            copy: false,
+            mode: SpellMode::Normal,
         }
     }
 
@@ -2837,7 +3039,7 @@ mod tests {
             card,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         }
     }
 
@@ -3069,7 +3271,7 @@ mod tests {
             card: Card::Unearth,
             controller: Player::You,
             target: Some(your_graveyard(Card::ThassasOracle)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         state.stack.push(their_spell(
             Card::SurgicalExtraction,
@@ -3095,7 +3297,7 @@ mod tests {
             card: Card::Unearth,
             controller: Player::You,
             target: Some(your_graveyard(Card::ThassasOracle)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after = pass_twice(&state);
         assert_eq!(after.you.battlefield.len(), 1);
@@ -3137,7 +3339,7 @@ mod tests {
                     card: Card::Flusterstorm,
                     controller: Player::Opponent,
                     target: Some(on_stack(0, Card::DarkRitual)),
-                    copy: true,
+                    mode: SpellMode::Copy,
                 }
             );
         }
@@ -3208,7 +3410,9 @@ mod tests {
             .iter()
             .map(|item| match item {
                 StackItem::Spell {
-                    target, copy: true, ..
+                    target,
+                    mode: SpellMode::Copy,
+                    ..
                 } => *target,
                 other => panic!("expected a copy, got {other:?}"),
             })
@@ -3248,7 +3452,7 @@ mod tests {
             card: Card::Stifle,
             controller: Player::You,
             target: Some(on_stack(2, Card::Flusterstorm)),
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after = pass_twice(&state);
         assert_eq!(after.stack.len(), 2);
@@ -3317,5 +3521,340 @@ mod tests {
         // The Counterspell stays, with its target gone.
         assert_eq!(after.stack, vec![their_spell(Card::Counterspell, None)]);
         assert_eq!(after.opponent.graveyard, vec![Card::MindbreakTrap]);
+    }
+
+    // ------------------------------------------------------------ stage 4c
+
+    use crate::state::test_support::versus;
+
+    fn opponent_hand(hand: Vec<Card>) -> PlayerState {
+        PlayerState {
+            hand,
+            ..PlayerState::default()
+        }
+    }
+
+    #[test]
+    fn protection_and_discard_data() {
+        assert_eq!(Card::Silence.kind(), CardKind::Instant);
+        assert_eq!(Card::VeilOfSummer.kind(), CardKind::Instant);
+        assert_eq!(Card::Teferi.kind(), CardKind::Planeswalker);
+        assert_eq!(Card::DefenseGrid.kind(), CardKind::Artifact);
+        assert_eq!(Card::Thoughtseize.kind(), CardKind::Sorcery);
+        assert_eq!(Card::Duress.kind(), CardKind::Sorcery);
+        assert_eq!(Card::Grief.kind(), CardKind::Creature);
+        assert_eq!(Card::Silence.mana_cost().to_string(), "{W}");
+        assert_eq!(Card::VeilOfSummer.mana_cost().to_string(), "{G}");
+        assert_eq!(Card::Teferi.mana_cost().to_string(), "{1}{W}{U}");
+        assert_eq!(Card::DefenseGrid.mana_cost().to_string(), "{2}");
+        assert_eq!(Card::Thoughtseize.mana_cost().to_string(), "{B}");
+        assert_eq!(Card::Duress.mana_cost().to_string(), "{B}");
+        assert_eq!(Card::Grief.mana_cost().to_string(), "{2}{B}{B}");
+        assert_eq!(Card::Teferi.starting_loyalty(), 4);
+        assert_eq!(Card::Teferi.blue_devotion(), 1);
+        assert!(Card::Grief.is_black());
+        assert!(Card::Grief.evoke_pitch().is_some());
+        assert!(Card::ThassasOracle.evoke_pitch().is_none());
+        assert_eq!(Card::Grief.etb_trigger(), Some(TriggerKind::GriefEnters));
+        assert_eq!(Card::DefenseGrid.mana_ability(), None);
+    }
+
+    #[test]
+    fn silence_stops_the_opponent_from_casting() {
+        let state = versus(
+            PlayerState {
+                hand: vec![Card::ThassasOracle],
+                mana_pool: ManaPool::of(Color::U, 2),
+                ..PlayerState::default()
+            },
+            PlayerState {
+                hand: vec![Card::Counterspell],
+                battlefield: vec![Permanent::untapped(Card::Island); 2],
+                ..PlayerState::default()
+            },
+        );
+        let silenced = resolve(state, Card::Silence);
+        assert!(silenced.opponent.silenced);
+        assert!(!silenced.you.silenced);
+        assert_eq!(silenced.you.graveyard, vec![Card::Silence]);
+        // Oracle on the stack, opponent's turn to act: pass is all they have.
+        let mut state = silenced;
+        state.stack.push(your_spell(Card::ThassasOracle));
+        let theirs = apply(&state, &Action::Pass).unwrap();
+        assert_eq!(legal_actions(&theirs), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn veil_draws_only_after_a_blue_or_black_spell_and_then_protects() {
+        // No blue or black spell from them yet: no draw.
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        let after = resolve(state, Card::VeilOfSummer);
+        assert!(after.you.hand.is_empty());
+        assert!(after.you.veiled);
+        // They have: draw one.
+        let mut state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        state.opponent.cast_blue_or_black_this_turn = true;
+        let after = resolve(state, Card::VeilOfSummer);
+        assert_eq!(after.you.hand, vec![Card::Island]);
+        assert_eq!(after.you.cards_drawn_this_turn, 1);
+    }
+
+    #[test]
+    fn a_veiled_spell_cannot_be_countered_or_taxed_but_can_be_exiled() {
+        let veiled = || PlayerState {
+            veiled: true,
+            ..PlayerState::default()
+        };
+        // Counterspell resolves without effect and is still binned.
+        let after = pass_twice(&countered(
+            veiled(),
+            Card::ThassasOracle,
+            Card::Counterspell,
+        ));
+        assert_eq!(after.stack, vec![your_spell(Card::ThassasOracle)]);
+        assert_eq!(after.opponent.graveyard, vec![Card::Counterspell]);
+        // Daze asks for nothing.
+        let after = pass_twice(&countered(veiled(), Card::Brainstorm, Card::Daze));
+        assert_eq!(after.pending, None);
+        assert_eq!(after.stack, vec![your_spell(Card::Brainstorm)]);
+        assert_eq!(after.opponent.graveyard, vec![Card::Daze]);
+        // Mindbreak Trap exiles anyway.
+        let after = pass_twice(&countered(veiled(), Card::Brainstorm, Card::MindbreakTrap));
+        assert!(after.stack.is_empty());
+        assert_eq!(after.you.exile, vec![Card::Brainstorm]);
+        // And counters are not even offered against a veiled player's spells.
+        let mut state = versus(veiled(), opponent_hand(vec![Card::Counterspell]));
+        state.opponent.battlefield = vec![Permanent::untapped(Card::Island); 2];
+        state.stack.push(your_spell(Card::Brainstorm));
+        assert_eq!(
+            Card::Counterspell.target_options(&state, Player::Opponent),
+            Some(Vec::new())
+        );
+        assert_eq!(
+            Card::MindbreakTrap.target_options(&state, Player::Opponent),
+            Some(vec![on_stack(0, Card::Brainstorm)])
+        );
+    }
+
+    #[test]
+    fn veil_gives_hexproof_from_blue_and_black_only() {
+        let mut state = main_phase(PlayerState {
+            veiled: true,
+            battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+            ..PlayerState::default()
+        });
+        let lab_man = your_permanent(Card::LaboratoryManiac);
+        assert_eq!(
+            Card::SnuffOut.target_options(&state, Player::Opponent),
+            Some(Vec::new())
+        );
+        assert_eq!(
+            Card::Pyroblast.target_options(&state, Player::Opponent),
+            Some(vec![lab_man])
+        );
+        assert_eq!(
+            Card::SwordsToPlowshares.target_options(&state, Player::Opponent),
+            Some(vec![lab_man])
+        );
+        // A Snuff Out already on the stack fizzles once Veil has resolved.
+        state.you.veiled = false;
+        state.stack.push(their_spell(Card::SnuffOut, Some(lab_man)));
+        state.stack.push(your_spell(Card::VeilOfSummer));
+        let after = pass_twice(&pass_twice(&state));
+        assert!(after.stack.is_empty());
+        assert_eq!(after.you.battlefield.len(), 1);
+        assert_eq!(after.opponent.graveyard, vec![Card::SnuffOut]);
+        // Your own targeting is unaffected: Teferi's bounce still works.
+    }
+
+    #[test]
+    fn teferi_plus_one_gives_sorceries_flash() {
+        let state = with_ability(
+            main_phase(PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Teferi)],
+                ..PlayerState::default()
+            }),
+            Card::Teferi,
+            AbilityKind::TeferiPlusOne,
+        );
+        let after = pass_twice(&state);
+        assert!(after.you.sorceries_have_flash);
+    }
+
+    #[test]
+    fn teferi_minus_three_bounces_and_draws() {
+        let mut state = versus(
+            PlayerState {
+                battlefield: vec![
+                    Permanent::untapped(Card::Teferi),
+                    Permanent::untapped(Card::LionsEyeDiamond),
+                ],
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                battlefield: vec![
+                    Permanent::untapped(Card::LaboratoryManiac),
+                    Permanent::untapped(Card::Swamp),
+                ],
+                ..PlayerState::default()
+            },
+        );
+        // Options: no target, your LED, their Lab Man (no lands, no Teferi).
+        assert_eq!(
+            Card::Teferi.loyalty_abilities(&state, Player::You),
+            vec![
+                LoyaltyAbility::TeferiPlusOne,
+                LoyaltyAbility::TeferiMinusThree { target: None },
+                LoyaltyAbility::TeferiMinusThree {
+                    target: Some(your_permanent(Card::LionsEyeDiamond)),
+                },
+                LoyaltyAbility::TeferiMinusThree {
+                    target: Some(Target::Permanent {
+                        owner: Player::Opponent,
+                        card: Card::LaboratoryManiac,
+                    }),
+                },
+            ]
+        );
+        state.stack.push(StackItem::Ability {
+            source: Card::Teferi,
+            kind: AbilityKind::TeferiMinusThree {
+                target: Some(your_permanent(Card::LionsEyeDiamond)),
+            },
+            controller: Player::You,
+        });
+        let after = pass_twice(&state);
+        assert_eq!(after.you.hand, vec![Card::LionsEyeDiamond, Card::Island]);
+        assert_eq!(after.you.battlefield.len(), 1);
+        assert!(after.you.library.is_empty());
+        // With no target it just draws; into an empty library with Lab Man
+        // that is the win.
+        let mut state = main_phase(PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::Teferi),
+                Permanent::untapped(Card::LaboratoryManiac),
+            ],
+            ..PlayerState::default()
+        });
+        state.stack.push(StackItem::Ability {
+            source: Card::Teferi,
+            kind: AbilityKind::TeferiMinusThree { target: None },
+            controller: Player::You,
+        });
+        assert_eq!(pass_twice(&state).outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn thoughtseize_and_duress_pick_from_the_opponents_hand() {
+        let hand = vec![
+            Card::Counterspell,
+            Card::Counterspell,
+            Card::ThassasOracle,
+            Card::Island,
+        ];
+        let state = versus(PlayerState::default(), opponent_hand(hand.clone()));
+        let asked = resolve(state, Card::Thoughtseize);
+        assert_eq!(asked.you.life, 18);
+        let pending = asked.pending.expect("your pick");
+        assert_eq!(pending.player, Player::You);
+        assert_eq!(pending.bin, Some(Card::Thoughtseize));
+        assert_eq!(
+            legal_actions(&asked),
+            vec![
+                Action::Choose(Choice::Discard(vec![Card::ThassasOracle])),
+                Action::Choose(Choice::Discard(vec![Card::Counterspell])),
+            ]
+        );
+        let after = apply(
+            &asked,
+            &Action::Choose(Choice::Discard(vec![Card::Counterspell])),
+        )
+        .unwrap();
+        assert_eq!(
+            after.opponent.hand,
+            vec![Card::ThassasOracle, Card::Counterspell, Card::Island]
+        );
+        assert_eq!(after.opponent.graveyard, vec![Card::Counterspell]);
+        assert_eq!(after.you.graveyard, vec![Card::Thoughtseize]);
+        // Duress can't take the creature.
+        let state = versus(PlayerState::default(), opponent_hand(hand));
+        let asked = resolve(state, Card::Duress);
+        assert_eq!(asked.you.life, 20);
+        assert_eq!(
+            legal_actions(&asked),
+            vec![Action::Choose(Choice::Discard(vec![Card::Counterspell]))]
+        );
+        // Nothing to take: no choice, the spell is just binned.
+        let state = versus(
+            PlayerState::default(),
+            opponent_hand(vec![Card::Island, Card::ThassasOracle]),
+        );
+        let after = resolve(state, Card::Duress);
+        assert_eq!(after.pending, None);
+        assert_eq!(after.you.graveyard, vec![Card::Duress]);
+        // Thoughtseize at 2 life is fatal.
+        let state = versus(
+            PlayerState {
+                life: 2,
+                ..PlayerState::default()
+            },
+            opponent_hand(vec![Card::Counterspell]),
+        );
+        let after = resolve(state, Card::Thoughtseize);
+        assert_eq!(after.outcome, Some(Outcome::Loss(LossReason::LifeZero)));
+    }
+
+    #[test]
+    fn evoked_grief_is_sacrificed_but_still_strips_a_card() {
+        let mut state = versus(
+            PlayerState::default(),
+            opponent_hand(vec![Card::ForceOfWill, Card::Island]),
+        );
+        state.stack.push(StackItem::Spell {
+            card: Card::Grief,
+            controller: Player::You,
+            target: None,
+            mode: SpellMode::Evoked,
+        });
+        let entered = pass_twice(&state);
+        assert!(entered.you.battlefield.is_empty());
+        assert_eq!(entered.you.graveyard, vec![Card::Grief]);
+        assert!(matches!(
+            entered.stack.as_slice(),
+            [StackItem::Trigger {
+                kind: TriggerKind::GriefEnters,
+                ..
+            }]
+        ));
+        let asked = pass_twice(&entered);
+        assert_eq!(
+            legal_actions(&asked),
+            vec![Action::Choose(Choice::Discard(vec![Card::ForceOfWill]))]
+        );
+        let after = apply(
+            &asked,
+            &Action::Choose(Choice::Discard(vec![Card::ForceOfWill])),
+        )
+        .unwrap();
+        assert_eq!(after.opponent.hand, vec![Card::Island]);
+        assert_eq!(after.opponent.graveyard, vec![Card::ForceOfWill]);
+        // Hardcast, Grief stays.
+        let mut state = versus(PlayerState::default(), opponent_hand(vec![Card::Island]));
+        state.stack.push(your_spell(Card::Grief));
+        let entered = pass_twice(&state);
+        assert_eq!(
+            entered.you.battlefield,
+            vec![Permanent::entering(Card::Grief, false)]
+        );
+        // Nothing nonland in their hand: the trigger does nothing.
+        let after = pass_twice(&entered);
+        assert_eq!(after.pending, None);
     }
 }

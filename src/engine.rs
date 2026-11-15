@@ -10,7 +10,7 @@ use crate::cards::{
 };
 use crate::mana::{AltCost, Color, ManaPool, Payment};
 use crate::state::{
-    LossReason, Permanent, Phase, Player, PlayerState, StackItem, State, Target, Zone,
+    LossReason, Permanent, Phase, Player, PlayerState, SpellMode, StackItem, State, Target, Zone,
 };
 
 /// A player's answer to a [`crate::state::PendingChoice`].
@@ -185,7 +185,7 @@ fn your_actions(state: &State) -> Vec<Action> {
             out.push(Action::ActivateDoom);
         }
         if sorcery_speed && !perm.loyalty_used {
-            for ability in perm.card.loyalty_abilities() {
+            for ability in perm.card.loyalty_abilities(state, Player::You) {
                 out.push(Action::Loyalty {
                     source: perm.card,
                     ability,
@@ -231,15 +231,27 @@ fn your_actions(state: &State) -> Vec<Action> {
 /// early.
 fn their_actions(state: &State) -> Vec<Action> {
     let mut out = Vec::new();
-    for card in distinct(&state.opponent.hand) {
-        if card.kind() == CardKind::Instant
-            && card.target_options(state, Player::Opponent).is_some()
-        {
-            push_casts(&mut out, state, Player::Opponent, card, Zone::Hand);
+    // Silence stops every spell; your Teferi limits them to sorcery speed,
+    // which never comes on your turn.
+    if !state.opponent.silenced && !controls(state, Player::You, Card::Teferi) {
+        for card in distinct(&state.opponent.hand) {
+            if card.kind() == CardKind::Instant
+                && card.target_options(state, Player::Opponent).is_some()
+            {
+                push_casts(&mut out, state, Player::Opponent, card, Zone::Hand);
+            }
         }
     }
     out.push(Action::Pass);
     out
+}
+
+fn controls(state: &State, player: Player, card: Card) -> bool {
+    state
+        .player(player)
+        .battlefield
+        .iter()
+        .any(|p| p.card == card)
 }
 
 /// Casting or playing `card` from `from`, respecting timing.
@@ -251,14 +263,27 @@ fn push_plays(
     from: Zone,
     sorcery_speed: bool,
 ) {
+    let ps = state.player(player);
+    // Teferi: the other player's instants are sorcery-speed. His +1: the
+    // controller's sorceries have flash.
+    let instant_speed = sorcery_speed || !controls(state, player.other(), Card::Teferi);
     match card.kind() {
         CardKind::Land => {
-            if sorcery_speed && state.player(player).land_drop_available {
+            if sorcery_speed && ps.land_drop_available {
                 out.push(Action::PlayLand { card, from });
             }
         }
-        CardKind::Instant => push_casts(out, state, player, card, from),
-        CardKind::Sorcery | CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
+        CardKind::Instant => {
+            if instant_speed {
+                push_casts(out, state, player, card, from);
+            }
+        }
+        CardKind::Sorcery => {
+            if sorcery_speed || (instant_speed && ps.sorceries_have_flash) {
+                push_casts(out, state, player, card, from);
+            }
+        }
+        CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
             if sorcery_speed {
                 push_casts(out, state, player, card, from);
             }
@@ -296,11 +321,23 @@ fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
         Player::You => vec![ps.mana_pool],
         Player::Opponent => reachable_pools(ps),
     };
+    // Defense Grid: {3} more per Grid for the player whose turn it isn't,
+    // on top of the mana cost or of an alternative cost alike.
+    let tax = match player {
+        Player::You => 0,
+        Player::Opponent => {
+            3 * [&state.you, &state.opponent]
+                .iter()
+                .flat_map(|p| p.battlefield.iter())
+                .filter(|p| p.card == Card::DefenseGrid)
+                .count() as u8
+        }
+    };
     let mut out = Vec::new();
     let mut add = |cost: &crate::mana::ManaCost, replicate: u8| -> bool {
         let mut any = false;
         for pool in &pools {
-            for payment in Payment::options(pool, cost, ps.life) {
+            for payment in Payment::options(pool, &cost.with_generic(tax), ps.life) {
                 let payment = Payment {
                     replicate,
                     ..payment
@@ -325,7 +362,16 @@ fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
             }
         }
     }
-    out.extend(card.alternative_payments(state, player));
+    for alt in card.alternative_payments(state, player) {
+        for pool in &pools {
+            for mana in pool.payments_for(&crate::mana::ManaCost::FREE.with_generic(tax)) {
+                let payment = Payment { mana, ..alt };
+                if !out.contains(&payment) {
+                    out.push(payment);
+                }
+            }
+        }
+    }
     out
 }
 
@@ -653,14 +699,26 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
             card,
             controller,
             target,
-            copy,
+            mode,
         } => match card.kind() {
             CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
                 state.enter_battlefield(controller, card, false);
+                // Evoke: sacrificed as it enters, its enter trigger already
+                // on the stack.
+                if mode == SpellMode::Evoked {
+                    let ps = state.player_mut(controller);
+                    if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
+                        ps.battlefield.remove(idx);
+                        ps.put_in_graveyard(card);
+                    }
+                }
                 Ok(())
             }
             CardKind::Instant | CardKind::Sorcery => {
-                let bin = if copy { None } else { Some(card) };
+                let bin = match mode {
+                    SpellMode::Copy => None,
+                    SpellMode::Normal | SpellMode::Evoked => Some(card),
+                };
                 cards::resolve_spell(state, card, controller, target, bin)
             }
             CardKind::Land => Err(EngineError::Internal("a land can't be on the stack")),
@@ -724,13 +782,20 @@ fn cast(
         None => {}
     }
     ps.spells_cast_this_turn += 1;
+    if card.is_blue() || card.is_black() {
+        ps.cast_blue_or_black_this_turn = true;
+    }
+    let mode = match payment.alt {
+        Some(AltCost::Pitch(_)) if card.evoke_pitch().is_some() => SpellMode::Evoked,
+        _ => SpellMode::Normal,
+    };
     // Storm counts every spell cast before this one this turn, by anyone.
     let storm = state.you.spells_cast_this_turn + state.opponent.spells_cast_this_turn - 1;
     state.stack.push(StackItem::Spell {
         card,
         controller: player,
         target,
-        copy: false,
+        mode,
     });
     let copies = match (card.has_storm(), payment.replicate) {
         (true, _) => storm,
@@ -888,7 +953,7 @@ fn activate_loyalty(
     ability: LoyaltyAbility,
 ) -> Result<(), EngineError> {
     let illegal = || EngineError::IllegalAction(Action::Loyalty { source, ability });
-    if !source.loyalty_abilities().contains(&ability) || !state.stack.is_empty() {
+    if !source.loyalty_abilities(state, player).contains(&ability) || !state.stack.is_empty() {
         return Err(illegal());
     }
     let idx = find_permanent(state, player, source, |p| !p.loyalty_used).ok_or_else(illegal)?;
@@ -1053,6 +1118,13 @@ impl fmt::Display for LoyaltyAbility {
             LoyaltyAbility::JacePlusOne {
                 target: Player::Opponent,
             } => f.write_str("+1 targeting the opponent"),
+            LoyaltyAbility::TeferiPlusOne => f.write_str("+1, sorceries have flash"),
+            LoyaltyAbility::TeferiMinusThree { target: Some(t) } => {
+                write!(f, "-3 returning {t} to hand and drawing")
+            }
+            LoyaltyAbility::TeferiMinusThree { target: None } => {
+                f.write_str("-3 with no target, drawing")
+            }
         }
     }
 }
@@ -1175,7 +1247,7 @@ mod tests {
                 card: Card::Brainstorm,
                 controller: Player::You,
                 target: None,
-                copy: false,
+                mode: SpellMode::Normal,
             }]
         );
         assert!(next.you.hand.is_empty());
@@ -1194,7 +1266,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let after_mine = apply(&state, &Action::Pass).unwrap();
         assert_eq!(after_mine.priority, Player::Opponent);
@@ -1217,7 +1289,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         // Opponent passes first (we fake it by handing them priority).
         state.priority = Player::Opponent;
@@ -1272,7 +1344,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let busy = legal_actions(&state);
         assert!(busy.contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1))));
@@ -1421,7 +1493,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         assert!(
             legal_actions(&state)
@@ -1712,7 +1784,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         assert!(
             !legal_actions(&busy)
@@ -1763,7 +1835,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         assert!(!legal_actions(&busy).contains(&play_land_action(Card::Island)));
     }
@@ -1890,7 +1962,7 @@ mod tests {
             card: Card::Brainstorm,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let action = Action::ActivateLed { color: Color::U };
         assert!(legal_actions(&state).contains(&action));
@@ -2139,7 +2211,7 @@ mod tests {
                     owner: Player::You,
                     card: Card::ThassasOracle
                 }),
-                copy: false,
+                mode: SpellMode::Normal,
             }]
         );
         assert!(matches!(
@@ -2160,7 +2232,7 @@ mod tests {
             card: Card::DarkRitual,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         });
         let cycle = Action::Cycle {
             card: Card::Unearth,
@@ -2393,7 +2465,7 @@ mod tests {
             card,
             controller: Player::You,
             target: None,
-            copy: false,
+            mode: SpellMode::Normal,
         }
     }
 
@@ -2402,7 +2474,7 @@ mod tests {
             card,
             controller: Player::Opponent,
             target,
-            copy: false,
+            mode: SpellMode::Normal,
         }
     }
 
@@ -3238,5 +3310,291 @@ mod tests {
         );
         let next = apply(&quiet, &cast).unwrap();
         assert_eq!(next.stack.len(), 2);
+    }
+
+    // ------------------------------------------------------------ stage 4c
+
+    #[test]
+    fn your_teferi_shuts_the_opponent_out() {
+        let state = facing(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Teferi)],
+                ..PlayerState::default()
+            },
+            opponent_with(
+                vec![Card::Counterspell],
+                vec![Permanent::untapped(Card::Island); 2],
+            ),
+            Card::Brainstorm,
+        );
+        assert_eq!(legal_actions(&state), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn their_teferi_makes_your_instants_sorcery_speed() {
+        let mut state = versus(
+            PlayerState {
+                hand: vec![Card::Brainstorm, Card::StreetWraith],
+                mana_pool: ManaPool::of(Color::U, 1),
+                ..PlayerState::default()
+            },
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Teferi)],
+                ..PlayerState::default()
+            },
+        );
+        // Empty stack: fine.
+        assert!(
+            legal_actions(&state)
+                .contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1)))
+        );
+        // Something on the stack: no Brainstorm, but cycling is an ability.
+        state.stack.push(their_spell(Card::Counterspell, None));
+        let actions = legal_actions(&state);
+        assert!(
+            !actions
+                .iter()
+                .any(|a| matches!(a, Action::CastSpell { .. }))
+        );
+        assert!(actions.iter().any(|a| matches!(a, Action::Cycle { .. })));
+    }
+
+    #[test]
+    fn teferi_plus_one_lets_you_cast_sorceries_in_response() {
+        let mut state = main_phase(PlayerState {
+            hand: vec![Card::Ponder],
+            mana_pool: ManaPool::of(Color::U, 1),
+            sorceries_have_flash: true,
+            ..PlayerState::default()
+        });
+        state.stack.push(their_spell(Card::Counterspell, None));
+        assert!(
+            legal_actions(&state).contains(&cast_action(Card::Ponder, ManaPool::of(Color::U, 1)))
+        );
+        state.you.sorceries_have_flash = false;
+        assert!(
+            !legal_actions(&state).contains(&cast_action(Card::Ponder, ManaPool::of(Color::U, 1)))
+        );
+    }
+
+    #[test]
+    fn teferi_loyalty_actions_are_offered_once_at_sorcery_speed() {
+        let state = main_phase(PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::Teferi),
+                Permanent::untapped(Card::MoxSapphire),
+            ],
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        let minus_three = Action::Loyalty {
+            source: Card::Teferi,
+            ability: LoyaltyAbility::TeferiMinusThree {
+                target: Some(Target::Permanent {
+                    owner: Player::You,
+                    card: Card::MoxSapphire,
+                }),
+            },
+        };
+        assert!(legal_actions(&state).contains(&Action::Loyalty {
+            source: Card::Teferi,
+            ability: LoyaltyAbility::TeferiPlusOne,
+        }));
+        assert!(legal_actions(&state).contains(&minus_three));
+        let next = apply(&state, &minus_three).unwrap();
+        assert_eq!(next.you.battlefield[0].loyalty, 1);
+        assert!(next.you.battlefield[0].loyalty_used);
+        let resolved = pass_twice(&next);
+        assert_eq!(resolved.you.hand, vec![Card::MoxSapphire, Card::Island]);
+        // Below 3 loyalty the −3 is illegal.
+        let mut low = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::Teferi)],
+            ..PlayerState::default()
+        });
+        low.you.battlefield[0].loyalty = 2;
+        assert!(matches!(
+            apply(
+                &low,
+                &Action::Loyalty {
+                    source: Card::Teferi,
+                    ability: LoyaltyAbility::TeferiMinusThree { target: None },
+                }
+            ),
+            Err(EngineError::IllegalAction(_))
+        ));
+    }
+
+    #[test]
+    fn defense_grid_taxes_the_opponents_spells_and_alternative_costs() {
+        let grid = || PlayerState {
+            battlefield: vec![Permanent::untapped(Card::DefenseGrid)],
+            ..PlayerState::default()
+        };
+        let target = on_stack(0, Card::Brainstorm);
+        // Counterspell needs UU + 3.
+        let state = facing(
+            grid(),
+            opponent_with(
+                vec![Card::Counterspell],
+                vec![Permanent::untapped(Card::Island); 2],
+            ),
+            Card::Brainstorm,
+        );
+        assert_eq!(legal_actions(&state), vec![Action::Pass]);
+        let state = facing(
+            grid(),
+            opponent_with(
+                vec![Card::Counterspell],
+                vec![Permanent::untapped(Card::Island); 5],
+            ),
+            Card::Brainstorm,
+        );
+        assert_eq!(
+            legal_actions(&state),
+            vec![
+                their_cast(
+                    Card::Counterspell,
+                    Payment::mana(ManaPool::of(Color::U, 5)),
+                    target
+                ),
+                Action::Pass
+            ]
+        );
+        // Force of Will's pitch still needs {3}; Pact of Negation costs {3}.
+        let state = facing(
+            grid(),
+            opponent_with(
+                vec![Card::ForceOfWill, Card::PactOfNegation, Card::Ponder],
+                vec![Permanent::untapped(Card::Island); 3],
+            ),
+            Card::Brainstorm,
+        );
+        let actions = legal_actions(&state);
+        let taxed_force = their_cast(
+            Card::ForceOfWill,
+            Payment {
+                mana: ManaPool::of(Color::U, 3),
+                alt: Some(AltCost::Pitch(Card::Ponder)),
+                ..Payment::life(1)
+            },
+            target,
+        );
+        let taxed_pact = their_cast(
+            Card::PactOfNegation,
+            Payment::mana(ManaPool::of(Color::U, 3)),
+            target,
+        );
+        assert!(actions.contains(&taxed_force));
+        assert!(actions.contains(&taxed_pact));
+        assert!(!actions.contains(&their_cast(Card::PactOfNegation, Payment::FREE, target)));
+        let next = apply(&state, &taxed_force).unwrap();
+        assert_eq!(
+            next.opponent.battlefield,
+            vec![Permanent::tapped(Card::Island); 3]
+        );
+        assert_eq!(next.opponent.life, 19);
+        // Two Grids (one theirs) cost {6}; your own casts are never taxed.
+        let mut two = facing(
+            grid(),
+            opponent_with(
+                vec![Card::PactOfNegation],
+                vec![Permanent::untapped(Card::Island); 5],
+            ),
+            Card::Brainstorm,
+        );
+        two.opponent
+            .battlefield
+            .push(Permanent::untapped(Card::DefenseGrid));
+        assert_eq!(legal_actions(&two), vec![Action::Pass]);
+        let mine = main_phase(PlayerState {
+            hand: vec![Card::Brainstorm],
+            mana_pool: ManaPool::of(Color::U, 1),
+            ..grid()
+        });
+        assert!(
+            legal_actions(&mine)
+                .contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1)))
+        );
+    }
+
+    #[test]
+    fn grief_evoke_pitches_a_black_card_and_marks_the_spell() {
+        let state = main_phase(PlayerState {
+            hand: vec![
+                Card::Grief,
+                Card::DarkRitual,
+                Card::Brainstorm,
+                Card::Swamp,
+                Card::Grief,
+            ],
+            ..PlayerState::default()
+        });
+        let evoke = |pitched| Action::CastSpell {
+            card: Card::Grief,
+            payment: Payment {
+                alt: Some(AltCost::Pitch(pitched)),
+                ..Payment::FREE
+            },
+            target: None,
+            from: Zone::Hand,
+        };
+        let casts: Vec<Action> = legal_actions(&state)
+            .into_iter()
+            .filter(|a| matches!(a, Action::CastSpell { .. }))
+            .collect();
+        assert_eq!(casts, vec![evoke(Card::Grief), evoke(Card::DarkRitual)]);
+        let next = apply(&state, &evoke(Card::DarkRitual)).unwrap();
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Spell {
+                card: Card::Grief,
+                controller: Player::You,
+                target: None,
+                mode: SpellMode::Evoked,
+            }]
+        );
+        assert_eq!(next.you.exile, vec![Card::DarkRitual]);
+        // Force of Negation and Spell Pierce can't hit the creature spell.
+        let mut theirs = next.clone();
+        theirs.opponent.hand = vec![Card::ForceOfNegation, Card::SpellPierce, Card::Brainstorm];
+        theirs.opponent.battlefield = vec![Permanent::untapped(Card::Island); 3];
+        let theirs = apply(&theirs, &Action::Pass).unwrap();
+        assert_eq!(legal_actions(&theirs), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn casting_a_blue_or_black_spell_is_remembered_for_veil() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Pyroblast, Card::Counterspell],
+                vec![
+                    Permanent::untapped(Card::Mountain),
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::Island),
+                ],
+            ),
+            Card::Brainstorm,
+        );
+        let red = apply(
+            &state,
+            &their_cast(
+                Card::Pyroblast,
+                Payment::mana(ManaPool::of(Color::R, 1)),
+                on_stack(0, Card::Brainstorm),
+            ),
+        )
+        .unwrap();
+        assert!(!red.opponent.cast_blue_or_black_this_turn);
+        let blue = apply(
+            &state,
+            &their_cast(
+                Card::Counterspell,
+                Payment::mana(ManaPool::of(Color::U, 2)),
+                on_stack(0, Card::Brainstorm),
+            ),
+        )
+        .unwrap();
+        assert!(blue.opponent.cast_blue_or_black_this_turn);
     }
 }

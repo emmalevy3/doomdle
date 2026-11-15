@@ -1234,3 +1234,238 @@ fn mindbreak_trap_punishes_the_long_line() {
         }
     )));
 }
+
+// --------------------------------------------------------------- stage 4c
+
+/// Pair 25: Duress strips Counterspell before Oracle; Thoughtseize at 2 life
+/// after Doomsday kills you instead.
+#[test]
+fn duress_clears_the_way_for_oracle() {
+    let one = [Card::Swamp];
+    let counterspell = || opponent(vec![Card::Counterspell], 2);
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::Duress, Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::Discard(cards)) if cards == &[Card::Counterspell]
+    )));
+    // Thoughtseize works the same way with life to spare, and kills you at 4
+    // (2 after Doomsday).
+    assert_wins_vs(
+        puzzle_vs(
+            vec![Card::Thoughtseize, Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    let mut low = puzzle_vs(
+        vec![Card::Thoughtseize, Card::ThassasOracle],
+        lands(),
+        one.to_vec(),
+        counterspell(),
+    );
+    low.you.life = 4;
+    assert_fails(low, &one);
+}
+
+/// Pair 26: Silence before Oracle against Force of Will: they Force the
+/// Silence or can't cast afterwards.
+#[test]
+fn silence_beats_force_of_will() {
+    let one = [Card::Swamp];
+    let force = || opponent(vec![Card::ForceOfWill, Card::Brainstorm], 0);
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::Plains),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    assert_fails(
+        puzzle_vs(vec![Card::ThassasOracle], lands(), one.to_vec(), force()),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::Silence, Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+            force(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Silence,
+            ..
+        }
+    )));
+}
+
+/// Pair 27: Veil of Summer gives Laboratory Maniac hexproof from Snuff Out.
+#[test]
+fn veil_protects_lab_man_from_snuff_out() {
+    let one = [Card::Swamp];
+    let snuff = || PlayerState {
+        battlefield: vec![Permanent::untapped(Card::Swamp)],
+        ..opponent(vec![Card::SnuffOut], 0)
+    };
+    let lands = |forest: bool| {
+        let mut v = islands(4);
+        if forest {
+            v.push(Permanent::untapped(Card::Forest));
+        }
+        v
+    };
+    assert_fails(
+        puzzle_vs(
+            vec![Card::LaboratoryManiac, Card::Brainstorm],
+            lands(false),
+            one.to_vec(),
+            snuff(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::LaboratoryManiac, Card::Brainstorm, Card::VeilOfSummer],
+            lands(true),
+            one.to_vec(),
+            snuff(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::VeilOfSummer,
+            ..
+        }
+    )));
+}
+
+/// Pair 28: Teferi resolves and the opponent can't cast anything afterwards,
+/// or they counter Teferi and Oracle is clear.
+#[test]
+fn teferi_locks_out_the_counterspell() {
+    let one = [Card::Swamp];
+    let counterspell = || opponent(vec![Card::Counterspell], 2);
+    let lands = || {
+        let mut v = islands(4);
+        v.push(Permanent::untapped(Card::Plains));
+        v
+    };
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::Teferi, Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Teferi,
+            ..
+        }
+    )));
+}
+
+/// Pair 29: Defense Grid on your side makes Daze cost {3}, which one Island
+/// can't pay.
+#[test]
+fn defense_grid_turns_off_daze() {
+    let one = [Card::Swamp];
+    let daze = || opponent(vec![Card::Daze], 1);
+    assert_fails(
+        puzzle_vs(vec![Card::ThassasOracle], islands(2), one.to_vec(), daze()),
+        &one,
+    );
+    let mut board = islands(2);
+    board.push(Permanent::untapped(Card::DefenseGrid));
+    let steps = assert_wins_vs(
+        puzzle_vs(vec![Card::ThassasOracle], board, one.to_vec(), daze()),
+        &one,
+    );
+    assert!(!has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Daze,
+            ..
+        }
+    )));
+}
+
+/// Pair 30: Grief evoked for Dark Ritual takes Force of Will, then Oracle
+/// resolves.
+#[test]
+fn evoked_grief_takes_the_force() {
+    let one = [Card::Swamp];
+    let force = || opponent(vec![Card::ForceOfWill, Card::Brainstorm], 0);
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle, Card::DarkRitual],
+            islands(2),
+            one.to_vec(),
+            force(),
+        ),
+        &one,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle, Card::DarkRitual, Card::Grief],
+            islands(2),
+            one.to_vec(),
+            force(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Grief,
+            payment: doomdle::Payment {
+                alt: Some(doomdle::AltCost::Pitch(Card::DarkRitual)),
+                ..
+            },
+            ..
+        }
+    )));
+}
