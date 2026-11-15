@@ -1,10 +1,12 @@
 //! The card pool and every card-specific behavior, as `match` arms.
 //!
-//! Only cards from `CARDS.md` belong here. Stages 1–4a cover Thassa's Oracle,
+//! Only cards from `CARDS.md` belong here. Stages 1–6b cover Thassa's Oracle,
 //! Jace, Doctor Doom, Laboratory Maniac, Doomsday, the blue cantrips, Probe,
 //! Street Wraith, Edge of Autumn, the graveyard package (Unearth, Yawgmoth's
 //! Will, Flow State, Cabal Ritual, Frantic Search), the fast mana, the
-//! basic, dual, fetch and surveil lands, and the counterspells.
+//! basic, dual, fetch and surveil lands, the counterspells and removal, your
+//! protection and discard, the opponent's hate permanents, the draw and mana
+//! spells, and the artifacts with abilities plus the two equipment.
 
 use std::fmt;
 
@@ -14,7 +16,8 @@ use crate::engine::{
 };
 use crate::mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 use crate::state::{
-    ChoiceKind, LossReason, PendingChoice, Player, PlayerState, SpellMode, StackItem, State, Target,
+    ChoiceKind, LossReason, PendingChoice, Permanent, Player, PlayerState, SpellMode, StackItem,
+    State, Target,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -75,6 +78,13 @@ pub enum Card {
     // Mana (stage 6a)
     SolRing,
     Gleemox,
+    // Artifacts with abilities, and equipment (stage 6b)
+    AetherSpellbomb,
+    ChromaticStar,
+    WizardsRockets,
+    MishrasBauble,
+    LightningGreaves,
+    Skateboard,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -159,6 +169,10 @@ pub enum ManaAbility {
     TapColorless(u8),
     /// {T}, sacrifice: add this many mana of any one color.
     Sacrifice(u8),
+    /// Pay mana, {T}, sacrifice: add the same amount back in any colors.
+    /// Chromatic Star filters exactly one mana; Wizard's Rockets (`x`) any
+    /// amount, including none.
+    Filter { x: bool },
     /// Lion's Eye Diamond: discard your hand, sacrifice: add three mana of
     /// one color. Activate only as an instant.
     Led,
@@ -204,6 +218,21 @@ pub enum TriggerKind {
     /// Orcish Bowmasters: the other player drew a card; deal 1 damage to a
     /// target of its controller's choice.
     BowmastersPing,
+    /// Chromatic Star / Wizard's Rockets went to the graveyard: draw a card.
+    DiesDraw,
+    /// Skateboard entered: tap the target permanent.
+    TapPermanent { target: Target },
+}
+
+/// An activated ability a permanent offers right now, with its mana cost.
+/// Other costs (sacrifice, {T}) are implied by the ability and paid by the
+/// engine on activation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ActivatedAbility {
+    pub kind: AbilityKind,
+    pub cost: ManaCost,
+    /// "Activate only as a sorcery" (equip).
+    pub sorcery_speed: bool,
 }
 
 /// An activated ability on the stack, costs already paid.
@@ -222,6 +251,16 @@ pub enum AbilityKind {
     /// Teferi −3: return up to one target artifact, creature or enchantment
     /// to its owner's hand, then draw a card.
     TeferiMinusThree { target: Option<Target> },
+    /// Aether Spellbomb, {U}, sacrifice: return target creature to its
+    /// owner's hand.
+    SpellbombBounce { target: Target },
+    /// Aether Spellbomb, {1}, sacrifice: draw a card.
+    SpellbombDraw,
+    /// Mishra's Bauble, {T}, sacrifice: nothing the engine models (the look
+    /// and the delayed draw are ignored).
+    BaubleLook,
+    /// Equip: attach the source to target creature you control.
+    Equip { target: Target },
 }
 
 /// A loyalty ability a planeswalker can activate.
@@ -300,6 +339,12 @@ impl Card {
             Card::RecklessImpulse => "Reckless Impulse",
             Card::SolRing => "Sol Ring",
             Card::Gleemox => "Gleemox",
+            Card::AetherSpellbomb => "Aether Spellbomb",
+            Card::ChromaticStar => "Chromatic Star",
+            Card::WizardsRockets => "Wizard's Rockets",
+            Card::MishrasBauble => "Mishra's Bauble",
+            Card::LightningGreaves => "Lightning Greaves",
+            Card::Skateboard => "Skateboard",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -402,7 +447,13 @@ impl Card {
             | Card::DefenseGrid
             | Card::GrafdiggersCage
             | Card::SolRing
-            | Card::Gleemox => CardKind::Artifact,
+            | Card::Gleemox
+            | Card::AetherSpellbomb
+            | Card::ChromaticStar
+            | Card::WizardsRockets
+            | Card::MishrasBauble
+            | Card::LightningGreaves
+            | Card::Skateboard => CardKind::Artifact,
             Card::Plains
             | Card::Island
             | Card::Swamp
@@ -480,7 +531,12 @@ impl Card {
             Card::Manamorphose => ManaCost::FREE.with_generic(1).with_hybrid(1),
             Card::Gush => ManaCost::colored(Color::U, 1).with_generic(4),
             Card::RecklessImpulse => ManaCost::colored(Color::R, 1).with_generic(1),
-            Card::SolRing => ManaCost::FREE.with_generic(1),
+            Card::SolRing
+            | Card::AetherSpellbomb
+            | Card::ChromaticStar
+            | Card::WizardsRockets
+            | Card::Skateboard => ManaCost::FREE.with_generic(1),
+            Card::LightningGreaves => ManaCost::FREE.with_generic(2),
             _ => ManaCost::FREE,
         }
     }
@@ -585,26 +641,10 @@ impl Card {
             }
             stack_targets(&|item| matches!(item, StackItem::Spell { card, .. } if pred(*card)))
         };
-        // Distinct cards among `owner`'s permanents or graveyard that pass.
-        // Veil of Summer gives hexproof from blue and from black.
         let permanents_where = |owner: Player, pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
-            if owner != player && hexproof_blocks(state, owner, self) {
-                return Vec::new();
-            }
-            let mut cards: Vec<Card> = state
-                .player(owner)
-                .battlefield
-                .iter()
-                .map(|p| p.card)
-                .filter(|&c| pred(c))
-                .collect();
-            cards.sort();
-            cards.dedup();
-            cards
-                .into_iter()
-                .map(|card| Target::Permanent { owner, card })
-                .collect()
+            permanent_targets(state, player, owner, self, pred)
         };
+        // Distinct cards in `owner`'s graveyard that pass.
         let graveyard_where = |owner: Player, pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
             let mut cards: Vec<Card> = state
                 .player(owner)
@@ -780,9 +820,24 @@ impl Card {
         )
     }
 
-    /// Lands that enter the battlefield tapped.
+    /// Permanents that enter the battlefield tapped.
     pub fn enters_tapped(self) -> bool {
-        matches!(self, Card::UndercitySewers | Card::MeticulousArchive)
+        matches!(
+            self,
+            Card::UndercitySewers | Card::MeticulousArchive | Card::WizardsRockets
+        )
+    }
+
+    pub fn is_equipment(self) -> bool {
+        matches!(self, Card::LightningGreaves | Card::Skateboard)
+    }
+
+    /// "When this is put into a graveyard from the battlefield" triggers.
+    pub fn dies_trigger(self) -> Option<TriggerKind> {
+        match self {
+            Card::ChromaticStar | Card::WizardsRockets => Some(TriggerKind::DiesDraw),
+            _ => None,
+        }
     }
 
     /// Which land types a fetchland can find.
@@ -813,6 +868,8 @@ impl Card {
             Card::LotusPetal => Some(ManaAbility::Sacrifice(1)),
             Card::MoxSapphire | Card::MoxJet | Card::Gleemox => Some(ManaAbility::Tap),
             Card::SolRing => Some(ManaAbility::TapColorless(2)),
+            Card::ChromaticStar => Some(ManaAbility::Filter { x: false }),
+            Card::WizardsRockets => Some(ManaAbility::Filter { x: true }),
             _ if self.kind() == CardKind::Land && !self.land_types().is_empty() => {
                 Some(ManaAbility::Tap)
             }
@@ -869,29 +926,82 @@ impl Card {
                 // "Up to one target artifact, creature, or enchantment",
                 // either player's.
                 for owner in [player, player.other()] {
-                    let mut cards: Vec<Card> = state
-                        .player(owner)
-                        .battlefield
-                        .iter()
-                        .map(|p| p.card)
-                        .filter(|c| {
-                            matches!(
-                                c.kind(),
-                                CardKind::Artifact | CardKind::Creature | CardKind::Enchantment
-                            )
-                        })
-                        .collect();
-                    cards.sort();
-                    cards.dedup();
-                    out.extend(
-                        cards
-                            .into_iter()
-                            .map(|card| LoyaltyAbility::TeferiMinusThree {
-                                target: Some(Target::Permanent { owner, card }),
-                            }),
-                    );
+                    let targets = permanent_targets(state, player, owner, self, &|c| {
+                        matches!(
+                            c.kind(),
+                            CardKind::Artifact | CardKind::Creature | CardKind::Enchantment
+                        )
+                    });
+                    out.extend(targets.into_iter().map(|target| {
+                        LoyaltyAbility::TeferiMinusThree {
+                            target: Some(target),
+                        }
+                    }));
                 }
                 out
+            }
+            _ => Vec::new(),
+        }
+    }
+
+    /// The activated abilities (other than mana, loyalty, cycling and the
+    /// hard-coded fetch and Doom ones) `player` could activate on this
+    /// permanent right now, with their targets.
+    pub fn activated_abilities(self, state: &State, player: Player) -> Vec<ActivatedAbility> {
+        let creature = |c: Card| c.kind() == CardKind::Creature;
+        let ability = |kind, cost, sorcery_speed| ActivatedAbility {
+            kind,
+            cost,
+            sorcery_speed,
+        };
+        match self {
+            Card::AetherSpellbomb => {
+                let mut out = Vec::new();
+                for owner in [player, player.other()] {
+                    for target in permanent_targets(state, player, owner, self, &creature) {
+                        out.push(ability(
+                            AbilityKind::SpellbombBounce { target },
+                            ManaCost::colored(Color::U, 1),
+                            false,
+                        ));
+                    }
+                }
+                out.push(ability(
+                    AbilityKind::SpellbombDraw,
+                    ManaCost::FREE.with_generic(1),
+                    false,
+                ));
+                out
+            }
+            Card::MishrasBauble => vec![ability(AbilityKind::BaubleLook, ManaCost::FREE, false)],
+            Card::LightningGreaves | Card::Skateboard => {
+                let cost = match self {
+                    Card::Skateboard => ManaCost::FREE.with_generic(1),
+                    _ => ManaCost::FREE,
+                };
+                // Your creatures not already wearing this equipment.
+                let wearing = |p: &Permanent| match self {
+                    Card::LightningGreaves => p.greaves,
+                    _ => p.skateboard,
+                };
+                let ps = state.player(player);
+                let mut targets: Vec<Target> =
+                    permanent_targets(state, player, player, self, &creature)
+                        .into_iter()
+                        .filter(|t| {
+                            let Target::Permanent { card, .. } = t else {
+                                return false;
+                            };
+                            ps.battlefield
+                                .iter()
+                                .any(|p| p.card == *card && !p.shroud() && !wearing(p))
+                        })
+                        .collect();
+                targets.sort();
+                targets
+                    .into_iter()
+                    .map(|target| ability(AbilityKind::Equip { target }, cost, true))
+                    .collect()
             }
             _ => Vec::new(),
         }
@@ -920,6 +1030,10 @@ impl fmt::Display for AbilityKind {
             AbilityKind::TeferiPlusOne => f.write_str("+1"),
             AbilityKind::TeferiMinusThree { target: Some(t) } => write!(f, "-3 targeting {t}"),
             AbilityKind::TeferiMinusThree { target: None } => f.write_str("-3 with no target"),
+            AbilityKind::SpellbombBounce { target } => write!(f, "bounce targeting {target}"),
+            AbilityKind::SpellbombDraw => f.write_str("draw"),
+            AbilityKind::BaubleLook => f.write_str("look"),
+            AbilityKind::Equip { target } => write!(f, "equip targeting {target}"),
         }
     }
 }
@@ -963,11 +1077,13 @@ pub(crate) fn resolve_spell(
         Card::SpellPierce | Card::Miscalculation => return tax(state, controller, bin, target, 2),
         // Counter mode on a spell, destroy mode on a permanent.
         Card::Pyroblast | Card::Hydroblast => match target {
-            Some(Target::Permanent { .. }) => remove_permanent(state, card, target, false),
+            Some(Target::Permanent { .. }) => {
+                remove_permanent(state, controller, card, target, false)
+            }
             _ => counter(state, target, false),
         },
-        Card::SwordsToPlowshares => remove_permanent(state, card, target, true),
-        Card::SnuffOut => remove_permanent(state, card, target, false),
+        Card::SwordsToPlowshares => remove_permanent(state, controller, card, target, true),
+        Card::SnuffOut => remove_permanent(state, controller, card, target, false),
         Card::Silence => state.player_mut(controller.other()).silenced = true,
         Card::VeilOfSummer => {
             // "Draw a card if an opponent has cast a blue or black spell this
@@ -1137,24 +1253,80 @@ fn hexproof_blocks(state: &State, owner: Player, spell: Card) -> bool {
     state.player(owner).veiled && (spell.is_blue() || spell.is_black())
 }
 
+/// Whether `source`, used by `player`, may target the permanent `perm` on
+/// `owner`'s battlefield: not with shroud, and not through the other
+/// player's Veil of Summer.
+fn targetable(
+    state: &State,
+    player: Player,
+    owner: Player,
+    source: Card,
+    perm: &Permanent,
+) -> bool {
+    !perm.shroud() && (owner == player || !hexproof_blocks(state, owner, source))
+}
+
+/// The distinct cards among `owner`'s permanents that pass `pred` and that
+/// `source` (a spell or ability `player` controls) may target. A name is
+/// offered when any copy is targetable; effects then hit the first
+/// targetable copy.
+fn permanent_targets(
+    state: &State,
+    player: Player,
+    owner: Player,
+    source: Card,
+    pred: &dyn Fn(Card) -> bool,
+) -> Vec<Target> {
+    let mut cards: Vec<Card> = state
+        .player(owner)
+        .battlefield
+        .iter()
+        .filter(|p| pred(p.card) && targetable(state, player, owner, source, p))
+        .map(|p| p.card)
+        .collect();
+    cards.sort();
+    cards.dedup();
+    cards
+        .into_iter()
+        .map(|card| Target::Permanent { owner, card })
+        .collect()
+}
+
+/// Index of the first permanent `target` points at that `source` (used by
+/// `player`) may still target, if it is still there. A Veil cast in response,
+/// or Greaves equipped in response, makes the target illegal: the effect
+/// does nothing.
+fn find_target(state: &State, player: Player, source: Card, target: Target) -> Option<usize> {
+    let Target::Permanent { owner, card } = target else {
+        return None;
+    };
+    state
+        .player(owner)
+        .battlefield
+        .iter()
+        .position(|p| p.card == card && targetable(state, player, owner, source, p))
+}
+
 /// Destroys (or exiles) the permanent `target` points at, if it is still
-/// there and `spell` may still target it.
-fn remove_permanent(state: &mut State, spell: Card, target: Option<Target>, exile: bool) {
-    let Some(Target::Permanent { owner, card }) = target else {
+/// there and `spell` (cast by `controller`) may still target it.
+fn remove_permanent(
+    state: &mut State,
+    controller: Player,
+    spell: Card,
+    target: Option<Target>,
+    exile: bool,
+) {
+    let Some(target @ Target::Permanent { owner, .. }) = target else {
         return;
     };
-    // A Veil cast in response makes the target illegal: the spell fizzles.
-    if hexproof_blocks(state, owner, spell) {
+    let Some(idx) = find_target(state, controller, spell, target) else {
         return;
-    }
-    let ps = state.player_mut(owner);
-    if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
-        ps.battlefield.remove(idx);
-        if exile {
-            ps.exile.push(card);
-        } else {
-            state.put_in_graveyard(owner, card);
-        }
+    };
+    if exile {
+        let card = state.player_mut(owner).take_permanent(idx);
+        state.player_mut(owner).exile.push(card);
+    } else {
+        state.battlefield_to_graveyard(owner, idx);
     }
 }
 
@@ -1382,8 +1554,27 @@ pub(crate) fn resolve_trigger(
             }
         }
         TriggerKind::GriefEnters => return discard_from(state, controller, None, true),
+        // No legal target (Veil of Summer): the trigger does nothing.
         TriggerKind::BowmastersPing => {
-            return pause(state, controller, None, ChoiceKind::PingTarget);
+            if !ping_targets(state, controller).is_empty() {
+                return pause(state, controller, None, ChoiceKind::PingTarget);
+            }
+        }
+        TriggerKind::DiesDraw => state.draw(controller, 1),
+        // Tap the first untapped copy of the target; nothing if it left or
+        // gained shroud in the meantime.
+        TriggerKind::TapPermanent { target } => {
+            if let Target::Permanent { owner, card } = target {
+                let ps = state.player(owner);
+                let idx = ps.battlefield.iter().position(|p| {
+                    p.card == card
+                        && !p.tapped
+                        && targetable(state, controller, owner, Card::Skateboard, p)
+                });
+                if let Some(idx) = idx {
+                    state.player_mut(owner).battlefield[idx].tapped = true;
+                }
+            }
         }
     }
     Ok(())
@@ -1430,17 +1621,43 @@ pub(crate) fn resolve_ability(
             state.player_mut(controller).sorceries_have_flash = true;
         }
         AbilityKind::TeferiMinusThree { target } => {
-            if let Some(Target::Permanent { owner, card }) = target {
-                let ps = state.player_mut(owner);
-                if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
-                    ps.battlefield.remove(idx);
-                    ps.hand.push(card);
-                }
+            if let Some(target) = target {
+                bounce(state, controller, source, target);
             }
             state.draw(controller, 1);
         }
+        AbilityKind::SpellbombBounce { target } => bounce(state, controller, source, target),
+        AbilityKind::SpellbombDraw => state.draw(controller, 1),
+        AbilityKind::BaubleLook => {}
+        // Attach `source` to the first targetable creature named by the
+        // target, taking it off whatever wore it before.
+        AbilityKind::Equip { target } => {
+            if let Some(idx) = find_target(state, controller, source, target) {
+                let ps = state.player_mut(controller);
+                for (i, p) in ps.battlefield.iter_mut().enumerate() {
+                    match source {
+                        Card::LightningGreaves => p.greaves = i == idx,
+                        Card::Skateboard => p.skateboard = i == idx,
+                        _ => {}
+                    }
+                }
+            }
+        }
     }
     Ok(())
+}
+
+/// Returns the permanent `target` points at to its owner's hand, if `source`
+/// (used by `player`) may still target it.
+fn bounce(state: &mut State, player: Player, source: Card, target: Target) {
+    let Target::Permanent { owner, .. } = target else {
+        return;
+    };
+    if let Some(idx) = find_target(state, player, source, target) {
+        let ps = state.player_mut(owner);
+        let card = ps.take_permanent(idx);
+        ps.hand.push(card);
+    }
 }
 
 /// Every legal answer to a pending choice.
@@ -1573,6 +1790,13 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
                 ping_targets(state, pending.player)
                     .into_iter()
                     .map(Choice::Ping),
+            );
+        }
+        ChoiceKind::TapTarget => {
+            out.extend(
+                tap_targets(state, pending.player)
+                    .into_iter()
+                    .map(Choice::Tap),
             );
         }
         ChoiceKind::AddMana { amount, .. } => {
@@ -1766,17 +1990,25 @@ pub(crate) fn apply_choice(
             }
             match *target {
                 Target::Player(victim) => state.player_mut(victim).life -= 1,
-                Target::Permanent { owner, card } => {
-                    let ps = state.player_mut(owner);
-                    let idx = ps
-                        .battlefield
-                        .iter()
-                        .position(|p| p.card == card)
+                Target::Permanent { owner, .. } => {
+                    let idx = find_target(state, player, Card::OrcishBowmasters, *target)
                         .ok_or_else(illegal)?;
-                    ps.battlefield[idx].damage += 1;
+                    state.player_mut(owner).battlefield[idx].damage += 1;
                 }
                 _ => return Err(illegal()),
             }
+        }
+        // The trigger goes on the stack with its target; it resolves (or is
+        // Stifled) like any other trigger.
+        (ChoiceKind::TapTarget, Choice::Tap(target)) => {
+            if !tap_targets(state, player).contains(target) {
+                return Err(illegal());
+            }
+            state.stack.push(StackItem::Trigger {
+                source: Card::Skateboard,
+                kind: TriggerKind::TapPermanent { target: *target },
+                controller: player,
+            });
         }
         (ChoiceKind::AddMana { amount, then_draw }, Choice::AddMana(mana)) => {
             if mana.total() != amount || mana.get_colorless() != 0 {
@@ -1798,20 +2030,34 @@ pub(crate) fn apply_choice(
 /// or one of their creatures.
 fn ping_targets(state: &State, controller: Player) -> Vec<Target> {
     let victim = controller.other();
-    let mut out = vec![Target::Player(victim)];
-    let mut creatures: Vec<Card> = state
-        .player(victim)
-        .battlefield
-        .iter()
-        .map(|p| p.card)
-        .filter(|c| c.kind() == CardKind::Creature)
-        .collect();
-    creatures.sort();
-    creatures.dedup();
-    out.extend(creatures.into_iter().map(|card| Target::Permanent {
-        owner: victim,
-        card,
-    }));
+    let mut out = Vec::new();
+    // Veil of Summer: the player has hexproof from black too.
+    if !hexproof_blocks(state, victim, Card::OrcishBowmasters) {
+        out.push(Target::Player(victim));
+    }
+    out.extend(permanent_targets(
+        state,
+        controller,
+        victim,
+        Card::OrcishBowmasters,
+        &|c| c.kind() == CardKind::Creature,
+    ));
+    out
+}
+
+/// Where Skateboard's enter trigger may aim: any permanent of either player,
+/// Skateboard itself included (the way to waste the tap).
+fn tap_targets(state: &State, controller: Player) -> Vec<Target> {
+    let mut out = Vec::new();
+    for owner in [controller, controller.other()] {
+        out.extend(permanent_targets(
+            state,
+            controller,
+            owner,
+            Card::Skateboard,
+            &|_| true,
+        ));
+    }
     out
 }
 
@@ -4717,5 +4963,550 @@ mod tests {
             resolve(scrambled, Card::RecklessImpulse).outcome,
             Some(Outcome::Loss(LossReason::LibraryUnordered))
         );
+    }
+
+    // ------------------------------------------------------------ stage 6b
+
+    fn their_permanent(card: Card) -> Target {
+        Target::Permanent {
+            owner: Player::Opponent,
+            card,
+        }
+    }
+
+    fn activate(source: Card, kind: AbilityKind, mana: ManaPool) -> Action {
+        Action::Activate { source, kind, mana }
+    }
+
+    fn equip(equipment: Card, creature: Card, mana: ManaPool) -> Action {
+        activate(
+            equipment,
+            AbilityKind::Equip {
+                target: your_permanent(creature),
+            },
+            mana,
+        )
+    }
+
+    fn flag(state: &State, card: Card) -> &Permanent {
+        state
+            .you
+            .battlefield
+            .iter()
+            .find(|p| p.card == card)
+            .expect("permanent is there")
+    }
+
+    #[test]
+    fn artifact_data_6b() {
+        for card in [
+            Card::AetherSpellbomb,
+            Card::ChromaticStar,
+            Card::WizardsRockets,
+            Card::MishrasBauble,
+            Card::LightningGreaves,
+            Card::Skateboard,
+        ] {
+            assert_eq!(card.kind(), CardKind::Artifact);
+            assert!(card.is_colorless());
+        }
+        assert_eq!(Card::AetherSpellbomb.mana_cost().mana_value(), 1);
+        assert_eq!(Card::ChromaticStar.mana_cost().mana_value(), 1);
+        assert_eq!(Card::WizardsRockets.mana_cost().mana_value(), 1);
+        assert_eq!(Card::MishrasBauble.mana_cost(), ManaCost::FREE);
+        assert_eq!(Card::LightningGreaves.mana_cost().mana_value(), 2);
+        assert_eq!(Card::Skateboard.mana_cost().mana_value(), 1);
+        assert!(Card::LightningGreaves.is_equipment());
+        assert!(Card::Skateboard.is_equipment());
+        assert!(!Card::AetherSpellbomb.is_equipment());
+        assert!(Card::WizardsRockets.enters_tapped());
+        assert!(!Card::ChromaticStar.enters_tapped());
+        assert_eq!(
+            Card::ChromaticStar.dies_trigger(),
+            Some(TriggerKind::DiesDraw)
+        );
+        assert_eq!(
+            Card::WizardsRockets.dies_trigger(),
+            Some(TriggerKind::DiesDraw)
+        );
+        assert_eq!(Card::MishrasBauble.dies_trigger(), None);
+        assert_eq!(
+            Card::ChromaticStar.mana_ability(),
+            Some(ManaAbility::Filter { x: false })
+        );
+        assert_eq!(
+            Card::WizardsRockets.mana_ability(),
+            Some(ManaAbility::Filter { x: true })
+        );
+        assert_eq!(Card::AetherSpellbomb.mana_ability(), None);
+    }
+
+    #[test]
+    fn aether_spellbomb_bounces_a_creature_or_draws() {
+        let state = versus(
+            PlayerState {
+                library: vec![Card::Swamp],
+                mana_pool: ManaPool::of(Color::U, 1).with(Color::B, 1),
+                battlefield: vec![
+                    Permanent::untapped(Card::AetherSpellbomb),
+                    Permanent::untapped(Card::ThassasOracle),
+                ],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Thalia)],
+                ..PlayerState::default()
+            },
+        );
+        let bounce = |target, mana| {
+            activate(
+                Card::AetherSpellbomb,
+                AbilityKind::SpellbombBounce { target },
+                mana,
+            )
+        };
+        let draw = |mana| activate(Card::AetherSpellbomb, AbilityKind::SpellbombDraw, mana);
+        let blue = ManaPool::of(Color::U, 1);
+        let black = ManaPool::of(Color::B, 1);
+        let actions = legal_actions(&state);
+        // Either player's creature, for {U} only; the draw for any one mana.
+        assert!(actions.contains(&bounce(their_permanent(Card::Thalia), blue)));
+        assert!(actions.contains(&bounce(your_permanent(Card::ThassasOracle), blue)));
+        assert!(!actions.contains(&bounce(their_permanent(Card::Thalia), black)));
+        assert!(actions.contains(&draw(blue)));
+        assert!(actions.contains(&draw(black)));
+
+        let next = apply(&state, &bounce(their_permanent(Card::Thalia), blue)).unwrap();
+        assert_eq!(next.you.graveyard, vec![Card::AetherSpellbomb]);
+        assert_eq!(next.you.mana_pool, black);
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Ability {
+                source: Card::AetherSpellbomb,
+                kind: AbilityKind::SpellbombBounce {
+                    target: their_permanent(Card::Thalia)
+                },
+                controller: Player::You,
+            }]
+        );
+        assert_eq!(
+            next.stack[0].to_string(),
+            "Aether Spellbomb bounce targeting Thalia, Guardian of Thraben (You)"
+        );
+        let resolved = pass_twice(&next);
+        assert!(resolved.opponent.battlefield.is_empty());
+        assert_eq!(resolved.opponent.hand, vec![Card::Thalia]);
+
+        let drawn = pass_twice(&apply(&state, &draw(black)).unwrap());
+        assert_eq!(drawn.you.hand, vec![Card::Swamp]);
+        assert_eq!(drawn.you.mana_pool, blue);
+
+        // A target that has left the battlefield: nothing happens.
+        let gone = with_ability(
+            main_phase(PlayerState::default()),
+            Card::AetherSpellbomb,
+            AbilityKind::SpellbombBounce {
+                target: your_permanent(Card::ThassasOracle),
+            },
+        );
+        assert!(pass_twice(&gone).you.hand.is_empty());
+    }
+
+    #[test]
+    fn chromatic_star_filters_one_mana_and_cantrips() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Swamp],
+            mana_pool: ManaPool::colorless(1),
+            battlefield: vec![Permanent::untapped(Card::ChromaticStar)],
+            ..PlayerState::default()
+        });
+        let crack = |color| Action::FilterMana {
+            source: Card::ChromaticStar,
+            pay: ManaPool::colorless(1),
+            add: ManaPool::of(color, 1),
+        };
+        let is_crack = |a: &Action| matches!(a, Action::FilterMana { .. });
+        let actions = legal_actions(&state);
+        for color in Color::ALL {
+            assert!(actions.contains(&crack(color)));
+        }
+        assert_eq!(actions.iter().filter(|a| is_crack(a)).count(), 5);
+        assert_eq!(
+            crack(Color::U).to_string(),
+            "Crack Chromatic Star turning C into U"
+        );
+
+        let next = apply(&state, &crack(Color::U)).unwrap();
+        assert_eq!(next.you.mana_pool, ManaPool::of(Color::U, 1));
+        assert_eq!(next.you.graveyard, vec![Card::ChromaticStar]);
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Trigger {
+                source: Card::ChromaticStar,
+                kind: TriggerKind::DiesDraw,
+                controller: Player::You,
+            }]
+        );
+        assert_eq!(pass_twice(&next).you.hand, vec![Card::Swamp]);
+
+        // No mana to pay, or already tapped: no activation.
+        let broke = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::ChromaticStar)],
+            ..PlayerState::default()
+        });
+        assert!(!legal_actions(&broke).iter().any(is_crack));
+        let mut tapped = state.clone();
+        tapped.you.battlefield[0].tapped = true;
+        assert!(!legal_actions(&tapped).iter().any(is_crack));
+
+        // Exiled instead of binned (Yawgmoth's Will, the opponent's Leyline):
+        // it never reached the graveyard, so no draw.
+        let mut willed = state.clone();
+        willed.you.yawgmoths_will = true;
+        let next = apply(&willed, &crack(Color::U)).unwrap();
+        assert_eq!(next.you.exile, vec![Card::ChromaticStar]);
+        assert!(next.stack.is_empty());
+        let mut leylined = state.clone();
+        leylined
+            .opponent
+            .battlefield
+            .push(Permanent::untapped(Card::LeylineOfTheVoid));
+        let next = apply(&leylined, &crack(Color::U)).unwrap();
+        assert_eq!(next.you.exile, vec![Card::ChromaticStar]);
+        assert!(next.stack.is_empty());
+    }
+
+    #[test]
+    fn wizards_rockets_pays_x_and_cantrips_but_enters_tapped() {
+        let pool = ManaPool::of(Color::U, 1).with(Color::B, 1);
+        let state = main_phase(PlayerState {
+            library: vec![Card::Swamp],
+            mana_pool: pool,
+            battlefield: vec![Permanent::untapped(Card::WizardsRockets)],
+            ..PlayerState::default()
+        });
+        let crack = |pay, add| Action::FilterMana {
+            source: Card::WizardsRockets,
+            pay,
+            add,
+        };
+        let is_crack = |a: &Action| matches!(a, Action::FilterMana { .. });
+        let free = crack(ManaPool::EMPTY, ManaPool::EMPTY);
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&free));
+        assert!(actions.contains(&crack(ManaPool::of(Color::U, 1), ManaPool::of(Color::R, 1))));
+        assert!(actions.contains(&crack(pool, ManaPool::of(Color::R, 2))));
+        // X in and X out, never colorless out.
+        assert!(!actions.contains(&crack(ManaPool::of(Color::U, 1), ManaPool::of(Color::R, 2))));
+        assert!(!actions.contains(&crack(ManaPool::of(Color::U, 1), ManaPool::colorless(1))));
+        // 1 (X=0) + 2 ways × 5 colors (X=1) + 1 way × 15 pairs (X=2).
+        assert_eq!(actions.iter().filter(|a| is_crack(a)).count(), 26);
+        assert_eq!(free.to_string(), "Crack Wizard's Rockets for X=0");
+
+        let next = apply(&state, &free).unwrap();
+        assert_eq!(next.you.mana_pool, pool);
+        assert_eq!(next.you.graveyard, vec![Card::WizardsRockets]);
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Trigger {
+                source: Card::WizardsRockets,
+                kind: TriggerKind::DiesDraw,
+                controller: Player::You,
+            }]
+        );
+        assert_eq!(pass_twice(&next).you.hand, vec![Card::Swamp]);
+        let recolored = apply(&state, &crack(pool, ManaPool::of(Color::R, 2))).unwrap();
+        assert_eq!(recolored.you.mana_pool, ManaPool::of(Color::R, 2));
+
+        // Cast this turn, it enters tapped and can't be cracked.
+        let cast = resolve(
+            main_phase(PlayerState {
+                mana_pool: pool,
+                ..PlayerState::default()
+            }),
+            Card::WizardsRockets,
+        );
+        assert!(cast.you.battlefield[0].tapped);
+        assert!(!legal_actions(&cast).iter().any(is_crack));
+    }
+
+    #[test]
+    fn mishras_bauble_is_a_free_sacrifice_that_does_nothing() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Swamp],
+            battlefield: vec![Permanent::untapped(Card::MishrasBauble)],
+            ..PlayerState::default()
+        });
+        let look = activate(
+            Card::MishrasBauble,
+            AbilityKind::BaubleLook,
+            ManaPool::EMPTY,
+        );
+        assert!(legal_actions(&state).contains(&look));
+        assert_eq!(look.to_string(), "Mishra's Bauble: look");
+        let next = apply(&state, &look).unwrap();
+        assert_eq!(next.you.graveyard, vec![Card::MishrasBauble]);
+        assert_eq!(next.stack.len(), 1);
+        let resolved = pass_twice(&next);
+        assert!(resolved.you.hand.is_empty());
+        assert_eq!(resolved.you.library, vec![Card::Swamp]);
+        assert_eq!(resolved.you.cards_drawn_this_turn, 0);
+        // {T} is part of the cost: a tapped Bauble can't be activated.
+        let tapped = main_phase(PlayerState {
+            battlefield: vec![Permanent::tapped(Card::MishrasBauble)],
+            ..PlayerState::default()
+        });
+        assert!(!legal_actions(&tapped).contains(&look));
+    }
+
+    #[test]
+    fn lightning_greaves_gives_haste_and_shroud() {
+        let state = versus(
+            PlayerState {
+                library: vec![Card::Swamp],
+                mana_pool: ManaPool::of(Color::U, 1),
+                battlefield: vec![
+                    Permanent::entering(Card::DoctorDoom, false),
+                    Permanent::untapped(Card::LightningGreaves),
+                    Permanent::untapped(Card::AetherSpellbomb),
+                ],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                hand: vec![Card::SwordsToPlowshares],
+                battlefield: vec![
+                    Permanent::untapped(Card::Plains),
+                    Permanent::untapped(Card::OrcishBowmasters),
+                ],
+                ..PlayerState::default()
+            },
+        );
+        // Summoning sick: no tap ability yet. Equip is free.
+        assert!(!legal_actions(&state).contains(&Action::ActivateDoom));
+        let equip_doom = equip(Card::LightningGreaves, Card::DoctorDoom, ManaPool::EMPTY);
+        assert!(legal_actions(&state).contains(&equip_doom));
+        assert_eq!(
+            Card::SwordsToPlowshares.target_options(&state, Player::Opponent),
+            Some(vec![your_permanent(Card::DoctorDoom)])
+        );
+        assert_eq!(
+            ping_targets(&state, Player::Opponent),
+            vec![
+                Target::Player(Player::You),
+                your_permanent(Card::DoctorDoom)
+            ]
+        );
+
+        let next = apply(&state, &equip_doom).unwrap();
+        assert_eq!(
+            next.stack,
+            vec![StackItem::Ability {
+                source: Card::LightningGreaves,
+                kind: AbilityKind::Equip {
+                    target: your_permanent(Card::DoctorDoom)
+                },
+                controller: Player::You,
+            }]
+        );
+        let equipped = pass_twice(&next);
+        let doom = flag(&equipped, Card::DoctorDoom);
+        assert!(doom.greaves && doom.has_haste() && doom.shroud());
+        assert!(doom.summoning_sick);
+        assert!(
+            doom.to_string()
+                .contains("(summoning sick) (equipped: Lightning Greaves)")
+        );
+        let actions = legal_actions(&equipped);
+        assert!(actions.contains(&Action::ActivateDoom));
+        // Not offered again on the creature already wearing it.
+        assert!(!actions.contains(&equip_doom));
+        // Shroud: nobody targets Doom, not even your own Spellbomb.
+        assert_eq!(
+            Card::SwordsToPlowshares.target_options(&equipped, Player::Opponent),
+            Some(vec![])
+        );
+        assert_eq!(
+            ping_targets(&equipped, Player::Opponent),
+            vec![Target::Player(Player::You)]
+        );
+        let bounce = |target| {
+            activate(
+                Card::AetherSpellbomb,
+                AbilityKind::SpellbombBounce { target },
+                ManaPool::of(Color::U, 1),
+            )
+        };
+        assert!(!actions.contains(&bounce(your_permanent(Card::DoctorDoom))));
+        assert!(actions.contains(&bounce(their_permanent(Card::OrcishBowmasters))));
+
+        // A Swords already aimed at Doom fizzles once Greaves is on.
+        let mut responded = equipped.clone();
+        responded.stack.push(their_spell(
+            Card::SwordsToPlowshares,
+            Some(your_permanent(Card::DoctorDoom)),
+        ));
+        let after = pass_twice(&responded);
+        assert!(
+            after
+                .you
+                .battlefield
+                .iter()
+                .any(|p| p.card == Card::DoctorDoom)
+        );
+        assert_eq!(after.opponent.graveyard, vec![Card::SwordsToPlowshares]);
+
+        // Doom's ability works the turn he was cast.
+        let drew = pass_twice(&apply(&equipped, &Action::ActivateDoom).unwrap());
+        assert_eq!(drew.outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn equipment_moves_between_creatures_and_comes_off_when_bounced() {
+        let mut doom = Permanent::untapped(Card::DoctorDoom);
+        doom.greaves = true;
+        let state = main_phase(PlayerState {
+            library: vec![Card::Swamp, Card::Swamp],
+            battlefield: vec![
+                doom,
+                Permanent::untapped(Card::ThassasOracle),
+                Permanent::untapped(Card::LightningGreaves),
+                Permanent::untapped(Card::Teferi),
+            ],
+            ..PlayerState::default()
+        });
+        let equip_oracle = equip(Card::LightningGreaves, Card::ThassasOracle, ManaPool::EMPTY);
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&equip_oracle));
+        assert!(!actions.contains(&equip(
+            Card::LightningGreaves,
+            Card::DoctorDoom,
+            ManaPool::EMPTY
+        )));
+        let moved = pass_twice(&apply(&state, &equip_oracle).unwrap());
+        assert!(!flag(&moved, Card::DoctorDoom).greaves);
+        assert!(flag(&moved, Card::ThassasOracle).greaves);
+
+        // Teferi's −3 can't target the shrouded wearer, but can bounce the
+        // Greaves themselves, which takes them off.
+        let minus_three = |card| Action::Loyalty {
+            source: Card::Teferi,
+            ability: LoyaltyAbility::TeferiMinusThree {
+                target: Some(your_permanent(card)),
+            },
+        };
+        let actions = legal_actions(&moved);
+        assert!(!actions.contains(&minus_three(Card::ThassasOracle)));
+        assert!(actions.contains(&minus_three(Card::DoctorDoom)));
+        assert!(actions.contains(&minus_three(Card::LightningGreaves)));
+        let off = pass_twice(&apply(&moved, &minus_three(Card::LightningGreaves)).unwrap());
+        assert!(!flag(&off, Card::ThassasOracle).greaves);
+        assert_eq!(off.you.hand, vec![Card::LightningGreaves, Card::Swamp]);
+    }
+
+    #[test]
+    fn skateboard_taps_a_chosen_permanent_and_equips_for_one() {
+        let mut shrouded = Permanent::untapped(Card::DoctorDoom);
+        shrouded.greaves = true;
+        let state = versus(
+            PlayerState {
+                mana_pool: ManaPool::colorless(1),
+                battlefield: vec![
+                    shrouded,
+                    Permanent::entering(Card::ThassasOracle, false),
+                    Permanent::untapped(Card::Island),
+                ],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                hand: vec![Card::Stifle],
+                battlefield: vec![
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::Island),
+                ],
+                ..PlayerState::default()
+            },
+        );
+        let entered = resolve(state, Card::Skateboard);
+        assert_eq!(entered.pending.map(|p| p.kind), Some(ChoiceKind::TapTarget));
+        let tap = |owner, card| Action::Choose(Choice::Tap(Target::Permanent { owner, card }));
+        // Any permanent of either player, Skateboard itself included, except
+        // the shrouded Doom.
+        assert_eq!(
+            legal_actions(&entered),
+            vec![
+                tap(Player::You, Card::ThassasOracle),
+                tap(Player::You, Card::Skateboard),
+                tap(Player::You, Card::Island),
+                tap(Player::Opponent, Card::Island),
+            ]
+        );
+        let chosen = apply(&entered, &tap(Player::Opponent, Card::Island)).unwrap();
+        assert_eq!(
+            chosen.stack,
+            vec![StackItem::Trigger {
+                source: Card::Skateboard,
+                kind: TriggerKind::TapPermanent {
+                    target: their_permanent(Card::Island)
+                },
+                controller: Player::You,
+            }]
+        );
+        // The trigger is on the stack, so Stifle can hit it.
+        assert_eq!(
+            Card::Stifle.target_options(&chosen, Player::Opponent),
+            Some(vec![on_stack(0, Card::Skateboard)])
+        );
+        let tapped = pass_twice(&chosen);
+        assert_eq!(
+            tapped
+                .opponent
+                .battlefield
+                .iter()
+                .filter(|p| p.tapped)
+                .count(),
+            1
+        );
+
+        // Equip costs {1}: haste, no shroud.
+        let equip_oracle = equip(
+            Card::Skateboard,
+            Card::ThassasOracle,
+            ManaPool::colorless(1),
+        );
+        let actions = legal_actions(&tapped);
+        assert!(actions.contains(&equip_oracle));
+        assert!(!actions.contains(&equip(
+            Card::Skateboard,
+            Card::ThassasOracle,
+            ManaPool::EMPTY
+        )));
+        assert!(!actions.contains(&equip(
+            Card::Skateboard,
+            Card::DoctorDoom,
+            ManaPool::colorless(1)
+        )));
+        let equipped = pass_twice(&apply(&tapped, &equip_oracle).unwrap());
+        let oracle = flag(&equipped, Card::ThassasOracle);
+        assert!(oracle.skateboard && oracle.has_haste() && !oracle.shroud());
+        assert!(equipped.you.mana_pool.is_empty());
+    }
+
+    #[test]
+    fn veil_of_summer_leaves_bowmasters_nothing_to_ping() {
+        let state = against(
+            PlayerState {
+                library: vec![Card::Island],
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                veiled: true,
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters],
+        );
+        let after = resolve(state, Card::GitaxianProbe);
+        assert_eq!(after.stack.len(), 1);
+        let done = pass_twice(&after);
+        assert!(done.pending.is_none());
+        assert_eq!(done.you.life, 20);
+        assert_eq!(done.you.battlefield[0].damage, 0);
     }
 }

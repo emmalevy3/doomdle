@@ -1947,3 +1947,197 @@ fn sol_ring_pays_generic_only() {
         &one,
     );
 }
+
+// --------------------------------------------------------------- stage 6b
+
+/// Pair 43: Chromatic Star turns Sol Ring's colorless into the second {U}
+/// for Oracle.
+#[test]
+fn chromatic_star_fixes_sol_rings_colorless() {
+    let one = [Card::Swamp];
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::SolRing),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    let mut with_star = lands();
+    with_star.push(Permanent::untapped(Card::ChromaticStar));
+    let steps = assert_wins(
+        puzzle(vec![Card::ThassasOracle], with_star, one.to_vec()),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::FilterMana {
+            source: Card::ChromaticStar,
+            ..
+        }
+    )));
+    assert_fails(
+        puzzle(vec![Card::ThassasOracle], lands(), one.to_vec()),
+        &one,
+    );
+}
+
+/// Pair 44: Wizard's Rockets already on the battlefield is a free draw that
+/// shrinks the library to Oracle's devotion; cast this turn it enters tapped.
+#[test]
+fn wizards_rockets_must_start_on_the_battlefield() {
+    let three = [Card::Swamp, Card::Plains, Card::Mountain];
+    let mut with_rockets = islands(3);
+    with_rockets.push(Permanent::untapped(Card::WizardsRockets));
+    let steps = assert_wins(
+        puzzle(vec![Card::ThassasOracle], with_rockets, three.to_vec()),
+        &three,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::FilterMana {
+            source: Card::WizardsRockets,
+            pay,
+            ..
+        } if pay.is_empty()
+    )));
+    assert_fails(
+        puzzle(
+            vec![Card::ThassasOracle, Card::WizardsRockets],
+            islands(3),
+            three.to_vec(),
+        ),
+        &three,
+    );
+}
+
+/// Pair 45: Lightning Greaves lets Doctor Doom tap the turn he is cast.
+#[test]
+fn greaves_gives_doom_haste() {
+    let one = [Card::Island];
+    let swamps = |n| vec![Permanent::untapped(Card::Swamp); n];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::DoctorDoom, Card::LightningGreaves],
+            swamps(6),
+            one.to_vec(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Activate {
+            source: Card::LightningGreaves,
+            ..
+        }
+    )));
+    assert!(has_action(&steps, |a| matches!(a, Action::ActivateDoom)));
+    assert_fails(
+        puzzle(
+            vec![Card::DoctorDoom, Card::LightningGreaves],
+            swamps(5),
+            one.to_vec(),
+        ),
+        &one,
+    );
+}
+
+/// Pair 46: Skateboard's enter trigger taps one of the opponent's two
+/// Islands, so Counterspell can't be cast on Oracle; if they counter the
+/// Skateboard instead, Oracle resolves anyway. Greaves taps nothing.
+#[test]
+fn skateboard_taps_the_opponents_mana() {
+    let one = [Card::Swamp];
+    let counterspell = || opponent(vec![Card::Counterspell], 2);
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::Skateboard, Card::ThassasOracle],
+            islands(4),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::Tap(Target::Permanent {
+            owner: Player::Opponent,
+            card: Card::Island,
+        }))
+    )));
+    assert_fails(
+        puzzle_vs(
+            vec![Card::LightningGreaves, Card::ThassasOracle],
+            islands(4),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+}
+
+/// Pair 47: Mishra's Bauble is the seventh card in the graveyard for Cabal
+/// Ritual's threshold; without it the ritual makes three and the mana is
+/// two short of Greaves plus Doom.
+#[test]
+fn bauble_fills_the_graveyard_for_threshold() {
+    let four = [Card::Island, Card::Plains, Card::Mountain, Card::Forest];
+    let hand = vec![
+        Card::LotusPetal,
+        Card::GitaxianProbe,
+        Card::StreetWraith,
+        Card::EdgeOfAutumn,
+        Card::CabalRitual,
+        Card::DoctorDoom,
+        Card::LightningGreaves,
+    ];
+    let swamps = || vec![Permanent::untapped(Card::Swamp); 2];
+    let no_land_drop = |hand: Vec<Card>| {
+        let mut p = puzzle(hand, swamps(), four.to_vec());
+        p.you.land_drop_available = false;
+        p
+    };
+    let mut with_bauble = hand.clone();
+    with_bauble.push(Card::MishrasBauble);
+    let steps = assert_wins(no_land_drop(with_bauble), &four);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Activate {
+            source: Card::MishrasBauble,
+            ..
+        }
+    )));
+    assert_fails(no_land_drop(hand), &four);
+}
+
+/// Pair 48: Aether Spellbomb bounces Oracle in response to Swords to
+/// Plowshares, and the recast wins; a mana short, the recast is impossible.
+/// (With one card in the pile, the solver preferred Spellbomb's draw mode:
+/// an empty library wins even after Swords. Two cards force the bounce.)
+#[test]
+fn spellbomb_saves_oracle_from_swords() {
+    let one = [Card::Swamp, Card::Plains];
+    let swords = || PlayerState {
+        hand: vec![Card::SwordsToPlowshares],
+        battlefield: vec![Permanent::untapped(Card::Plains)],
+        ..PlayerState::default()
+    };
+    let board = |n| {
+        let mut v = islands(n);
+        v.push(Permanent::untapped(Card::AetherSpellbomb));
+        v
+    };
+    let steps = assert_wins_vs(
+        puzzle_vs(vec![Card::ThassasOracle], board(5), one.to_vec(), swords()),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Activate {
+            kind: doomdle::AbilityKind::SpellbombBounce { .. },
+            ..
+        }
+    )));
+    assert_fails(
+        puzzle_vs(vec![Card::ThassasOracle], board(4), one.to_vec(), swords()),
+        &one,
+    );
+}

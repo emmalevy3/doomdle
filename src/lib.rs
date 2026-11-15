@@ -11,8 +11,8 @@ pub mod solver;
 pub mod state;
 
 pub use cards::{
-    AbilityKind, Card, CardKind, CyclingCost, LandFilter, LandType, LoyaltyAbility, ManaAbility,
-    TriggerKind,
+    AbilityKind, ActivatedAbility, Card, CardKind, CyclingCost, LandFilter, LandType,
+    LoyaltyAbility, ManaAbility, TriggerKind,
 };
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
 pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};

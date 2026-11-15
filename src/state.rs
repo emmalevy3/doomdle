@@ -48,7 +48,9 @@ pub enum Target {
 
 /// A card on the battlefield. Which player controls it is given by which
 /// battlefield it sits on. `loyalty` and `loyalty_used` are only meaningful
-/// for planeswalkers and stay 0/false otherwise; `damage` only for creatures.
+/// for planeswalkers and stay 0/false otherwise; `damage`, `greaves` and
+/// `skateboard` only for creatures. Equipment is recorded on the creature
+/// wearing it, so two creatures with the same name can differ.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Permanent {
     pub card: Card,
@@ -57,6 +59,10 @@ pub struct Permanent {
     pub loyalty: u8,
     pub loyalty_used: bool,
     pub damage: u8,
+    /// Equipped with Lightning Greaves: haste and shroud.
+    pub greaves: bool,
+    /// Equipped with Skateboard: haste.
+    pub skateboard: bool,
 }
 
 impl Permanent {
@@ -70,7 +76,24 @@ impl Permanent {
             loyalty: card.starting_loyalty(),
             loyalty_used: false,
             damage: 0,
+            greaves: false,
+            skateboard: false,
         }
+    }
+
+    pub fn has_haste(&self) -> bool {
+        self.greaves || self.skateboard
+    }
+
+    /// Shroud: can't be the target of spells or abilities, anyone's.
+    pub fn shroud(&self) -> bool {
+        self.greaves
+    }
+
+    /// Whether a {T} ability can be activated: untapped, and either not
+    /// summoning sick or hasty.
+    pub fn can_tap_for_ability(&self) -> bool {
+        !self.tapped && (!self.summoning_sick || self.has_haste())
     }
 
     pub fn tapped(card: Card) -> Permanent {
@@ -190,6 +213,8 @@ pub enum ChoiceKind {
     /// Orcish Bowmasters: its controller picks who takes the 1 damage, the
     /// other player or one of their creatures.
     PingTarget,
+    /// Skateboard has entered: pick the permanent its trigger will tap.
+    TapTarget,
     /// Manamorphose: add `amount` mana in any combination of colors, then
     /// draw `then_draw` cards.
     AddMana { amount: u8, then_draw: u8 },
@@ -354,6 +379,22 @@ impl PlayerState {
         self.graveyard.iter().any(|c| c.kind() == kind)
     }
 
+    /// The one way a permanent leaves the battlefield. Equipment that leaves
+    /// comes off whatever it was attached to; a creature that leaves takes
+    /// its equipment flags with it (the equipment stays, unattached).
+    pub(crate) fn take_permanent(&mut self, idx: usize) -> Card {
+        let card = self.battlefield.remove(idx).card;
+        match card {
+            Card::LightningGreaves => self.battlefield.iter_mut().for_each(|p| p.greaves = false),
+            Card::Skateboard => self
+                .battlefield
+                .iter_mut()
+                .for_each(|p| p.skateboard = false),
+            _ => {}
+        }
+        card
+    }
+
     /// The library was shuffled: its order is unknown unless at most one card
     /// is left.
     pub(crate) fn shuffle(&mut self) {
@@ -470,8 +511,9 @@ impl State {
 
     /// The one way a card reaches a graveyard, so the "exile it instead"
     /// replacements apply everywhere: `player`'s own Yawgmoth's Will, or the
-    /// other player's Leyline of the Void.
-    pub(crate) fn put_in_graveyard(&mut self, player: Player, card: Card) {
+    /// other player's Leyline of the Void. Returns whether the card really
+    /// reached the graveyard.
+    pub(crate) fn put_in_graveyard(&mut self, player: Player, card: Card) -> bool {
         let exile = self.player(player).yawgmoths_will
             || self.controls(player.other(), Card::LeylineOfTheVoid);
         let ps = self.player_mut(player);
@@ -480,6 +522,25 @@ impl State {
         } else {
             ps.graveyard.push(card);
         }
+        !exile
+    }
+
+    /// Destroys or sacrifices `player`'s permanent at `idx`: it leaves the
+    /// battlefield, goes to the graveyard (or exile), and its "put into a
+    /// graveyard from the battlefield" trigger goes on the stack if it really
+    /// got there (Chromatic Star, Wizard's Rockets).
+    pub(crate) fn battlefield_to_graveyard(&mut self, player: Player, idx: usize) -> Card {
+        let card = self.player_mut(player).take_permanent(idx);
+        if self.put_in_graveyard(player, card)
+            && let Some(kind) = card.dies_trigger()
+        {
+            self.stack.push(StackItem::Trigger {
+                source: card,
+                kind,
+                controller: player,
+            });
+        }
+        card
     }
 
     /// Mills `player`'s top `n` cards (fewer if the library is smaller).
@@ -540,6 +601,9 @@ impl State {
 
     /// Puts `card` onto `player`'s battlefield and queues its enter trigger.
     /// Under the other player's Archon of Emeria, nonbasic lands enter tapped.
+    /// Skateboard's trigger needs a target before it can go on the stack, so
+    /// its controller is asked first (a pending choice; Skateboard only ever
+    /// enters from a resolving spell, when nothing else is pending).
     pub(crate) fn enter_battlefield(&mut self, player: Player, card: Card, tapped: bool) {
         let archon = card.kind() == CardKind::Land
             && !card.is_basic_land()
@@ -547,7 +611,14 @@ impl State {
         self.player_mut(player)
             .battlefield
             .push(Permanent::entering(card, tapped || archon));
-        if let Some(kind) = card.etb_trigger() {
+        if card == Card::Skateboard {
+            self.pending = Some(PendingChoice {
+                player,
+                kind: ChoiceKind::TapTarget,
+                bin: None,
+                bin_owner: player,
+            });
+        } else if let Some(kind) = card.etb_trigger() {
             self.stack.push(StackItem::Trigger {
                 source: card,
                 kind,
@@ -569,23 +640,22 @@ impl State {
         if self.you.drew_from_empty {
             self.lose(LossReason::DrewFromEmptyLibrary);
         }
-        // Creatures with lethal damage are destroyed.
+        // Creatures with lethal damage are destroyed. Highest index first, so
+        // removing one doesn't shift the others.
         for player in [Player::You, Player::Opponent] {
-            let dead: Vec<Card> = {
-                let ps = self.player_mut(player);
-                let mut dead = Vec::new();
-                ps.battlefield.retain(|p| {
-                    let lethal =
-                        p.card.kind() == CardKind::Creature && p.damage >= p.card.toughness();
-                    if lethal {
-                        dead.push(p.card);
-                    }
-                    !lethal
-                });
-                dead
-            };
-            for card in dead {
-                self.put_in_graveyard(player, card);
+            let dead: Vec<usize> = self
+                .player(player)
+                .battlefield
+                .iter()
+                .enumerate()
+                .filter(|(_, p)| {
+                    p.card.kind() == CardKind::Creature && p.damage >= p.card.toughness()
+                })
+                .map(|(idx, _)| idx)
+                .rev()
+                .collect();
+            for idx in dead {
+                self.battlefield_to_graveyard(player, idx);
             }
         }
     }
@@ -625,6 +695,12 @@ impl fmt::Display for Permanent {
         }
         if self.damage > 0 {
             write!(f, " ({} damage)", self.damage)?;
+        }
+        if self.greaves {
+            f.write_str(" (equipped: Lightning Greaves)")?;
+        }
+        if self.skateboard {
+            f.write_str(" (equipped: Skateboard)")?;
         }
         Ok(())
     }

@@ -47,6 +47,8 @@ pub enum Choice {
     Ping(Target),
     /// Manamorphose: the colors of the mana it adds.
     AddMana(ManaPool),
+    /// Skateboard: the permanent its enter trigger taps.
+    Tap(Target),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -101,6 +103,21 @@ pub enum Action {
     /// Lion's Eye Diamond: discard your hand, add three of `color`.
     ActivateLed {
         color: Color,
+    },
+    /// Chromatic Star or Wizard's Rockets: pay `pay`, tap and sacrifice it,
+    /// add `add` (the same amount, any colors). Mana ability: no stack.
+    FilterMana {
+        source: Card,
+        pay: ManaPool,
+        add: ManaPool,
+    },
+    /// Activate one of `source`'s non-mana abilities (Aether Spellbomb,
+    /// Mishra's Bauble, equip), paying `mana` plus whatever the ability
+    /// implies (sacrifice, {T}); it goes on the stack.
+    Activate {
+        source: Card,
+        kind: AbilityKind,
+        mana: ManaPool,
     },
     Choose(Choice),
 }
@@ -201,7 +218,7 @@ fn your_actions(state: &State) -> Vec<Action> {
         if perm.card.fetch_filter().is_some() && !perm.tapped && you.life >= 1 {
             out.push(Action::ActivateFetch { source: perm.card });
         }
-        if perm.card == Card::DoctorDoom && !perm.tapped && !perm.summoning_sick {
+        if perm.card == Card::DoctorDoom && perm.can_tap_for_ability() {
             out.push(Action::ActivateDoom);
         }
         if sorcery_speed && !perm.loyalty_used {
@@ -210,6 +227,25 @@ fn your_actions(state: &State) -> Vec<Action> {
                     source: perm.card,
                     ability,
                 });
+            }
+        }
+        for ability in perm.card.activated_abilities(state, Player::You) {
+            if (ability.sorcery_speed && !sorcery_speed)
+                || (ability_taps(ability.kind) && perm.tapped)
+            {
+                continue;
+            }
+            for mana in you.mana_pool.payments_for(&ability.cost) {
+                let action = Action::Activate {
+                    source: perm.card,
+                    kind: ability.kind,
+                    mana,
+                };
+                // Two copies that differ only in irrelevant state (one
+                // tapped Spellbomb, one not) offer the same activation.
+                if !out.contains(&action) {
+                    out.push(action);
+                }
             }
         }
     }
@@ -233,6 +269,31 @@ fn your_actions(state: &State) -> Vec<Action> {
                         source: perm.card,
                         color,
                     });
+                }
+            }
+            // Every amount X the pool can pay, every way to pay it, every
+            // combination of colors to get back.
+            Some(ManaAbility::Filter { x }) if !perm.tapped => {
+                let (min, max) = if x {
+                    (0, you.mana_pool.total())
+                } else {
+                    (1, 1)
+                };
+                for n in min..=max {
+                    let cost = crate::mana::ManaCost::FREE.with_generic(n);
+                    for pay in you.mana_pool.payments_for(&cost) {
+                        for colors in multisets(&Color::ALL, usize::from(n)) {
+                            let mut add = ManaPool::EMPTY;
+                            for color in colors {
+                                add.add_mana(color, 1);
+                            }
+                            out.push(Action::FilterMana {
+                                source: perm.card,
+                                pay,
+                                add,
+                            });
+                        }
+                    }
                 }
             }
             // "Activate only as an instant": whenever you hold priority.
@@ -279,6 +340,19 @@ fn controls(state: &State, player: Player, card: Card) -> bool {
 /// Whether either player controls this card (the symmetric hate pieces).
 fn anyone_controls(state: &State, card: Card) -> bool {
     controls(state, Player::You, card) || controls(state, Player::Opponent, card)
+}
+
+/// Abilities whose cost includes {T} (so the source must be untapped).
+fn ability_taps(kind: AbilityKind) -> bool {
+    kind == AbilityKind::BaubleLook
+}
+
+/// Abilities whose cost includes sacrificing the source.
+fn ability_sacrifices(kind: AbilityKind) -> bool {
+    matches!(
+        kind,
+        AbilityKind::SpellbombBounce { .. } | AbilityKind::SpellbombDraw | AbilityKind::BaubleLook
+    )
 }
 
 /// Archon of Emeria: "each player can't cast more than one spell each turn".
@@ -697,6 +771,12 @@ pub fn apply(state: &State, action: &Action) -> Result<State, EngineError> {
                 sacrifice_for_mana(&mut next, actor, *source, *color)?
             }
             Action::ActivateLed { color } => activate_led(&mut next, actor, *color)?,
+            Action::FilterMana { source, pay, add } => {
+                filter_mana(&mut next, actor, *source, pay, add)?
+            }
+            Action::Activate { source, kind, mana } => {
+                activate_ability(&mut next, actor, *source, *kind, mana)?
+            }
             Action::Choose(choice) => choose(&mut next, choice)?,
         }
     }
@@ -769,15 +849,13 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
             | CardKind::Artifact
             | CardKind::Enchantment
             | CardKind::Planeswalker => {
-                state.enter_battlefield(controller, card, false);
+                state.enter_battlefield(controller, card, card.enters_tapped());
                 // Evoke: sacrificed as it enters, its enter trigger already
                 // on the stack.
-                if mode == SpellMode::Evoked {
-                    let ps = state.player_mut(controller);
-                    if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
-                        ps.battlefield.remove(idx);
-                        state.put_in_graveyard(controller, card);
-                    }
+                if mode == SpellMode::Evoked
+                    && let Some(idx) = find_permanent(state, controller, card, |_| true)
+                {
+                    state.battlefield_to_graveyard(controller, idx);
                 }
                 Ok(())
             }
@@ -884,7 +962,7 @@ fn cast(
 /// Returns one of `ps`'s own permanents named `card` to their hand.
 fn bounce_own(ps: &mut PlayerState, card: Card) -> Option<()> {
     let idx = ps.battlefield.iter().position(|p| p.card == card)?;
-    ps.battlefield.remove(idx);
+    let card = ps.take_permanent(idx);
     ps.hand.push(card);
     Some(())
 }
@@ -976,8 +1054,7 @@ fn cycle(
                 return Err(illegal());
             }
             let idx = find_permanent(state, player, land, |_| true).ok_or_else(illegal)?;
-            state.player_mut(player).battlefield.remove(idx);
-            state.put_in_graveyard(player, land);
+            state.battlefield_to_graveyard(player, idx);
         }
         _ => return Err(illegal()),
     }
@@ -1001,10 +1078,8 @@ fn activate_fetch(state: &mut State, player: Player, source: Card) -> Result<(),
         return Err(illegal());
     }
     let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
-    let ps = state.player_mut(player);
-    ps.life -= 1;
-    ps.battlefield.remove(idx);
-    state.put_in_graveyard(player, source);
+    state.player_mut(player).life -= 1;
+    state.battlefield_to_graveyard(player, idx);
     state.stack.push(StackItem::Ability {
         source,
         kind: AbilityKind::Fetch,
@@ -1016,7 +1091,7 @@ fn activate_fetch(state: &mut State, player: Player, source: Card) -> Result<(),
 
 fn activate_doom(state: &mut State, player: Player) -> Result<(), EngineError> {
     let source = Card::DoctorDoom;
-    let idx = find_permanent(state, player, source, |p| !p.tapped && !p.summoning_sick)
+    let idx = find_permanent(state, player, source, Permanent::can_tap_for_ability)
         .ok_or(EngineError::IllegalAction(Action::ActivateDoom))?;
     state.player_mut(player).battlefield[idx].tapped = true;
     state.stack.push(StackItem::Ability {
@@ -1108,10 +1183,86 @@ fn sacrifice_for_mana(
         return Err(illegal());
     };
     let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
+    state.player_mut(player).mana_pool.add_mana(color, amount);
+    state.battlefield_to_graveyard(player, idx);
+    acted(state, player);
+    Ok(())
+}
+
+/// Chromatic Star / Wizard's Rockets: pay `pay`, sacrifice, get `add` back.
+fn filter_mana(
+    state: &mut State,
+    player: Player,
+    source: Card,
+    pay: &ManaPool,
+    add: &ManaPool,
+) -> Result<(), EngineError> {
+    let illegal = || {
+        EngineError::IllegalAction(Action::FilterMana {
+            source,
+            pay: *pay,
+            add: *add,
+        })
+    };
+    let Some(ManaAbility::Filter { x }) = source.mana_ability() else {
+        return Err(illegal());
+    };
+    let n = add.total();
+    if add.get_colorless() != 0 || pay.total() != n || (!x && n != 1) {
+        return Err(illegal());
+    }
+    let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
     let ps = state.player_mut(player);
-    ps.battlefield.remove(idx);
-    ps.mana_pool.add_mana(color, amount);
-    state.put_in_graveyard(player, source);
+    ps.mana_pool = ps.mana_pool.minus(pay).ok_or_else(illegal)?.plus(add);
+    state.battlefield_to_graveyard(player, idx);
+    acted(state, player);
+    Ok(())
+}
+
+/// Aether Spellbomb, Mishra's Bauble and equip: pay the mana and whatever
+/// else the ability costs, then put it on the stack.
+fn activate_ability(
+    state: &mut State,
+    player: Player,
+    source: Card,
+    kind: AbilityKind,
+    mana: &ManaPool,
+) -> Result<(), EngineError> {
+    let illegal = || {
+        EngineError::IllegalAction(Action::Activate {
+            source,
+            kind,
+            mana: *mana,
+        })
+    };
+    let ability = source
+        .activated_abilities(state, player)
+        .into_iter()
+        .find(|a| a.kind == kind)
+        .ok_or_else(illegal)?;
+    if (ability.sorcery_speed && !state.stack.is_empty())
+        || !state
+            .player(player)
+            .mana_pool
+            .payments_for(&ability.cost)
+            .contains(mana)
+    {
+        return Err(illegal());
+    }
+    let idx = find_permanent(state, player, source, |p| !ability_taps(kind) || !p.tapped)
+        .ok_or_else(illegal)?;
+    let ps = state.player_mut(player);
+    ps.mana_pool = ps.mana_pool.minus(mana).ok_or_else(illegal)?;
+    if ability_sacrifices(kind) {
+        state.battlefield_to_graveyard(player, idx);
+    } else if ability_taps(kind) {
+        ps.battlefield[idx].tapped = true;
+    }
+    state.stack.push(StackItem::Ability {
+        source,
+        kind,
+        controller: player,
+    });
     acted(state, player);
     Ok(())
 }
@@ -1121,13 +1272,12 @@ fn activate_led(state: &mut State, player: Player, color: Color) -> Result<(), E
     let idx = find_permanent(state, player, source, |_| true)
         .ok_or(EngineError::IllegalAction(Action::ActivateLed { color }))?;
     let ps = state.player_mut(player);
-    ps.battlefield.remove(idx);
     ps.mana_pool.add_mana(color, 3);
     let discarded = std::mem::take(&mut ps.hand);
     for card in discarded {
         state.put_in_graveyard(player, card);
     }
-    state.put_in_graveyard(player, source);
+    state.battlefield_to_graveyard(player, idx);
     acted(state, player);
     Ok(())
 }
@@ -1193,6 +1343,7 @@ impl fmt::Display for Choice {
             }
             Choice::Ping(target) => write!(f, "Orcish Bowmasters pings {target}"),
             Choice::AddMana(mana) => write!(f, "Add {mana}"),
+            Choice::Tap(target) => write!(f, "Skateboard taps {target}"),
         }
     }
 }
@@ -1285,6 +1436,20 @@ impl fmt::Display for Action {
                     f,
                     "Crack Lion's Eye Diamond for {color}{color}{color}, discarding hand"
                 )
+            }
+            Action::FilterMana { source, pay, add } => {
+                if pay.is_empty() {
+                    write!(f, "Crack {source} for X=0")
+                } else {
+                    write!(f, "Crack {source} turning {pay} into {add}")
+                }
+            }
+            Action::Activate { source, kind, mana } => {
+                write!(f, "{source}: {kind}")?;
+                if !mana.is_empty() {
+                    write!(f, " paying {mana}")?;
+                }
+                Ok(())
             }
             Action::Choose(choice) => write!(f, "{choice}"),
         }
@@ -4018,5 +4183,69 @@ mod tests {
         // Sol Ring made two, one floats.
         assert_eq!(next.opponent.mana_pool, ManaPool::colorless(1));
         assert!(next.opponent.battlefield.iter().all(|p| p.tapped));
+    }
+
+    #[test]
+    fn equip_is_sorcery_speed_and_twin_artifacts_offer_one_activation() {
+        let mut state = main_phase(PlayerState {
+            mana_pool: ManaPool::of(Color::U, 1),
+            battlefield: vec![
+                Permanent::untapped(Card::AetherSpellbomb),
+                Permanent::tapped(Card::AetherSpellbomb),
+                Permanent::untapped(Card::LightningGreaves),
+                Permanent::untapped(Card::ThassasOracle),
+            ],
+            ..PlayerState::default()
+        });
+        let draws = |actions: &[Action]| {
+            actions
+                .iter()
+                .filter(|a| {
+                    matches!(
+                        a,
+                        Action::Activate {
+                            kind: AbilityKind::SpellbombDraw,
+                            ..
+                        }
+                    )
+                })
+                .count()
+        };
+        let equips = |actions: &[Action]| {
+            actions
+                .iter()
+                .filter(|a| {
+                    matches!(
+                        a,
+                        Action::Activate {
+                            kind: AbilityKind::Equip { .. },
+                            ..
+                        }
+                    )
+                })
+                .count()
+        };
+        let actions = legal_actions(&state);
+        assert_eq!(draws(&actions), 1);
+        assert_eq!(equips(&actions), 1);
+        // With a spell on the stack the Spellbomb still works, equip doesn't.
+        state.stack.push(your_spell(Card::Brainstorm));
+        let actions = legal_actions(&state);
+        assert_eq!(draws(&actions), 1);
+        assert_eq!(equips(&actions), 0);
+        let equip = Action::Activate {
+            source: Card::LightningGreaves,
+            kind: AbilityKind::Equip {
+                target: Target::Permanent {
+                    owner: Player::You,
+                    card: Card::ThassasOracle,
+                },
+            },
+            mana: ManaPool::EMPTY,
+        };
+        assert!(matches!(
+            apply(&state, &equip),
+            Err(EngineError::IllegalAction(_))
+        ));
     }
 }
