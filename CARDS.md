@@ -129,16 +129,16 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Simplifications:** the two Islands are any two lands with the Island type (basic Islands or blue duals) and may share a name; the pair is unordered. Returning them is an alternative cost, so Thalia's {1} still applies. The floating mana stays.
 
 ### Quantum Riddler
-- **Cost / type:** {3}{U}{U} — Creature — Sphinx. Warp {1}{U}.
+- **Cost / type:** {3}{U}{U} — Creature — Sphinx. Warp {1}{U}. Toughness 6.
 - **Effect:** Flying. When this creature enters, draw a card. As long as you have one or fewer cards in hand, if you would draw one or more cards, you draw that many cards plus one instead. Warp {1}{U}
 - **Gotchas:** The bonus applies once per draw *instruction*: Brainstorm draws 4, Probe 2, Timetwister 8. The hand size is checked at the moment of each draw, and the spell being cast isn't in your hand. Its own enter-draw gets the bonus too if your hand is small. Devotion 2 from its printed cost even when warped. Mana value 5, so Unearth can't return it.
-- **Simplifications:** ignore warp's end-step exile.
+- **Simplifications:** ignore warp's end-step exile; a warped Riddler is an ordinary permanent with devotion 2. The bonus is judged once per draw instruction by the hand size as the instruction starts, and is applied before Narset's cap (so under Narset one card still comes). Several Riddlers each add one.
 
 ### Tamiyo, Inquisitive Student
-- **Cost / type:** {U} — Legendary Creature — Moonfolk Wizard (transforms into Tamiyo, Seasoned Scholar, Legendary Planeswalker, loyalty 2)
+- **Cost / type:** {U} — Legendary Creature — Moonfolk Wizard (transforms into Tamiyo, Seasoned Scholar, Legendary Planeswalker, loyalty 2). Toughness 3.
 - **Effect:** Flying. Whenever Tamiyo attacks, investigate. When you draw your third card in a turn, exile Tamiyo, then return her to the battlefield transformed. // Seasoned Scholar: +2: attackers get −1/−0. −3: Return target instant or sorcery card from your graveyard to your hand; if it's a green card, add one mana of any color. −7: Draw cards equal to half your library, rounded up; no maximum hand size.
 - **Gotchas:** Counts *all* draws this turn, including ones before she entered. The transform is mandatory. The back face starts at loyalty 2, so −3 can't be used the turn she flips. The back face has no mana cost, so flipping *drops* her devotion from 1 to 0, which can break an Oracle line. Draw count becomes something to manage.
-- **Simplifications:** ignore attacking and the +2 and −7 abilities.
+- **Simplifications:** ignore attacking and the +2 and −7 abilities. The transform is a trigger on the stack (Stifle can counter it) that fires only on the exact third draw of the turn, so a puzzle that starts at three or more draws with the front face in play never flips her. The legend rule is ignored. The back face is blue (Pyroblast can destroy it), enters at loyalty 2 with devotion 0, and goes to the graveyard as the front face. The −3 needs a target: with no instant or sorcery in the graveyard it can't be activated.
 
 ### Manamorphose
 - **Cost / type:** {1}{R/G} — Instant
@@ -231,10 +231,10 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Simplifications:** none; both modes are modeled.
 
 ### Thundertrap Trainer
-- **Cost / type:** {1}{U} — Creature — Otter Wizard. Offspring {4}.
+- **Cost / type:** {1}{U} — Creature — Otter Wizard. Offspring {4}. Toughness 2 (the token is a 1/1).
 - **Effect:** Offspring {4} (You may pay an additional {4} as you cast this spell. If you do, when this creature enters, create a 1/1 token copy of it.) When this creature enters, look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.
 - **Gotchas:** The cards that go to the bottom are in a *random* order, which scrambles the pile unless the order no longer matters. It can only take a noncreature, nonland card, so it can't find Oracle or Doom. The offspring token also has the trigger and adds 1 devotion. It's a Wizard, so Cavern set to Wizard makes it uncounterable.
-- **Simplifications:** treat the bottom-of-library cards as making the library unordered (same rule as shuffles).
+- **Simplifications:** treat the bottom-of-library cards as making the library unordered (same rule as shuffles): two or more leftovers scramble the whole library, even above cards the look didn't reach. The picked card goes to hand without being a draw. With offspring paid, the token's trigger goes on the stack above the original's, so the token enters and looks first; the token ceases to exist when it leaves the battlefield.
 
 ### Aether Spellbomb
 - **Cost / type:** {1} — Artifact
@@ -379,7 +379,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** Land
 - **Effect:** As this land enters, choose a creature type. {T}: Add {C}. {T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered.
 - **Gotchas:** Wizard covers both Oracle and Thundertrap Trainer. The colored mana can only pay for creature spells of the chosen type; otherwise it makes {C}. Spending even one Cavern mana on the spell makes it uncounterable.
-- **Simplifications:** if it starts in play, the puzzle file sets its type.
+- **Simplifications:** if it starts in play, the puzzle file sets its type. Played during the puzzle, the type is chosen as it enters from the creature types of the creature cards you own anywhere (Wizard if none). Its colored mana is never floated: it is tapped as part of casting a creature spell of the chosen type, which is then uncounterable (counters aren't even offered against it); on its own it taps for {C} for either player.
 
 ---
 
