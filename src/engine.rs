@@ -45,6 +45,8 @@ pub enum Choice {
     CopyTargets(Vec<Target>),
     /// Orcish Bowmasters: who takes the 1 damage.
     Ping(Target),
+    /// Manamorphose: the colors of the mana it adds.
+    AddMana(ManaPool),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -85,6 +87,11 @@ pub enum Action {
     TapForMana {
         source: Card,
         color: Color,
+    },
+    /// Tap an untapped permanent with this card name for its colorless mana
+    /// (Sol Ring).
+    TapForColorless {
+        source: Card,
     },
     /// Black Lotus or Lotus Petal.
     SacrificeForMana {
@@ -178,6 +185,17 @@ fn your_actions(state: &State) -> Vec<Action> {
             );
         }
     }
+    // Reckless Impulse: the exiled cards may be played this turn.
+    for card in distinct(&you.impulse) {
+        push_plays(
+            &mut out,
+            state,
+            Player::You,
+            card,
+            Zone::Exile,
+            sorcery_speed,
+        );
+    }
 
     for perm in distinct(&you.battlefield) {
         if perm.card.fetch_filter().is_some() && !perm.tapped && you.life >= 1 {
@@ -205,6 +223,9 @@ fn your_actions(state: &State) -> Vec<Action> {
                         color,
                     });
                 }
+            }
+            Some(ManaAbility::TapColorless(_)) if !perm.tapped => {
+                out.push(Action::TapForColorless { source: perm.card });
             }
             Some(ManaAbility::Sacrifice(_)) if !perm.tapped => {
                 for color in Color::ALL {
@@ -407,9 +428,9 @@ fn extra_generic(state: &State, player: Player, card: Card) -> u8 {
 /// already in the pool). `None` if it can't be paid.
 pub(crate) fn pay_mana(ps: &mut PlayerState, mana: &ManaPool) -> Option<()> {
     if ps.mana_pool.minus(mana).is_none() {
-        for (idx, color) in tap_plan(ps, mana)? {
+        for (idx, added) in tap_plan(ps, mana)? {
             ps.battlefield[idx].tapped = true;
-            ps.mana_pool.add_mana(color, 1);
+            ps.mana_pool = ps.mana_pool.plus(&added);
         }
     }
     ps.mana_pool = ps.mana_pool.minus(mana)?;
@@ -436,13 +457,25 @@ pub(crate) fn tax_payments(state: &State, player: Player, amount: u8) -> Vec<Man
     out
 }
 
-/// The untapped permanents of `ps` that tap for mana, as (index, colors).
-fn tap_sources(ps: &PlayerState) -> Vec<(usize, Vec<Color>)> {
+/// The untapped permanents of `ps` that tap for mana, as (index, the pools
+/// one tap could add).
+fn tap_sources(ps: &PlayerState) -> Vec<(usize, Vec<ManaPool>)> {
     ps.battlefield
         .iter()
         .enumerate()
-        .filter(|(_, p)| !p.tapped && p.card.mana_ability() == Some(ManaAbility::Tap))
-        .map(|(i, p)| (i, p.card.mana_colors()))
+        .filter(|(_, p)| !p.tapped)
+        .filter_map(|(i, p)| match p.card.mana_ability() {
+            Some(ManaAbility::Tap) => Some((
+                i,
+                p.card
+                    .mana_colors()
+                    .into_iter()
+                    .map(|c| ManaPool::of(c, 1))
+                    .collect(),
+            )),
+            Some(ManaAbility::TapColorless(n)) => Some((i, vec![ManaPool::colorless(n)])),
+            _ => None,
+        })
         .collect()
 }
 
@@ -462,8 +495,8 @@ fn reachable_pools(ps: &PlayerState) -> Vec<ManaPool> {
 
 /// The fewest taps that give `ps` a pool covering `needed`, in the same
 /// enumeration order as [`reachable_pools`] so the two always agree.
-fn tap_plan(ps: &PlayerState, needed: &ManaPool) -> Option<Vec<(usize, Color)>> {
-    let mut best: Option<Vec<(usize, Color)>> = None;
+fn tap_plan(ps: &PlayerState, needed: &ManaPool) -> Option<Vec<(usize, ManaPool)>> {
+    let mut best: Option<Vec<(usize, ManaPool)>> = None;
     for_each_tap_plan(&tap_sources(ps), &mut |taps| {
         let covers = pool_after(ps, taps).minus(needed).is_some();
         if covers && best.as_ref().is_none_or(|b| taps.len() < b.len()) {
@@ -473,29 +506,32 @@ fn tap_plan(ps: &PlayerState, needed: &ManaPool) -> Option<Vec<(usize, Color)>> 
     best
 }
 
-fn pool_after(ps: &PlayerState, taps: &[(usize, Color)]) -> ManaPool {
+fn pool_after(ps: &PlayerState, taps: &[(usize, ManaPool)]) -> ManaPool {
     let mut pool = ps.mana_pool;
-    for &(_, color) in taps {
-        pool.add_mana(color, 1);
+    for (_, added) in taps {
+        pool = pool.plus(added);
     }
     pool
 }
 
 /// Calls `visit` with every way to tap a subset of `sources`, each for one of
-/// its colors (the empty plan included).
-fn for_each_tap_plan(sources: &[(usize, Vec<Color>)], visit: &mut impl FnMut(&[(usize, Color)])) {
+/// its options (the empty plan included).
+fn for_each_tap_plan(
+    sources: &[(usize, Vec<ManaPool>)],
+    visit: &mut impl FnMut(&[(usize, ManaPool)]),
+) {
     fn go(
-        sources: &[(usize, Vec<Color>)],
-        acc: &mut Vec<(usize, Color)>,
-        visit: &mut impl FnMut(&[(usize, Color)]),
+        sources: &[(usize, Vec<ManaPool>)],
+        acc: &mut Vec<(usize, ManaPool)>,
+        visit: &mut impl FnMut(&[(usize, ManaPool)]),
     ) {
-        let Some(((idx, colors), rest)) = sources.split_first() else {
+        let Some(((idx, options), rest)) = sources.split_first() else {
             visit(acc);
             return;
         };
         go(rest, acc, visit);
-        for &color in colors {
-            acc.push((*idx, color));
+        for &added in options {
+            acc.push((*idx, added));
             go(rest, acc, visit);
             acc.pop();
         }
@@ -656,6 +692,7 @@ pub fn apply(state: &State, action: &Action) -> Result<State, EngineError> {
             Action::TapForMana { source, color } => {
                 tap_for_mana(&mut next, actor, *source, *color)?
             }
+            Action::TapForColorless { source } => tap_for_colorless(&mut next, actor, *source)?,
             Action::SacrificeForMana { source, color } => {
                 sacrifice_for_mana(&mut next, actor, *source, *color)?
             }
@@ -805,13 +842,11 @@ fn cast(
             ps.exile.push(pitched);
         }
         Some(AltCost::ReturnIsland(island)) => {
-            let idx = ps
-                .battlefield
-                .iter()
-                .position(|p| p.card == island)
-                .ok_or_else(illegal)?;
-            ps.battlefield.remove(idx);
-            ps.hand.push(island);
+            bounce_own(ps, island).ok_or_else(illegal)?;
+        }
+        Some(AltCost::ReturnTwoIslands(first, second)) => {
+            bounce_own(ps, first).ok_or_else(illegal)?;
+            bounce_own(ps, second).ok_or_else(illegal)?;
         }
         None => {}
     }
@@ -846,6 +881,14 @@ fn cast(
     Ok(())
 }
 
+/// Returns one of `ps`'s own permanents named `card` to their hand.
+fn bounce_own(ps: &mut PlayerState, card: Card) -> Option<()> {
+    let idx = ps.battlefield.iter().position(|p| p.card == card)?;
+    ps.battlefield.remove(idx);
+    ps.hand.push(card);
+    Some(())
+}
+
 /// Removes the stack item at `index` and keeps every other item's stack
 /// target pointing at the same item: indices above shift down, and a target
 /// on the removed item itself is cleared so that spell fizzles.
@@ -876,6 +919,10 @@ fn take_from_zone(ps: &mut PlayerState, card: Card, from: Zone) -> Option<Card> 
         Zone::Hand => ps.remove_from_hand(card),
         Zone::Graveyard if ps.yawgmoths_will => ps.remove_from_graveyard(card),
         Zone::Graveyard => None,
+        Zone::Exile => {
+            let pos = ps.impulse.iter().position(|&c| c == card)?;
+            Some(ps.impulse.remove(pos))
+        }
     }
 }
 
@@ -1037,6 +1084,19 @@ fn tap_for_mana(
     Ok(())
 }
 
+fn tap_for_colorless(state: &mut State, player: Player, source: Card) -> Result<(), EngineError> {
+    let illegal = || EngineError::IllegalAction(Action::TapForColorless { source });
+    let Some(ManaAbility::TapColorless(amount)) = source.mana_ability() else {
+        return Err(illegal());
+    };
+    let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
+    let ps = state.player_mut(player);
+    ps.battlefield[idx].tapped = true;
+    ps.mana_pool.add_colorless(amount);
+    acted(state, player);
+    Ok(())
+}
+
 fn sacrifice_for_mana(
     state: &mut State,
     player: Player,
@@ -1132,6 +1192,7 @@ impl fmt::Display for Choice {
                 write!(f, "Copies target {}", names.join(", "))
             }
             Choice::Ping(target) => write!(f, "Orcish Bowmasters pings {target}"),
+            Choice::AddMana(mana) => write!(f, "Add {mana}"),
         }
     }
 }
@@ -1141,6 +1202,7 @@ impl fmt::Display for Zone {
         match self {
             Zone::Hand => f.write_str("hand"),
             Zone::Graveyard => f.write_str("graveyard"),
+            Zone::Exile => f.write_str("exile"),
         }
     }
 }
@@ -1214,6 +1276,7 @@ impl fmt::Display for Action {
             Action::ActivateDoom => write!(f, "Tap Doctor Doom to draw"),
             Action::Loyalty { source, ability } => write!(f, "{source}: {ability}"),
             Action::TapForMana { source, color } => write!(f, "Tap {source} for {color}"),
+            Action::TapForColorless { source } => write!(f, "Tap {source} for colorless"),
             Action::SacrificeForMana { source, color } => {
                 write!(f, "Sacrifice {source} for {color}")
             }
@@ -2677,7 +2740,7 @@ mod tests {
         assert_eq!(tap_plan(&ps, &u(2)).unwrap().len(), 2);
         assert_eq!(
             tap_plan(&ps, &ManaPool::of(Color::W, 1)),
-            Some(vec![(2, Color::W)])
+            Some(vec![(2, ManaPool::of(Color::W, 1))])
         );
         assert_eq!(tap_plan(&ps, &u(4)), None);
         // Mana already floating counts.
@@ -3877,5 +3940,83 @@ mod tests {
             .battlefield
             .push(Permanent::untapped(Card::GrafdiggersCage));
         assert!(!legal_actions(&mine).contains(&from_graveyard));
+    }
+
+    // ------------------------------------------------------------ stage 6a
+
+    #[test]
+    fn sol_ring_taps_for_two_colorless_and_gleemox_for_any_color() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::LaboratoryManiac, Card::ThassasOracle],
+            battlefield: vec![
+                Permanent::untapped(Card::SolRing),
+                Permanent::untapped(Card::Gleemox),
+            ],
+            ..PlayerState::default()
+        });
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&Action::TapForColorless {
+            source: Card::SolRing
+        }));
+        for color in Color::ALL {
+            assert!(actions.contains(&Action::TapForMana {
+                source: Card::Gleemox,
+                color,
+            }));
+        }
+        let ring = apply(
+            &state,
+            &Action::TapForColorless {
+                source: Card::SolRing,
+            },
+        )
+        .unwrap();
+        assert_eq!(ring.you.mana_pool, ManaPool::colorless(2));
+        let both = apply(
+            &ring,
+            &Action::TapForMana {
+                source: Card::Gleemox,
+                color: Color::U,
+            },
+        )
+        .unwrap();
+        // CC + U pays Lab Man's {2}{U} but never Oracle's {U}{U}.
+        let casts: Vec<Card> = legal_actions(&both)
+            .into_iter()
+            .filter_map(|a| match a {
+                Action::CastSpell { card, .. } => Some(card),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(casts, vec![Card::LaboratoryManiac]);
+        // Tapped once, it's done.
+        assert!(!legal_actions(&both).contains(&Action::TapForColorless {
+            source: Card::SolRing
+        }));
+    }
+
+    #[test]
+    fn the_opponent_can_tap_sol_ring_for_generic_costs() {
+        let state = facing(
+            PlayerState::default(),
+            opponent_with(
+                vec![Card::Daze],
+                vec![
+                    Permanent::untapped(Card::SolRing),
+                    Permanent::untapped(Card::Island),
+                ],
+            ),
+            Card::Brainstorm,
+        );
+        let hard = their_cast(
+            Card::Daze,
+            Payment::mana(ManaPool::of(Color::U, 1).with_colorless(1)),
+            on_stack(0, Card::Brainstorm),
+        );
+        assert!(legal_actions(&state).contains(&hard));
+        let next = apply(&state, &hard).unwrap();
+        // Sol Ring made two, one floats.
+        assert_eq!(next.opponent.mana_pool, ManaPool::colorless(1));
+        assert!(next.opponent.battlefield.iter().all(|p| p.tapped));
     }
 }

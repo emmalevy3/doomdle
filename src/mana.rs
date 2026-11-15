@@ -72,6 +72,12 @@ impl ManaPool {
     }
 
     /// Builder-style: this pool plus `n` more of `color`.
+    /// Builder-style: this pool plus `n` colorless mana.
+    pub fn with_colorless(mut self, n: u8) -> ManaPool {
+        self.amounts[COLORLESS] += n;
+        self
+    }
+
     pub fn with(mut self, color: Color, n: u8) -> ManaPool {
         self.add_mana(color, n);
         self
@@ -123,6 +129,18 @@ impl ManaPool {
     /// exactly; generic mana can come from anything left over. Empty if the
     /// pool can't cover the cost. See [`Payment::options`] for life payments.
     pub fn payments_for(&self, cost: &ManaCost) -> Vec<ManaPool> {
+        // Each {R/G} pip is paid with red or green: try every split.
+        if cost.hybrid > 0 {
+            let mut out = Vec::new();
+            for red in 0..=cost.hybrid {
+                for payment in self.payments_for(&cost.with_hybrid_as(red)) {
+                    if !out.contains(&payment) {
+                        out.push(payment);
+                    }
+                }
+            }
+            return out;
+        }
         let pips = cost.pips_as_pool();
         let Some(spare) = self.minus(&pips) else {
             return Vec::new();
@@ -175,12 +193,15 @@ impl fmt::Display for ManaPool {
     }
 }
 
-/// A mana cost: colored pips, Phyrexian pips (pay the color or 2 life) and a
+/// A mana cost: colored pips, Phyrexian pips (pay the color or 2 life),
+/// {R/G} hybrid pips (the only hybrid in the pool, Manamorphose) and a
 /// generic amount.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct ManaCost {
     pips: [u8; 5],
     phyrexian: [u8; 5],
+    /// {R/G} pips: each is paid with red or green.
+    pub hybrid: u8,
     pub generic: u8,
 }
 
@@ -188,6 +209,7 @@ impl ManaCost {
     pub const FREE: ManaCost = ManaCost {
         pips: [0; 5],
         phyrexian: [0; 5],
+        hybrid: 0,
         generic: 0,
     };
 
@@ -197,8 +219,7 @@ impl ManaCost {
         pips[color.index()] = n;
         ManaCost {
             pips,
-            phyrexian: [0; 5],
-            generic: 0,
+            ..ManaCost::FREE
         }
     }
 
@@ -207,9 +228,8 @@ impl ManaCost {
         let mut phyrexian = [0; 5];
         phyrexian[color.index()] = n;
         ManaCost {
-            pips: [0; 5],
             phyrexian,
-            generic: 0,
+            ..ManaCost::FREE
         }
     }
 
@@ -225,6 +245,12 @@ impl ManaCost {
         self
     }
 
+    /// Builder-style: this cost plus `n` {R/G} pips.
+    pub fn with_hybrid(mut self, n: u8) -> ManaCost {
+        self.hybrid += n;
+        self
+    }
+
     /// Colored (non-Phyrexian) pips of `color`.
     pub fn pip(&self, color: Color) -> u8 {
         self.pips[color.index()]
@@ -234,9 +260,22 @@ impl ManaCost {
         self.phyrexian[color.index()]
     }
 
-    /// Phyrexian pips count as one each, whatever is paid for them.
+    /// Phyrexian and hybrid pips count as one each, whatever is paid for them.
     pub fn mana_value(&self) -> u8 {
-        self.pips.iter().sum::<u8>() + self.phyrexian.iter().sum::<u8>() + self.generic
+        self.pips.iter().sum::<u8>()
+            + self.phyrexian.iter().sum::<u8>()
+            + self.hybrid
+            + self.generic
+    }
+
+    /// This cost with its hybrid pips settled: `red` of them paid with red
+    /// mana and the rest with green.
+    fn with_hybrid_as(&self, red: u8) -> ManaCost {
+        let mut cost = *self;
+        cost.pips[Color::R.index()] += red;
+        cost.pips[Color::G.index()] += self.hybrid - red;
+        cost.hybrid = 0;
+        cost
     }
 
     /// Colored pips plus Phyrexian pips, as a pool: what paying everything
@@ -280,6 +319,9 @@ impl fmt::Display for ManaCost {
                 write!(f, "{{{}/P}}", color.symbol())?;
             }
         }
+        for _ in 0..self.hybrid {
+            write!(f, "{{R/G}}")?;
+        }
         Ok(())
     }
 }
@@ -287,10 +329,12 @@ impl fmt::Display for ManaCost {
 /// The non-mana part of an alternative cost.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum AltCost {
-    /// Exile this blue card from hand (Force of Will, Force of Negation).
+    /// Exile this card from hand (Force of Will, Force of Negation, evoke).
     Pitch(Card),
     /// Return this Island you control to hand (Daze).
     ReturnIsland(Card),
+    /// Return these two Islands you control to hand (Gush); sorted.
+    ReturnTwoIslands(Card, Card),
 }
 
 /// What a player hands over for a spell or ability: mana from the pool, life
@@ -396,6 +440,9 @@ impl fmt::Display for Payment {
         match self.alt {
             Some(AltCost::Pitch(card)) => parts.push(format!("exiling {card} from hand")),
             Some(AltCost::ReturnIsland(card)) => parts.push(format!("returning {card} to hand")),
+            Some(AltCost::ReturnTwoIslands(a, b)) => {
+                parts.push(format!("returning {a} and {b} to hand"))
+            }
             None => {}
         }
         match self.replicate {
@@ -564,6 +611,31 @@ mod tests {
             }
             .to_string(),
             "returning Island to hand"
+        );
+    }
+
+    #[test]
+    fn hybrid_pips_are_paid_with_either_color() {
+        let cost = ManaCost::FREE.with_generic(1).with_hybrid(1);
+        assert_eq!(cost.to_string(), "{1}{R/G}");
+        assert_eq!(cost.mana_value(), 2);
+        // R + U, G + U, or R + G either way round.
+        let pool = ManaPool::of(Color::R, 1)
+            .with(Color::G, 1)
+            .with(Color::U, 1);
+        let mut payments = pool.payments_for(&cost);
+        payments.sort();
+        let mut expected = vec![
+            ManaPool::of(Color::R, 1).with(Color::U, 1),
+            ManaPool::of(Color::G, 1).with(Color::U, 1),
+            ManaPool::of(Color::R, 1).with(Color::G, 1),
+        ];
+        expected.sort();
+        assert_eq!(payments, expected);
+        assert!(ManaPool::of(Color::U, 2).payments_for(&cost).is_empty());
+        assert_eq!(
+            ManaPool::of(Color::G, 2).payments_for(&cost),
+            vec![ManaPool::of(Color::G, 2)]
         );
     }
 }

@@ -1758,3 +1758,192 @@ fn archon_leaves_only_abilities() {
         Action::CastSpell { .. }
     )));
 }
+
+// --------------------------------------------------------------- stage 6a
+
+/// Pair 37: Night's Whisper digs two cards deep, but the 2 life kills you if
+/// Doomsday left you at 2.
+#[test]
+fn nights_whisper_needs_the_life_to_spare() {
+    let pile = [Card::ThassasOracle, Card::Swamp, Card::Plains];
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    let mut fine = puzzle(vec![Card::NightsWhisper], lands(), pile.to_vec());
+    fine.you.life = 6;
+    let steps = assert_wins(fine, &pile);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::NightsWhisper,
+            ..
+        }
+    )));
+    let mut dead = puzzle(vec![Card::NightsWhisper], lands(), pile.to_vec());
+    dead.you.life = 4;
+    assert_fails(dead, &pile);
+}
+
+/// Pair 38: Manamorphose turns red and white mana into the {U}{U} Oracle needs.
+#[test]
+fn manamorphose_fixes_the_colors_for_oracle() {
+    let one = [Card::Swamp];
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::Mountain),
+            Permanent::untapped(Card::Plains),
+        ]
+    };
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::Manamorphose, Card::ThassasOracle],
+            lands(),
+            one.to_vec(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::AddMana(mana)) if mana.get(doomdle::Color::U) == 2
+    )));
+    assert_fails(
+        puzzle(vec![Card::ThassasOracle], lands(), one.to_vec()),
+        &one,
+    );
+}
+
+/// Pair 39: Gush is free after tapping the two Islands it returns, and draws
+/// into the win.
+#[test]
+fn gush_floats_the_mana_and_draws_two() {
+    let pile = [Card::ThassasOracle, Card::Swamp];
+    let steps = assert_wins(puzzle(vec![Card::Gush], islands(2), pile.to_vec()), &pile);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Gush,
+            payment: doomdle::Payment {
+                alt: Some(doomdle::AltCost::ReturnTwoIslands(..)),
+                ..
+            },
+            ..
+        }
+    )));
+    // One Island: no alternative cost, no five mana.
+    assert_fails(puzzle(vec![Card::Gush], islands(1), pile.to_vec()), &pile);
+}
+
+/// Pair 40: Reckless Impulse isn't a draw, so Narset can't stop it finding
+/// Oracle.
+#[test]
+fn reckless_impulse_gets_around_narset() {
+    let pile = [Card::ThassasOracle, Card::Swamp, Card::Plains];
+    let narset = || board(&[Card::Narset]);
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::Mountain),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    assert_fails(
+        puzzle_vs(vec![Card::Brainstorm], lands(), pile.to_vec(), narset()),
+        &pile,
+    );
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::RecklessImpulse],
+            lands(),
+            pile.to_vec(),
+            narset(),
+        ),
+        &pile,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::ThassasOracle,
+            from: Zone::Exile,
+            ..
+        }
+    )));
+}
+
+/// Pair 41: Timetwister with exactly seven cards draws them all; eight leaves
+/// the order unknown.
+#[test]
+fn timetwister_needs_exactly_seven() {
+    // Hand after casting: Oracle. Graveyard: Doomsday. Library: the pile.
+    // 1 + 1 + 5 = 7, and Oracle comes back with devotion for an empty library.
+    let pile = [
+        Card::Swamp,
+        Card::Plains,
+        Card::Mountain,
+        Card::Forest,
+        Card::Tundra,
+    ];
+    let lands = || {
+        let mut v = islands(5);
+        v.push(Permanent::untapped(Card::Swamp));
+        v
+    };
+    assert_wins(
+        puzzle(
+            vec![Card::Timetwister, Card::ThassasOracle],
+            lands(),
+            pile.to_vec(),
+        ),
+        &pile,
+    );
+    // One more card in hand makes eight. A land with no land drop left
+    // can't be shed (a cantrip could rearrange the count, as the solver
+    // happily found with Brainstorm).
+    let mut eight = puzzle(
+        vec![Card::Timetwister, Card::ThassasOracle, Card::Mountain],
+        lands(),
+        pile.to_vec(),
+    );
+    eight.you.land_drop_available = false;
+    assert_fails(eight, &pile);
+}
+
+/// Pair 42: Sol Ring pays Laboratory Maniac's generic mana but can't pay
+/// Oracle's {U}{U}.
+#[test]
+fn sol_ring_pays_generic_only() {
+    let one = [Card::Swamp];
+    let board_with_ring = || {
+        vec![
+            Permanent::untapped(Card::SolRing),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    let steps = assert_wins(
+        puzzle(
+            vec![
+                Card::LaboratoryManiac,
+                Card::GitaxianProbe,
+                Card::GitaxianProbe,
+            ],
+            board_with_ring(),
+            one.to_vec(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::TapForColorless {
+            source: Card::SolRing
+        }
+    )));
+    assert_fails(
+        puzzle(vec![Card::ThassasOracle], board_with_ring(), one.to_vec()),
+        &one,
+    );
+}

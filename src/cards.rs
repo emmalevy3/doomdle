@@ -12,7 +12,7 @@ use crate::engine::{
     Choice, EngineError, multisets, ordered_selections, pay_mana, tax_payments,
     unordered_selections,
 };
-use crate::mana::{AltCost, Color, ManaCost, Payment};
+use crate::mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 use crate::state::{
     ChoiceKind, LossReason, PendingChoice, Player, PlayerState, SpellMode, StackItem, State, Target,
 };
@@ -64,6 +64,17 @@ pub enum Card {
     GrafdiggersCage,
     Thalia,
     ArchonOfEmeria,
+    // Draw and selection (stage 6a)
+    NightsWhisper,
+    Meditate,
+    IdeasUnbound,
+    Manamorphose,
+    Gush,
+    Timetwister,
+    RecklessImpulse,
+    // Mana (stage 6a)
+    SolRing,
+    Gleemox,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -144,6 +155,8 @@ impl LandType {
 pub enum ManaAbility {
     /// {T}: add one mana of one of the colors from [`Card::mana_colors`].
     Tap,
+    /// {T}: add this much colorless mana (Sol Ring).
+    TapColorless(u8),
     /// {T}, sacrifice: add this many mana of any one color.
     Sacrifice(u8),
     /// Lion's Eye Diamond: discard your hand, sacrifice: add three mana of
@@ -278,6 +291,15 @@ impl Card {
             Card::GrafdiggersCage => "Grafdigger's Cage",
             Card::Thalia => "Thalia, Guardian of Thraben",
             Card::ArchonOfEmeria => "Archon of Emeria",
+            Card::NightsWhisper => "Night's Whisper",
+            Card::Meditate => "Meditate",
+            Card::IdeasUnbound => "Ideas Unbound",
+            Card::Manamorphose => "Manamorphose",
+            Card::Gush => "Gush",
+            Card::Timetwister => "Timetwister",
+            Card::RecklessImpulse => "Reckless Impulse",
+            Card::SolRing => "Sol Ring",
+            Card::Gleemox => "Gleemox",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -338,7 +360,11 @@ impl Card {
             | Card::EdgeOfAutumn
             | Card::FlowState
             | Card::Thoughtseize
-            | Card::Duress => CardKind::Sorcery,
+            | Card::Duress
+            | Card::NightsWhisper
+            | Card::IdeasUnbound
+            | Card::Timetwister
+            | Card::RecklessImpulse => CardKind::Sorcery,
             Card::Brainstorm
             | Card::Consider
             | Card::AncestralRecall
@@ -364,14 +390,19 @@ impl Card {
             | Card::SnuffOut
             | Card::SurgicalExtraction
             | Card::Silence
-            | Card::VeilOfSummer => CardKind::Instant,
+            | Card::VeilOfSummer
+            | Card::Meditate
+            | Card::Manamorphose
+            | Card::Gush => CardKind::Instant,
             Card::LionsEyeDiamond
             | Card::BlackLotus
             | Card::LotusPetal
             | Card::MoxSapphire
             | Card::MoxJet
             | Card::DefenseGrid
-            | Card::GrafdiggersCage => CardKind::Artifact,
+            | Card::GrafdiggersCage
+            | Card::SolRing
+            | Card::Gleemox => CardKind::Artifact,
             Card::Plains
             | Card::Island
             | Card::Swamp
@@ -443,6 +474,13 @@ impl Card {
             Card::GrafdiggersCage => ManaCost::FREE.with_generic(1),
             Card::Thalia => ManaCost::colored(Color::W, 1).with_generic(1),
             Card::ArchonOfEmeria => ManaCost::colored(Color::W, 1).with_generic(2),
+            Card::NightsWhisper => ManaCost::colored(Color::B, 1).with_generic(1),
+            Card::Meditate | Card::Timetwister => ManaCost::colored(Color::U, 1).with_generic(2),
+            Card::IdeasUnbound => ManaCost::colored(Color::U, 2),
+            Card::Manamorphose => ManaCost::FREE.with_generic(1).with_hybrid(1),
+            Card::Gush => ManaCost::colored(Color::U, 1).with_generic(4),
+            Card::RecklessImpulse => ManaCost::colored(Color::R, 1).with_generic(1),
+            Card::SolRing => ManaCost::FREE.with_generic(1),
             _ => ManaCost::FREE,
         }
     }
@@ -468,10 +506,13 @@ impl Card {
         }
     }
 
-    /// Whether the card's cost has a pip of `color`, Phyrexian pips included.
+    /// Whether the card's cost has a pip of `color`, Phyrexian pips included;
+    /// an {R/G} hybrid pip makes the card both red and green.
     fn has_pip(self, color: Color) -> bool {
         let cost = self.mana_cost();
-        cost.pip(color) > 0 || cost.phyrexian_pip(color) > 0
+        cost.pip(color) > 0
+            || cost.phyrexian_pip(color) > 0
+            || (cost.hybrid > 0 && matches!(color, Color::R | Color::G))
     }
 
     /// Blue cards, for Force of Will's and Force of Negation's pitch and
@@ -665,12 +706,7 @@ impl Card {
             Card::Grief => pitches(0, Card::is_black),
             // "Return an Island you control to its owner's hand."
             Card::Daze => {
-                let mut islands: Vec<Card> = ps
-                    .battlefield
-                    .iter()
-                    .map(|p| p.card)
-                    .filter(|c| c.land_types().contains(&LandType::Island))
-                    .collect();
+                let mut islands = islands_controlled(ps);
                 islands.sort();
                 islands.dedup();
                 islands
@@ -681,6 +717,15 @@ impl Card {
                     })
                     .collect()
             }
+            // "Return two Islands you control to their owner's hand."
+            Card::Gush => unordered_selections(&islands_controlled(ps), 2)
+                .into_iter()
+                .filter(|pair| pair.len() == 2)
+                .map(|pair| Payment {
+                    alt: Some(AltCost::ReturnTwoIslands(pair[0], pair[1])),
+                    ..Payment::FREE
+                })
+                .collect(),
             // "If you control a Swamp, you may pay 4 life rather than pay
             // this spell's mana cost."
             Card::SnuffOut
@@ -766,7 +811,8 @@ impl Card {
             Card::LionsEyeDiamond => Some(ManaAbility::Led),
             Card::BlackLotus => Some(ManaAbility::Sacrifice(3)),
             Card::LotusPetal => Some(ManaAbility::Sacrifice(1)),
-            Card::MoxSapphire | Card::MoxJet => Some(ManaAbility::Tap),
+            Card::MoxSapphire | Card::MoxJet | Card::Gleemox => Some(ManaAbility::Tap),
+            Card::SolRing => Some(ManaAbility::TapColorless(2)),
             _ if self.kind() == CardKind::Land && !self.land_types().is_empty() => {
                 Some(ManaAbility::Tap)
             }
@@ -780,6 +826,7 @@ impl Card {
         match self {
             Card::MoxSapphire => vec![Color::U],
             Card::MoxJet => vec![Color::B],
+            Card::Gleemox => Color::ALL.to_vec(),
             _ => self.land_types().iter().map(|t| t.color()).collect(),
         }
     }
@@ -938,6 +985,48 @@ pub(crate) fn resolve_spell(
             return discard_from(state, controller, bin, true);
         }
         Card::Duress => return discard_from(state, controller, bin, false),
+        // The loss is checked after the resolution, so a win in the same
+        // draw still counts.
+        Card::NightsWhisper => {
+            state.draw(controller, 2);
+            state.player_mut(controller).life -= 2;
+        }
+        Card::Meditate => state.draw(controller, 4),
+        Card::IdeasUnbound => state.draw(controller, 3),
+        Card::Gush => state.draw(controller, 2),
+        // "Add two mana in any combination of colors. Draw a card." The colors
+        // are chosen first.
+        Card::Manamorphose => {
+            return pause(
+                state,
+                controller,
+                bin,
+                ChoiceKind::AddMana {
+                    amount: 2,
+                    then_draw: 1,
+                },
+            );
+        }
+        // Hand and graveyard into the library, shuffle, draw seven. The
+        // opponent's side is ignored (CARDS.md). Timetwister itself is on the
+        // stack, so it is binned afterwards as usual.
+        Card::Timetwister => {
+            let ps = state.player_mut(controller);
+            let hand = std::mem::take(&mut ps.hand);
+            let graveyard = std::mem::take(&mut ps.graveyard);
+            ps.library.extend(hand);
+            ps.library.extend(graveyard);
+            ps.shuffle();
+            state.draw(controller, 7);
+        }
+        // "Exile the top two cards of your library. Until the end of your next
+        // turn, you may play those cards." Order-dependent like a draw.
+        Card::RecklessImpulse => {
+            let k = look_at_top(state, controller, 2);
+            let ps = state.player_mut(controller);
+            let exiled: Vec<Card> = ps.library.drain(..k).collect();
+            ps.impulse.extend(exiled);
+        }
         Card::SurgicalExtraction => {
             if let Some(Target::Graveyard { owner, card: named }) = target {
                 surgical(state, owner, named);
@@ -1031,6 +1120,15 @@ pub(crate) fn resolve_spell(
         state.put_in_graveyard(controller, bin);
     }
     Ok(())
+}
+
+/// The Island-typed lands `ps` controls, one entry per permanent.
+fn islands_controlled(ps: &PlayerState) -> Vec<Card> {
+    ps.battlefield
+        .iter()
+        .map(|p| p.card)
+        .filter(|c| c.land_types().contains(&LandType::Island))
+        .collect()
 }
 
 /// Whether `owner`'s Veil of Summer stops `spell` (cast by the other player)
@@ -1477,6 +1575,15 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
                     .map(Choice::Ping),
             );
         }
+        ChoiceKind::AddMana { amount, .. } => {
+            for colors in multisets(&Color::ALL, usize::from(amount)) {
+                let mut pool = ManaPool::EMPTY;
+                for color in colors {
+                    pool.add_mana(color, 1);
+                }
+                out.push(Choice::AddMana(pool));
+            }
+        }
     }
     out
 }
@@ -1670,6 +1777,14 @@ pub(crate) fn apply_choice(
                 }
                 _ => return Err(illegal()),
             }
+        }
+        (ChoiceKind::AddMana { amount, then_draw }, Choice::AddMana(mana)) => {
+            if mana.total() != amount || mana.get_colorless() != 0 {
+                return Err(illegal());
+            }
+            let ps = state.player_mut(player);
+            ps.mana_pool = ps.mana_pool.plus(mana);
+            state.draw(player, usize::from(then_draw));
         }
         _ => return Err(illegal()),
     }
@@ -4323,6 +4438,284 @@ mod tests {
         assert_eq!(
             after.you.graveyard,
             vec![Card::ThassasOracle, Card::Doomsday, Card::Unearth]
+        );
+    }
+
+    // ------------------------------------------------------------ stage 6a
+
+    #[test]
+    fn draw_and_mana_spell_data() {
+        assert_eq!(Card::NightsWhisper.kind(), CardKind::Sorcery);
+        assert_eq!(Card::Meditate.kind(), CardKind::Instant);
+        assert_eq!(Card::IdeasUnbound.kind(), CardKind::Sorcery);
+        assert_eq!(Card::Manamorphose.kind(), CardKind::Instant);
+        assert_eq!(Card::Gush.kind(), CardKind::Instant);
+        assert_eq!(Card::Timetwister.kind(), CardKind::Sorcery);
+        assert_eq!(Card::RecklessImpulse.kind(), CardKind::Sorcery);
+        assert_eq!(Card::SolRing.kind(), CardKind::Artifact);
+        assert_eq!(Card::Gleemox.kind(), CardKind::Artifact);
+        assert_eq!(Card::NightsWhisper.mana_cost().to_string(), "{1}{B}");
+        assert_eq!(Card::Meditate.mana_cost().to_string(), "{2}{U}");
+        assert_eq!(Card::IdeasUnbound.mana_cost().to_string(), "{U}{U}");
+        assert_eq!(Card::Manamorphose.mana_cost().to_string(), "{1}{R/G}");
+        assert_eq!(Card::Gush.mana_cost().to_string(), "{4}{U}");
+        assert_eq!(Card::Timetwister.mana_cost().to_string(), "{2}{U}");
+        assert_eq!(Card::RecklessImpulse.mana_cost().to_string(), "{1}{R}");
+        assert_eq!(Card::SolRing.mana_cost().to_string(), "{1}");
+        assert_eq!(Card::Gleemox.mana_cost(), ManaCost::FREE);
+        // Mana values for Mental Misstep, Spell Snare and Unearth.
+        assert_eq!(Card::Gush.mana_cost().mana_value(), 5);
+        assert_eq!(Card::Manamorphose.mana_cost().mana_value(), 2);
+        assert_eq!(Card::SolRing.mana_cost().mana_value(), 1);
+        // Colors: Manamorphose is red and green, Impulse red, the rocks
+        // colorless.
+        assert!(Card::Manamorphose.is_red() && !Card::Manamorphose.is_blue());
+        assert!(Card::RecklessImpulse.is_red());
+        assert!(Card::SolRing.is_colorless() && Card::Gleemox.is_colorless());
+        assert!(!Card::Manamorphose.is_colorless());
+        assert_eq!(
+            Card::SolRing.mana_ability(),
+            Some(ManaAbility::TapColorless(2))
+        );
+        assert_eq!(Card::Gleemox.mana_ability(), Some(ManaAbility::Tap));
+        assert_eq!(Card::Gleemox.mana_colors(), Color::ALL.to_vec());
+    }
+
+    #[test]
+    fn nights_whisper_draws_two_and_loses_two_life() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island, Card::Swamp, Card::Plains],
+            ..PlayerState::default()
+        });
+        let after = resolve(state, Card::NightsWhisper);
+        assert_eq!(after.you.hand, vec![Card::Island, Card::Swamp]);
+        assert_eq!(after.you.life, 18);
+        assert_eq!(after.you.graveyard, vec![Card::NightsWhisper]);
+        // At 2 life it kills you, unless the draw already won.
+        let state = main_phase(PlayerState {
+            life: 2,
+            library: vec![Card::Island, Card::Swamp],
+            ..PlayerState::default()
+        });
+        assert_eq!(
+            resolve(state, Card::NightsWhisper).outcome,
+            Some(Outcome::Loss(LossReason::LifeZero))
+        );
+        let state = main_phase(PlayerState {
+            life: 2,
+            library: vec![Card::Island],
+            battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+            ..PlayerState::default()
+        });
+        assert_eq!(
+            resolve(state, Card::NightsWhisper).outcome,
+            Some(Outcome::Win)
+        );
+    }
+
+    #[test]
+    fn meditate_and_ideas_unbound_just_draw() {
+        let library = || {
+            vec![
+                Card::Island,
+                Card::Swamp,
+                Card::Plains,
+                Card::Mountain,
+                Card::Forest,
+            ]
+        };
+        let state = main_phase(PlayerState {
+            library: library(),
+            ..PlayerState::default()
+        });
+        let after = resolve(state, Card::Meditate);
+        assert_eq!(after.you.hand.len(), 4);
+        assert_eq!(after.you.library, vec![Card::Forest]);
+        let state = main_phase(PlayerState {
+            library: library(),
+            ..PlayerState::default()
+        });
+        let after = resolve(state, Card::IdeasUnbound);
+        assert_eq!(after.you.hand.len(), 3);
+        assert_eq!(after.you.library, vec![Card::Mountain, Card::Forest]);
+    }
+
+    #[test]
+    fn manamorphose_picks_two_colors_then_draws() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        let asked = resolve(state, Card::Manamorphose);
+        let pending = asked.pending.expect("choose the colors");
+        assert_eq!(
+            pending.kind,
+            ChoiceKind::AddMana {
+                amount: 2,
+                then_draw: 1,
+            }
+        );
+        // Five colors, two picks with repetition: 15 combinations.
+        let options = legal_actions(&asked);
+        assert_eq!(options.len(), 15);
+        assert!(options.contains(&Action::Choose(Choice::AddMana(ManaPool::of(Color::U, 2)))));
+        let after = apply(
+            &asked,
+            &Action::Choose(Choice::AddMana(ManaPool::of(Color::U, 1).with(Color::B, 1))),
+        )
+        .unwrap();
+        assert_eq!(
+            after.you.mana_pool,
+            ManaPool::of(Color::U, 1).with(Color::B, 1)
+        );
+        assert_eq!(after.you.hand, vec![Card::Island]);
+        assert_eq!(after.you.graveyard, vec![Card::Manamorphose]);
+        // Colorless or the wrong amount is rejected.
+        assert!(matches!(
+            apply(
+                &asked,
+                &Action::Choose(Choice::AddMana(ManaPool::colorless(2)))
+            ),
+            Err(EngineError::IllegalAction(_))
+        ));
+    }
+
+    #[test]
+    fn gush_returns_two_islands_or_costs_five() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::Gush],
+            battlefield: vec![
+                Permanent::tapped(Card::Island),
+                Permanent::untapped(Card::UndergroundSea),
+                Permanent::untapped(Card::Swamp),
+            ],
+            mana_pool: ManaPool::of(Color::U, 1).with(Color::B, 4),
+            library: vec![Card::Plains, Card::Mountain],
+            ..PlayerState::default()
+        });
+        let alt = Action::CastSpell {
+            card: Card::Gush,
+            payment: Payment {
+                alt: Some(AltCost::ReturnTwoIslands(
+                    Card::Island,
+                    Card::UndergroundSea,
+                )),
+                ..Payment::FREE
+            },
+            target: None,
+            from: Zone::Hand,
+        };
+        let hard = Action::CastSpell {
+            card: Card::Gush,
+            payment: Payment::mana(ManaPool::of(Color::U, 1).with(Color::B, 4)),
+            target: None,
+            from: Zone::Hand,
+        };
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&alt));
+        assert!(actions.contains(&hard));
+        let cast = apply(&state, &alt).unwrap();
+        assert_eq!(cast.you.hand, vec![Card::Island, Card::UndergroundSea]);
+        assert_eq!(cast.you.battlefield, vec![Permanent::untapped(Card::Swamp)]);
+        // The floating mana stays; Gush then draws two.
+        assert_eq!(cast.you.mana_pool.total(), 5);
+        let after = pass_twice(&cast);
+        assert_eq!(after.you.hand.len(), 4);
+        // One Island isn't enough for the alternative cost.
+        let one = main_phase(PlayerState {
+            hand: vec![Card::Gush],
+            battlefield: vec![Permanent::untapped(Card::Island)],
+            ..PlayerState::default()
+        });
+        assert!(!legal_actions(&one).iter().any(|a| matches!(
+            a,
+            Action::CastSpell {
+                card: Card::Gush,
+                ..
+            }
+        )));
+    }
+
+    #[test]
+    fn timetwister_shuffles_hand_and_graveyard_in_and_draws_seven() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::Island, Card::Swamp],
+            graveyard: vec![Card::Doomsday, Card::Brainstorm],
+            library: vec![Card::Plains, Card::Mountain, Card::Forest],
+            ..PlayerState::default()
+        });
+        // Exactly seven: all drawn, order irrelevant.
+        let after = resolve(state.clone(), Card::Timetwister);
+        assert_eq!(after.outcome, None);
+        assert_eq!(after.you.hand.len(), 7);
+        assert!(after.you.library.is_empty());
+        assert_eq!(after.you.graveyard, vec![Card::Timetwister]);
+        // Eight: the seven drawn depend on an unknown order.
+        let mut eight = state.clone();
+        eight.you.library.push(Card::Tundra);
+        assert_eq!(
+            resolve(eight, Card::Timetwister).outcome,
+            Some(Outcome::Loss(LossReason::LibraryUnordered))
+        );
+        // Six: the seventh draw is from an empty library.
+        let mut six = state;
+        six.you.library.pop();
+        let lost = resolve(six.clone(), Card::Timetwister);
+        assert_eq!(
+            lost.outcome,
+            Some(Outcome::Loss(LossReason::DrewFromEmptyLibrary))
+        );
+        six.you
+            .battlefield
+            .push(Permanent::untapped(Card::LaboratoryManiac));
+        assert_eq!(resolve(six, Card::Timetwister).outcome, Some(Outcome::Win));
+    }
+
+    #[test]
+    fn reckless_impulse_exiles_two_you_may_play() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::ThassasOracle, Card::Island, Card::Swamp],
+            mana_pool: ManaPool::of(Color::U, 2),
+            ..PlayerState::default()
+        });
+        let after = resolve(state, Card::RecklessImpulse);
+        assert_eq!(after.you.impulse, vec![Card::ThassasOracle, Card::Island]);
+        assert_eq!(after.you.library, vec![Card::Swamp]);
+        assert_eq!(after.you.cards_drawn_this_turn, 0);
+        let actions = legal_actions(&after);
+        assert!(actions.contains(&Action::PlayLand {
+            card: Card::Island,
+            from: Zone::Exile,
+        }));
+        let cast = Action::CastSpell {
+            card: Card::ThassasOracle,
+            payment: Payment::mana(ManaPool::of(Color::U, 2)),
+            target: None,
+            from: Zone::Exile,
+        };
+        assert!(actions.contains(&cast));
+        let next = apply(&after, &cast).unwrap();
+        assert_eq!(next.you.impulse, vec![Card::Island]);
+        // Grafdigger's Cage doesn't care, Narset doesn't either (no draw).
+        let mut caged = after.clone();
+        caged
+            .opponent
+            .battlefield
+            .push(Permanent::untapped(Card::GrafdiggersCage));
+        caged
+            .opponent
+            .battlefield
+            .push(Permanent::untapped(Card::Narset));
+        assert!(legal_actions(&caged).contains(&cast));
+        // An unordered library of three can't be exiled from.
+        let scrambled = main_phase(PlayerState {
+            library: vec![Card::ThassasOracle, Card::Island, Card::Swamp],
+            library_ordered: false,
+            ..PlayerState::default()
+        });
+        assert_eq!(
+            resolve(scrambled, Card::RecklessImpulse).outcome,
+            Some(Outcome::Loss(LossReason::LibraryUnordered))
         );
     }
 }

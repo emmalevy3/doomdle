@@ -27,6 +27,8 @@ impl Player {
 pub enum Zone {
     Hand,
     Graveyard,
+    /// The cards Reckless Impulse exiled this turn (`PlayerState::impulse`).
+    Exile,
 }
 
 /// What a spell targets, fixed when it is cast.
@@ -188,6 +190,9 @@ pub enum ChoiceKind {
     /// Orcish Bowmasters: its controller picks who takes the 1 damage, the
     /// other player or one of their creatures.
     PingTarget,
+    /// Manamorphose: add `amount` mana in any combination of colors, then
+    /// draw `then_draw` cards.
+    AddMana { amount: u8, then_draw: u8 },
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
@@ -243,6 +248,9 @@ pub struct PlayerState {
     pub graveyard: Vec<Card>,
     /// Kept sorted.
     pub exile: Vec<Card>,
+    /// Cards exiled by Reckless Impulse that may still be played this turn.
+    /// Kept sorted.
+    pub impulse: Vec<Card>,
     /// Kept sorted.
     pub battlefield: Vec<Permanent>,
     pub mana_pool: ManaPool,
@@ -283,6 +291,7 @@ impl Default for PlayerState {
             library_ordered: true,
             graveyard: Vec::new(),
             exile: Vec::new(),
+            impulse: Vec::new(),
             battlefield: Vec::new(),
             mana_pool: ManaPool::EMPTY,
             spells_cast_this_turn: 0,
@@ -357,6 +366,7 @@ impl PlayerState {
         self.hand.sort();
         self.graveyard.sort();
         self.exile.sort();
+        self.impulse.sort();
         self.battlefield.sort();
     }
 }
@@ -710,6 +720,9 @@ impl fmt::Display for PlayerState {
             "order unknown"
         };
         writeln!(f, "  library ({order}): {}", list_cards(&self.library))?;
+        if !self.impulse.is_empty() {
+            writeln!(f, "  exiled, may play: {}", list_cards(&self.impulse))?;
+        }
         write!(f, "  graveyard: {}", list_cards(&self.graveyard))
     }
 }
