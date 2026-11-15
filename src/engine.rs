@@ -43,6 +43,8 @@ pub enum Choice {
     /// Where a storm or replicate trigger's copies go, one target per copy
     /// (sorted, since the order of the copies doesn't matter).
     CopyTargets(Vec<Target>),
+    /// Orcish Bowmasters: who takes the 1 damage.
+    Ping(Target),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -232,8 +234,11 @@ fn your_actions(state: &State) -> Vec<Action> {
 fn their_actions(state: &State) -> Vec<Action> {
     let mut out = Vec::new();
     // Silence stops every spell; your Teferi limits them to sorcery speed,
-    // which never comes on your turn.
-    if !state.opponent.silenced && !controls(state, Player::You, Card::Teferi) {
+    // which never comes on your turn; Archon allows them one spell.
+    if !state.opponent.silenced
+        && !controls(state, Player::You, Card::Teferi)
+        && !spell_limit_reached(state, Player::Opponent)
+    {
         for card in distinct(&state.opponent.hand) {
             if card.kind() == CardKind::Instant
                 && card.target_options(state, Player::Opponent).is_some()
@@ -247,11 +252,17 @@ fn their_actions(state: &State) -> Vec<Action> {
 }
 
 fn controls(state: &State, player: Player, card: Card) -> bool {
-    state
-        .player(player)
-        .battlefield
-        .iter()
-        .any(|p| p.card == card)
+    state.controls(player, card)
+}
+
+/// Whether either player controls this card (the symmetric hate pieces).
+fn anyone_controls(state: &State, card: Card) -> bool {
+    controls(state, Player::You, card) || controls(state, Player::Opponent, card)
+}
+
+/// Archon of Emeria: "each player can't cast more than one spell each turn".
+fn spell_limit_reached(state: &State, player: Player) -> bool {
+    anyone_controls(state, Card::ArchonOfEmeria) && state.player(player).spells_cast_this_turn >= 1
 }
 
 /// Casting or playing `card` from `from`, respecting timing.
@@ -264,30 +275,33 @@ fn push_plays(
     sorcery_speed: bool,
 ) {
     let ps = state.player(player);
+    if card.kind() == CardKind::Land {
+        if sorcery_speed && ps.land_drop_available {
+            out.push(Action::PlayLand { card, from });
+        }
+        return;
+    }
+    if spell_limit_reached(state, player) {
+        return;
+    }
+    // Grafdigger's Cage: no casting from the graveyard (lands may be played).
+    if from == Zone::Graveyard && anyone_controls(state, Card::GrafdiggersCage) {
+        return;
+    }
     // Teferi: the other player's instants are sorcery-speed. His +1: the
     // controller's sorceries have flash.
     let instant_speed = sorcery_speed || !controls(state, player.other(), Card::Teferi);
-    match card.kind() {
-        CardKind::Land => {
-            if sorcery_speed && ps.land_drop_available {
-                out.push(Action::PlayLand { card, from });
-            }
-        }
-        CardKind::Instant => {
-            if instant_speed {
-                push_casts(out, state, player, card, from);
-            }
-        }
-        CardKind::Sorcery => {
-            if sorcery_speed || (instant_speed && ps.sorceries_have_flash) {
-                push_casts(out, state, player, card, from);
-            }
-        }
-        CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
-            if sorcery_speed {
-                push_casts(out, state, player, card, from);
-            }
-        }
+    let castable_now = match card.kind() {
+        CardKind::Land => false,
+        CardKind::Instant => instant_speed,
+        CardKind::Sorcery => sorcery_speed || (instant_speed && ps.sorceries_have_flash),
+        CardKind::Creature
+        | CardKind::Artifact
+        | CardKind::Enchantment
+        | CardKind::Planeswalker => sorcery_speed,
+    };
+    if castable_now {
+        push_casts(out, state, player, card, from);
     }
 }
 
@@ -321,18 +335,7 @@ fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
         Player::You => vec![ps.mana_pool],
         Player::Opponent => reachable_pools(ps),
     };
-    // Defense Grid: {3} more per Grid for the player whose turn it isn't,
-    // on top of the mana cost or of an alternative cost alike.
-    let tax = match player {
-        Player::You => 0,
-        Player::Opponent => {
-            3 * [&state.you, &state.opponent]
-                .iter()
-                .flat_map(|p| p.battlefield.iter())
-                .filter(|p| p.card == Card::DefenseGrid)
-                .count() as u8
-        }
-    };
+    let tax = extra_generic(state, player, card);
     let mut out = Vec::new();
     let mut add = |cost: &crate::mana::ManaCost, replicate: u8| -> bool {
         let mut any = false;
@@ -373,6 +376,30 @@ fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
         }
     }
     out
+}
+
+/// Generic mana added to every payment for `card` by `player`: Defense Grid's
+/// {3} per Grid for the player whose turn it isn't (always the opponent), and
+/// Thalia's {1} per Thalia on noncreature spells for both players. Both apply
+/// on top of alternative costs too.
+fn extra_generic(state: &State, player: Player, card: Card) -> u8 {
+    let count = |card: Card| -> u8 {
+        [&state.you, &state.opponent]
+            .iter()
+            .flat_map(|p| p.battlefield.iter())
+            .filter(|p| p.card == card)
+            .count() as u8
+    };
+    let grid = match player {
+        Player::You => 0,
+        Player::Opponent => 3 * count(Card::DefenseGrid),
+    };
+    let thalia = if card.kind() == CardKind::Creature {
+        0
+    } else {
+        count(Card::Thalia)
+    };
+    grid + thalia
 }
 
 /// Takes `mana` out of the pool, first tapping lands for any shortfall (the
@@ -662,14 +689,14 @@ fn choose_pile(state: &mut State, pile: &[Card]) -> Result<(), EngineError> {
     you.library = pile.to_vec();
     you.library_ordered = true;
     you.exile.extend(rest);
-    // Doomsday goes to the graveyard after resolving (or to exile, if
-    // Yawgmoth's Will was already active).
     you.graveyard.clear();
-    you.put_in_graveyard(Card::Doomsday);
     you.life -= (you.life.max(0) + 1) / 2;
     // Doomsday itself was cast this turn; the puzzle only lists the spells
     // cast before it.
     you.spells_cast_this_turn += 1;
+    // Doomsday goes to the graveyard after resolving (or to exile, under an
+    // already-active Yawgmoth's Will or the opponent's Leyline of the Void).
+    state.put_in_graveyard(Player::You, Card::Doomsday);
 
     state.phase = Phase::Main;
     state.priority = Player::You;
@@ -701,7 +728,10 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
             target,
             mode,
         } => match card.kind() {
-            CardKind::Creature | CardKind::Artifact | CardKind::Planeswalker => {
+            CardKind::Creature
+            | CardKind::Artifact
+            | CardKind::Enchantment
+            | CardKind::Planeswalker => {
                 state.enter_battlefield(controller, card, false);
                 // Evoke: sacrificed as it enters, its enter trigger already
                 // on the stack.
@@ -709,7 +739,7 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
                     let ps = state.player_mut(controller);
                     if let Some(idx) = ps.battlefield.iter().position(|p| p.card == card) {
                         ps.battlefield.remove(idx);
-                        ps.put_in_graveyard(card);
+                        state.put_in_graveyard(controller, card);
                     }
                 }
                 Ok(())
@@ -750,7 +780,11 @@ fn cast(
             from,
         })
     };
-    if !card.castable() || !cast_payments(state, player, card).contains(payment) {
+    if !card.castable()
+        || spell_limit_reached(state, player)
+        || (from == Zone::Graveyard && anyone_controls(state, Card::GrafdiggersCage))
+        || !cast_payments(state, player, card).contains(payment)
+    {
         return Err(illegal());
     }
     let target_ok = match (card.target_options(state, player), target) {
@@ -895,15 +929,16 @@ fn cycle(
                 return Err(illegal());
             }
             let idx = find_permanent(state, player, land, |_| true).ok_or_else(illegal)?;
-            let ps = state.player_mut(player);
-            ps.battlefield.remove(idx);
-            ps.put_in_graveyard(land);
+            state.player_mut(player).battlefield.remove(idx);
+            state.put_in_graveyard(player, land);
         }
         _ => return Err(illegal()),
     }
-    let ps = state.player_mut(player);
-    ps.remove_from_hand(card).ok_or_else(illegal)?;
-    ps.put_in_graveyard(card);
+    state
+        .player_mut(player)
+        .remove_from_hand(card)
+        .ok_or_else(illegal)?;
+    state.put_in_graveyard(player, card);
     state.stack.push(StackItem::Ability {
         source: card,
         kind: AbilityKind::Cycling,
@@ -922,7 +957,7 @@ fn activate_fetch(state: &mut State, player: Player, source: Card) -> Result<(),
     let ps = state.player_mut(player);
     ps.life -= 1;
     ps.battlefield.remove(idx);
-    ps.put_in_graveyard(source);
+    state.put_in_graveyard(player, source);
     state.stack.push(StackItem::Ability {
         source,
         kind: AbilityKind::Fetch,
@@ -1015,8 +1050,8 @@ fn sacrifice_for_mana(
     let idx = find_permanent(state, player, source, |p| !p.tapped).ok_or_else(illegal)?;
     let ps = state.player_mut(player);
     ps.battlefield.remove(idx);
-    ps.put_in_graveyard(source);
     ps.mana_pool.add_mana(color, amount);
+    state.put_in_graveyard(player, source);
     acted(state, player);
     Ok(())
 }
@@ -1027,12 +1062,12 @@ fn activate_led(state: &mut State, player: Player, color: Color) -> Result<(), E
         .ok_or(EngineError::IllegalAction(Action::ActivateLed { color }))?;
     let ps = state.player_mut(player);
     ps.battlefield.remove(idx);
+    ps.mana_pool.add_mana(color, 3);
     let discarded = std::mem::take(&mut ps.hand);
     for card in discarded {
-        ps.put_in_graveyard(card);
+        state.put_in_graveyard(player, card);
     }
-    ps.put_in_graveyard(source);
-    ps.mana_pool.add_mana(color, 3);
+    state.put_in_graveyard(player, source);
     acted(state, player);
     Ok(())
 }
@@ -1096,6 +1131,7 @@ impl fmt::Display for Choice {
                 let names: Vec<String> = targets.iter().map(|t| t.to_string()).collect();
                 write!(f, "Copies target {}", names.join(", "))
             }
+            Choice::Ping(target) => write!(f, "Orcish Bowmasters pings {target}"),
         }
     }
 }
@@ -2719,8 +2755,10 @@ mod tests {
                 .unwrap()
                 .into_iter()
                 .map(|t| match t {
-                    Target::Stack { card, .. } => card,
-                    Target::Graveyard { card, .. } | Target::Permanent { card, .. } => card,
+                    Target::Stack { card, .. }
+                    | Target::Graveyard { card, .. }
+                    | Target::Permanent { card, .. } => card,
+                    Target::Player(_) => panic!("a player is not a card"),
                 })
                 .collect()
         };
@@ -3596,5 +3634,248 @@ mod tests {
         )
         .unwrap();
         assert!(blue.opponent.cast_blue_or_black_this_turn);
+    }
+
+    // ------------------------------------------------------------- stage 5
+
+    fn hate(cards: &[Card]) -> PlayerState {
+        PlayerState {
+            battlefield: cards.iter().map(|&c| Permanent::untapped(c)).collect(),
+            ..PlayerState::default()
+        }
+    }
+
+    #[test]
+    fn thalia_taxes_noncreature_spells_for_both_players() {
+        let state = versus(
+            PlayerState {
+                hand: vec![Card::Brainstorm, Card::ThassasOracle, Card::GitaxianProbe],
+                mana_pool: ManaPool::of(Color::U, 2),
+                ..PlayerState::default()
+            },
+            hate(&[Card::Thalia]),
+        );
+        let casts: Vec<Action> = legal_actions(&state)
+            .into_iter()
+            .filter(|a| matches!(a, Action::CastSpell { .. }))
+            .collect();
+        // Brainstorm {1}{U}, Oracle still {U}{U}, Probe {U/P} + {1}.
+        assert!(casts.contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 2))));
+        assert!(!casts.contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1))));
+        assert!(casts.contains(&cast_action(Card::ThassasOracle, ManaPool::of(Color::U, 2))));
+        assert!(casts.contains(&Action::CastSpell {
+            card: Card::GitaxianProbe,
+            payment: Payment {
+                mana: ManaPool::of(Color::U, 1),
+                ..Payment::life(2)
+            },
+            target: None,
+            from: Zone::Hand,
+        }));
+        assert!(!casts.contains(&Action::CastSpell {
+            card: Card::GitaxianProbe,
+            payment: Payment::life(2),
+            target: None,
+            from: Zone::Hand,
+        }));
+        // Evoked Grief stays free; the opponent's Counterspell costs {1}{U}{U}
+        // and their Force of Will's pitch needs {1}.
+        let mut evoke = state.clone();
+        evoke.you.hand = vec![Card::Grief, Card::DarkRitual];
+        assert!(legal_actions(&evoke).contains(&Action::CastSpell {
+            card: Card::Grief,
+            payment: Payment {
+                alt: Some(AltCost::Pitch(Card::DarkRitual)),
+                ..Payment::FREE
+            },
+            target: None,
+            from: Zone::Hand,
+        }));
+        let theirs = facing(
+            PlayerState::default(),
+            PlayerState {
+                hand: vec![Card::Counterspell, Card::ForceOfWill, Card::Ponder],
+                battlefield: vec![
+                    Permanent::untapped(Card::Thalia),
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::Island),
+                ],
+                ..PlayerState::default()
+            },
+            Card::Brainstorm,
+        );
+        let target = on_stack(0, Card::Brainstorm);
+        let taxed_force = |pitched| {
+            their_cast(
+                Card::ForceOfWill,
+                Payment {
+                    mana: ManaPool::of(Color::U, 1),
+                    alt: Some(AltCost::Pitch(pitched)),
+                    ..Payment::life(1)
+                },
+                target,
+            )
+        };
+        assert_eq!(
+            legal_actions(&theirs),
+            vec![
+                taxed_force(Card::Counterspell),
+                taxed_force(Card::Ponder),
+                Action::Pass,
+            ]
+        );
+        // Two Thalias cost {2}.
+        let mut two = state;
+        two.you.battlefield.push(Permanent::untapped(Card::Thalia));
+        two.you.mana_pool = ManaPool::of(Color::U, 3);
+        assert!(
+            legal_actions(&two).contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 3)))
+        );
+        assert!(
+            !legal_actions(&two)
+                .contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 2)))
+        );
+    }
+
+    #[test]
+    fn archon_allows_one_spell_per_player_per_turn() {
+        // Doomsday was your spell: only abilities are left.
+        let state = versus(
+            PlayerState {
+                hand: vec![Card::Brainstorm, Card::StreetWraith],
+                mana_pool: ManaPool::of(Color::U, 3),
+                spells_cast_this_turn: 1,
+                battlefield: vec![
+                    Permanent::untapped(Card::LionsEyeDiamond),
+                    Permanent::untapped(Card::DoctorDoom),
+                ],
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            },
+            hate(&[Card::ArchonOfEmeria]),
+        );
+        let actions = legal_actions(&state);
+        assert!(
+            !actions
+                .iter()
+                .any(|a| matches!(a, Action::CastSpell { .. }))
+        );
+        assert!(actions.iter().any(|a| matches!(a, Action::Cycle { .. })));
+        assert!(
+            actions
+                .iter()
+                .any(|a| matches!(a, Action::ActivateLed { .. }))
+        );
+        assert!(actions.contains(&Action::ActivateDoom));
+        assert!(matches!(
+            apply(
+                &state,
+                &cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1))
+            ),
+            Err(EngineError::IllegalAction(_))
+        ));
+        // With no spell cast yet (a puzzle that says so) one is allowed.
+        let mut fresh = state.clone();
+        fresh.you.spells_cast_this_turn = 0;
+        assert!(
+            legal_actions(&fresh)
+                .contains(&cast_action(Card::Brainstorm, ManaPool::of(Color::U, 1)))
+        );
+        // The opponent gets one counter, then nothing.
+        let theirs = facing(
+            PlayerState::default(),
+            PlayerState {
+                hand: vec![Card::SpellPierce, Card::SpellPierce],
+                battlefield: vec![
+                    Permanent::untapped(Card::ArchonOfEmeria),
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::Island),
+                ],
+                ..PlayerState::default()
+            },
+            Card::Brainstorm,
+        );
+        let pierce = their_cast(
+            Card::SpellPierce,
+            Payment::mana(ManaPool::of(Color::U, 1)),
+            on_stack(0, Card::Brainstorm),
+        );
+        assert_eq!(legal_actions(&theirs), vec![pierce.clone(), Action::Pass]);
+        let after = apply(&theirs, &pierce).unwrap();
+        assert_eq!(legal_actions(&after), vec![Action::Pass]);
+    }
+
+    #[test]
+    fn archon_makes_your_nonbasic_lands_enter_tapped() {
+        let state = versus(
+            PlayerState {
+                hand: vec![Card::UndergroundSea, Card::Island, Card::PollutedDelta],
+                ..PlayerState::default()
+            },
+            hate(&[Card::ArchonOfEmeria]),
+        );
+        let sea = apply(&state, &play_land_action(Card::UndergroundSea)).unwrap();
+        assert_eq!(
+            sea.you.battlefield,
+            vec![Permanent::tapped(Card::UndergroundSea)]
+        );
+        let island = apply(&state, &play_land_action(Card::Island)).unwrap();
+        assert_eq!(
+            island.you.battlefield,
+            vec![Permanent::untapped(Card::Island)]
+        );
+        // A fetchland that enters tapped can't be cracked.
+        let delta = apply(&state, &play_land_action(Card::PollutedDelta)).unwrap();
+        assert!(delta.you.battlefield[0].tapped);
+        assert!(
+            !legal_actions(&delta)
+                .iter()
+                .any(|a| matches!(a, Action::ActivateFetch { .. }))
+        );
+        // The opponent's own nonbasics are unaffected; so are yours when the
+        // Archon is yours.
+        let mut mine = main_phase(PlayerState {
+            hand: vec![Card::UndergroundSea],
+            battlefield: vec![Permanent::untapped(Card::ArchonOfEmeria)],
+            ..PlayerState::default()
+        });
+        mine = apply(&mine, &play_land_action(Card::UndergroundSea)).unwrap();
+        assert!(mine.you.battlefield.iter().all(|p| !p.tapped));
+    }
+
+    #[test]
+    fn grafdiggers_cage_stops_graveyard_casts_but_not_land_plays() {
+        let state = versus(
+            PlayerState {
+                graveyard: vec![Card::Brainstorm, Card::Island],
+                mana_pool: ManaPool::of(Color::U, 1),
+                yawgmoths_will: true,
+                ..PlayerState::default()
+            },
+            hate(&[Card::GrafdiggersCage]),
+        );
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&Action::PlayLand {
+            card: Card::Island,
+            from: Zone::Graveyard,
+        }));
+        let from_graveyard = Action::CastSpell {
+            card: Card::Brainstorm,
+            payment: Payment::mana(ManaPool::of(Color::U, 1)),
+            target: None,
+            from: Zone::Graveyard,
+        };
+        assert!(!actions.contains(&from_graveyard));
+        assert!(matches!(
+            apply(&state, &from_graveyard),
+            Err(EngineError::IllegalAction(_))
+        ));
+        // Your own Cage is just as binding.
+        let mut mine = state.clone();
+        mine.opponent.battlefield.clear();
+        mine.you
+            .battlefield
+            .push(Permanent::untapped(Card::GrafdiggersCage));
+        assert!(!legal_actions(&mine).contains(&from_graveyard));
     }
 }

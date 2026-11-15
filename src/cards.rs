@@ -57,6 +57,13 @@ pub enum Card {
     Thoughtseize,
     Duress,
     Grief,
+    // The opponent's board (static hate)
+    Narset,
+    OrcishBowmasters,
+    LeylineOfTheVoid,
+    GrafdiggersCage,
+    Thalia,
+    ArchonOfEmeria,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -106,6 +113,7 @@ pub enum CardKind {
     Sorcery,
     Creature,
     Artifact,
+    Enchantment,
     Planeswalker,
     Land,
 }
@@ -180,6 +188,9 @@ pub enum TriggerKind {
     Copies { count: u8 },
     /// Grief enters: the opponent discards a nonland card of your choice.
     GriefEnters,
+    /// Orcish Bowmasters: the other player drew a card; deal 1 damage to a
+    /// target of its controller's choice.
+    BowmastersPing,
 }
 
 /// An activated ability on the stack, costs already paid.
@@ -261,6 +272,12 @@ impl Card {
             Card::Thoughtseize => "Thoughtseize",
             Card::Duress => "Duress",
             Card::Grief => "Grief",
+            Card::Narset => "Narset, Parter of Veils",
+            Card::OrcishBowmasters => "Orcish Bowmasters",
+            Card::LeylineOfTheVoid => "Leyline of the Void",
+            Card::GrafdiggersCage => "Grafdigger's Cage",
+            Card::Thalia => "Thalia, Guardian of Thraben",
+            Card::ArchonOfEmeria => "Archon of Emeria",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -306,8 +323,12 @@ impl Card {
             | Card::DoctorDoom
             | Card::LaboratoryManiac
             | Card::StreetWraith
-            | Card::Grief => CardKind::Creature,
-            Card::JaceWielderOfMysteries | Card::Teferi => CardKind::Planeswalker,
+            | Card::Grief
+            | Card::OrcishBowmasters
+            | Card::Thalia
+            | Card::ArchonOfEmeria => CardKind::Creature,
+            Card::JaceWielderOfMysteries | Card::Teferi | Card::Narset => CardKind::Planeswalker,
+            Card::LeylineOfTheVoid => CardKind::Enchantment,
             Card::Doomsday
             | Card::Unearth
             | Card::YawgmothsWill
@@ -349,7 +370,8 @@ impl Card {
             | Card::LotusPetal
             | Card::MoxSapphire
             | Card::MoxJet
-            | Card::DefenseGrid => CardKind::Artifact,
+            | Card::DefenseGrid
+            | Card::GrafdiggersCage => CardKind::Artifact,
             Card::Plains
             | Card::Island
             | Card::Swamp
@@ -415,7 +437,25 @@ impl Card {
             Card::DefenseGrid => ManaCost::FREE.with_generic(2),
             Card::Thoughtseize | Card::Duress => ManaCost::colored(Color::B, 1),
             Card::Grief => ManaCost::colored(Color::B, 2).with_generic(2),
+            Card::Narset => ManaCost::colored(Color::U, 2).with_generic(1),
+            Card::OrcishBowmasters => ManaCost::colored(Color::B, 1).with_generic(1),
+            Card::LeylineOfTheVoid => ManaCost::colored(Color::B, 2).with_generic(2),
+            Card::GrafdiggersCage => ManaCost::FREE.with_generic(1),
+            Card::Thalia => ManaCost::colored(Color::W, 1).with_generic(1),
+            Card::ArchonOfEmeria => ManaCost::colored(Color::W, 1).with_generic(2),
             _ => ManaCost::FREE,
+        }
+    }
+
+    /// A creature's toughness (0 for everything else): how much damage kills
+    /// it.
+    pub fn toughness(self) -> u8 {
+        match self {
+            Card::ThassasOracle | Card::ArchonOfEmeria => 3,
+            Card::LaboratoryManiac | Card::Grief => 2,
+            Card::DoctorDoom | Card::StreetWraith => 4,
+            Card::OrcishBowmasters | Card::Thalia => 1,
+            _ => 0,
         }
     }
 
@@ -757,6 +797,7 @@ impl Card {
     pub fn starting_loyalty(self) -> u8 {
         match self {
             Card::JaceWielderOfMysteries | Card::Teferi => 4,
+            Card::Narset => 5,
             _ => 0,
         }
     }
@@ -786,7 +827,12 @@ impl Card {
                         .battlefield
                         .iter()
                         .map(|p| p.card)
-                        .filter(|c| matches!(c.kind(), CardKind::Artifact | CardKind::Creature))
+                        .filter(|c| {
+                            matches!(
+                                c.kind(),
+                                CardKind::Artifact | CardKind::Creature | CardKind::Enchantment
+                            )
+                        })
                         .collect();
                     cards.sort();
                     cards.dedup();
@@ -844,8 +890,12 @@ pub(crate) fn resolve_spell(
 ) -> Result<(), EngineError> {
     match card {
         Card::Unearth => {
-            // A target that left the graveyard makes the spell do nothing.
+            // A target that left the graveyard makes the spell do nothing, and
+            // under Grafdigger's Cage the creature can't enter at all.
+            let caged = state.controls(Player::You, Card::GrafdiggersCage)
+                || state.controls(Player::Opponent, Card::GrafdiggersCage);
             if let Some(Target::Graveyard { card: creature, .. }) = target
+                && !caged
                 && state
                     .player_mut(controller)
                     .remove_from_graveyard(creature)
@@ -978,7 +1028,7 @@ pub(crate) fn resolve_spell(
         _ => return Err(EngineError::Internal("not an instant or sorcery")),
     }
     if let Some(bin) = bin {
-        state.player_mut(controller).put_in_graveyard(bin);
+        state.put_in_graveyard(controller, bin);
     }
     Ok(())
 }
@@ -1005,7 +1055,7 @@ fn remove_permanent(state: &mut State, spell: Card, target: Option<Target>, exil
         if exile {
             ps.exile.push(card);
         } else {
-            ps.put_in_graveyard(card);
+            state.put_in_graveyard(owner, card);
         }
     }
 }
@@ -1022,7 +1072,7 @@ fn discard_from(
     let kind = ChoiceKind::DiscardFrom { victim, creatures };
     if discard_candidates(state, kind).is_empty() {
         if let Some(bin) = bin {
-            state.player_mut(controller).put_in_graveyard(bin);
+            state.put_in_graveyard(controller, bin);
         }
         return Ok(());
     }
@@ -1126,11 +1176,10 @@ fn counter(state: &mut State, target: Option<Target>, exile: bool) {
             card, controller, ..
         } = item
     {
-        let ps = state.player_mut(controller);
         if exile {
-            ps.exile.push(card);
+            state.player_mut(controller).exile.push(card);
         } else {
-            ps.put_in_graveyard(card);
+            state.put_in_graveyard(controller, card);
         }
     }
 }
@@ -1166,7 +1215,7 @@ fn tax(
     }
     // The target is gone: the spell does nothing.
     if let Some(bin) = bin {
-        state.player_mut(controller).put_in_graveyard(bin);
+        state.put_in_graveyard(controller, bin);
     }
     Ok(())
 }
@@ -1235,6 +1284,9 @@ pub(crate) fn resolve_trigger(
             }
         }
         TriggerKind::GriefEnters => return discard_from(state, controller, None, true),
+        TriggerKind::BowmastersPing => {
+            return pause(state, controller, None, ChoiceKind::PingTarget);
+        }
     }
     Ok(())
 }
@@ -1273,7 +1325,7 @@ pub(crate) fn resolve_ability(
             if state.outcome.is_some() {
                 return Ok(());
             }
-            state.player_mut(target).mill(k);
+            state.mill(target, k);
             state.draw(controller, 1);
         }
         AbilityKind::TeferiPlusOne => {
@@ -1418,6 +1470,13 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
                     .map(|c| Choice::Discard(vec![c])),
             );
         }
+        ChoiceKind::PingTarget => {
+            out.extend(
+                ping_targets(state, pending.player)
+                    .into_iter()
+                    .map(Choice::Ping),
+            );
+        }
     }
     out
 }
@@ -1483,7 +1542,7 @@ pub(crate) fn apply_choice(
                 return Err(illegal());
             }
             if *to_graveyard {
-                ps.mill(1);
+                state.mill(player, 1);
             }
             if pending.kind == ChoiceKind::ConsiderSurveil {
                 state.draw(player, 1);
@@ -1535,10 +1594,13 @@ pub(crate) fn apply_choice(
                 return Err(illegal());
             }
             for &card in cards {
-                ps.remove_from_hand(card).ok_or_else(illegal)?;
-                ps.put_in_graveyard(card);
+                state
+                    .player_mut(player)
+                    .remove_from_hand(card)
+                    .ok_or_else(illegal)?;
+                state.put_in_graveyard(player, card);
             }
-            if !tapped_lands(ps).is_empty() {
+            if !tapped_lands(state.player(player)).is_empty() {
                 // The untap step is a second decision; the spell is binned
                 // once that one is answered.
                 return pause(state, player, pending.bin, ChoiceKind::UntapLands);
@@ -1585,16 +1647,57 @@ pub(crate) fn apply_choice(
             if !discard_candidates(state, kind).contains(card) {
                 return Err(illegal());
             }
-            let ps = state.player_mut(victim);
-            ps.remove_from_hand(*card).ok_or_else(illegal)?;
-            ps.put_in_graveyard(*card);
+            state
+                .player_mut(victim)
+                .remove_from_hand(*card)
+                .ok_or_else(illegal)?;
+            state.put_in_graveyard(victim, *card);
+        }
+        (ChoiceKind::PingTarget, Choice::Ping(target)) => {
+            if !ping_targets(state, player).contains(target) {
+                return Err(illegal());
+            }
+            match *target {
+                Target::Player(victim) => state.player_mut(victim).life -= 1,
+                Target::Permanent { owner, card } => {
+                    let ps = state.player_mut(owner);
+                    let idx = ps
+                        .battlefield
+                        .iter()
+                        .position(|p| p.card == card)
+                        .ok_or_else(illegal)?;
+                    ps.battlefield[idx].damage += 1;
+                }
+                _ => return Err(illegal()),
+            }
         }
         _ => return Err(illegal()),
     }
     if let Some(card) = pending.bin {
-        state.player_mut(pending.bin_owner).put_in_graveyard(card);
+        state.put_in_graveyard(pending.bin_owner, card);
     }
     Ok(())
+}
+
+/// Where Orcish Bowmasters' controller may send the ping: the other player,
+/// or one of their creatures.
+fn ping_targets(state: &State, controller: Player) -> Vec<Target> {
+    let victim = controller.other();
+    let mut out = vec![Target::Player(victim)];
+    let mut creatures: Vec<Card> = state
+        .player(victim)
+        .battlefield
+        .iter()
+        .map(|p| p.card)
+        .filter(|c| c.kind() == CardKind::Creature)
+        .collect();
+    creatures.sort();
+    creatures.dedup();
+    out.extend(creatures.into_iter().map(|card| Target::Permanent {
+        owner: victim,
+        card,
+    }));
+    out
 }
 
 /// Same multiset of cards, order ignored.
@@ -3856,5 +3959,370 @@ mod tests {
         // Nothing nonland in their hand: the trigger does nothing.
         let after = pass_twice(&entered);
         assert_eq!(after.pending, None);
+    }
+
+    // ------------------------------------------------------------- stage 5
+
+    fn against(you: PlayerState, hate: &[Card]) -> State {
+        versus(
+            you,
+            PlayerState {
+                battlefield: hate.iter().map(|&c| Permanent::untapped(c)).collect(),
+                ..PlayerState::default()
+            },
+        )
+    }
+
+    #[test]
+    fn hate_data() {
+        assert_eq!(Card::Narset.kind(), CardKind::Planeswalker);
+        assert_eq!(Card::Narset.starting_loyalty(), 5);
+        assert!(Card::Narset.is_blue());
+        assert_eq!(Card::OrcishBowmasters.kind(), CardKind::Creature);
+        assert_eq!(Card::LeylineOfTheVoid.kind(), CardKind::Enchantment);
+        assert!(Card::LeylineOfTheVoid.is_black());
+        assert_eq!(Card::GrafdiggersCage.kind(), CardKind::Artifact);
+        assert!(Card::GrafdiggersCage.is_colorless());
+        assert_eq!(Card::Thalia.kind(), CardKind::Creature);
+        assert_eq!(Card::ArchonOfEmeria.kind(), CardKind::Creature);
+        assert_eq!(Card::Narset.mana_cost().to_string(), "{1}{U}{U}");
+        assert_eq!(Card::OrcishBowmasters.mana_cost().to_string(), "{1}{B}");
+        assert_eq!(Card::LeylineOfTheVoid.mana_cost().to_string(), "{2}{B}{B}");
+        assert_eq!(Card::GrafdiggersCage.mana_cost().to_string(), "{1}");
+        assert_eq!(Card::Thalia.mana_cost().to_string(), "{1}{W}");
+        assert_eq!(Card::ArchonOfEmeria.mana_cost().to_string(), "{2}{W}");
+        for (card, toughness) in [
+            (Card::ThassasOracle, 3),
+            (Card::LaboratoryManiac, 2),
+            (Card::Grief, 2),
+            (Card::DoctorDoom, 4),
+            (Card::StreetWraith, 4),
+            (Card::OrcishBowmasters, 1),
+            (Card::Thalia, 1),
+            (Card::ArchonOfEmeria, 3),
+            (Card::Island, 0),
+        ] {
+            assert_eq!(card.toughness(), toughness, "{card}");
+        }
+    }
+
+    #[test]
+    fn narset_caps_your_draws_at_one_per_turn() {
+        let state = against(
+            PlayerState {
+                library: vec![Card::Island, Card::Swamp, Card::Plains],
+                ..PlayerState::default()
+            },
+            &[Card::Narset],
+        );
+        // Brainstorm draws one, then still asks for two put-backs.
+        let after = resolve(state.clone(), Card::Brainstorm);
+        assert_eq!(after.you.hand, vec![Card::Island]);
+        assert_eq!(after.you.cards_drawn_this_turn, 1);
+        assert_eq!(after.you.library.len(), 2);
+        // Already drew this turn: nothing at all.
+        let mut drew = state.clone();
+        drew.you.cards_drawn_this_turn = 1;
+        let after = resolve(drew, Card::GitaxianProbe);
+        assert!(after.you.hand.is_empty());
+        assert_eq!(after.outcome, None);
+        // An unordered library doesn't matter when no card is drawn.
+        let mut scrambled = state;
+        scrambled.you.cards_drawn_this_turn = 1;
+        scrambled.you.library_ordered = false;
+        let after = resolve(scrambled, Card::GitaxianProbe);
+        assert_eq!(after.outcome, None);
+    }
+
+    #[test]
+    fn a_draw_narset_forbids_is_never_replaced_by_lab_man() {
+        let state = against(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                cards_drawn_this_turn: 1,
+                ..PlayerState::default()
+            },
+            &[Card::Narset],
+        );
+        let after = resolve(state, Card::GitaxianProbe);
+        assert_eq!(after.outcome, None);
+        assert!(!after.you.drew_from_empty);
+        // Flow State puts into hand, which is not a draw; Doom's win check
+        // still fires with an empty library.
+        let state = against(
+            PlayerState {
+                library: vec![Card::Island],
+                cards_drawn_this_turn: 1,
+                ..PlayerState::default()
+            },
+            &[Card::Narset],
+        );
+        let asked = resolve(state, Card::FlowState);
+        assert!(asked.pending.is_some());
+        let state = with_ability(
+            against(
+                PlayerState {
+                    battlefield: vec![Permanent::untapped(Card::DoctorDoom)],
+                    cards_drawn_this_turn: 1,
+                    ..PlayerState::default()
+                },
+                &[Card::Narset],
+            ),
+            Card::DoctorDoom,
+            AbilityKind::DoomDraw,
+        );
+        assert_eq!(pass_twice(&state).outcome, Some(Outcome::Win));
+        // Pyroblast can destroy her.
+        let state = against(PlayerState::default(), &[Card::Narset]);
+        assert_eq!(
+            Card::Pyroblast.target_options(&state, Player::You),
+            Some(vec![Target::Permanent {
+                owner: Player::Opponent,
+                card: Card::Narset,
+            }])
+        );
+    }
+
+    #[test]
+    fn bowmasters_pings_once_per_card_drawn() {
+        let state = against(
+            PlayerState {
+                library: vec![Card::Island, Card::Swamp, Card::Plains],
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters],
+        );
+        let asked = resolve(state, Card::Brainstorm);
+        // Brainstorm's put-back comes first; the three pings wait on the stack.
+        assert_eq!(
+            asked.pending.map(|p| p.kind),
+            Some(ChoiceKind::BrainstormPutBack)
+        );
+        assert_eq!(asked.stack.len(), 3);
+        assert!(asked.stack.iter().all(|item| matches!(
+            item,
+            StackItem::Trigger {
+                kind: TriggerKind::BowmastersPing,
+                controller: Player::Opponent,
+                ..
+            }
+        )));
+        let after = apply(
+            &asked,
+            &Action::Choose(Choice::BrainstormPutBack([Card::Island, Card::Swamp])),
+        )
+        .unwrap();
+        // The opponent decides each ping: you, or Lab Man.
+        let ping = pass_twice(&after);
+        let pending = ping.pending.expect("the opponent aims the ping");
+        assert_eq!(pending.player, Player::Opponent);
+        assert_eq!(
+            legal_actions(&ping),
+            vec![
+                Action::Choose(Choice::Ping(Target::Player(Player::You))),
+                Action::Choose(Choice::Ping(your_permanent(Card::LaboratoryManiac))),
+            ]
+        );
+        let face = apply(
+            &ping,
+            &Action::Choose(Choice::Ping(Target::Player(Player::You))),
+        )
+        .unwrap();
+        assert_eq!(face.you.life, 19);
+        let hit = apply(
+            &ping,
+            &Action::Choose(Choice::Ping(your_permanent(Card::LaboratoryManiac))),
+        )
+        .unwrap();
+        assert_eq!(hit.you.battlefield[0].damage, 1);
+        assert!(hit.you.battlefield[0].to_string().contains("1 damage"));
+        // The second ping kills Lab Man.
+        let hit = apply(
+            &pass_twice(&hit),
+            &Action::Choose(Choice::Ping(your_permanent(Card::LaboratoryManiac))),
+        )
+        .unwrap();
+        assert!(hit.you.battlefield.is_empty());
+        assert_eq!(
+            hit.you.graveyard,
+            vec![Card::LaboratoryManiac, Card::Brainstorm]
+        );
+    }
+
+    #[test]
+    fn bowmasters_ping_at_one_life_kills_you_and_a_replaced_draw_never_pings() {
+        let state = against(
+            PlayerState {
+                life: 1,
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters],
+        );
+        let ping = pass_twice(&resolve(state, Card::GitaxianProbe));
+        assert_eq!(
+            legal_actions(&ping),
+            vec![Action::Choose(Choice::Ping(Target::Player(Player::You)))]
+        );
+        let dead = apply(
+            &ping,
+            &Action::Choose(Choice::Ping(Target::Player(Player::You))),
+        )
+        .unwrap();
+        assert_eq!(dead.outcome, Some(Outcome::Loss(LossReason::LifeZero)));
+        // Lab Man's replacement wins without any trigger.
+        let state = against(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters],
+        );
+        let won = resolve(state, Card::GitaxianProbe);
+        assert_eq!(won.outcome, Some(Outcome::Win));
+        assert!(won.stack.is_empty());
+    }
+
+    #[test]
+    fn a_creature_killed_under_leyline_is_exiled() {
+        let mut state = against(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::LaboratoryManiac)],
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters, Card::LeylineOfTheVoid],
+        );
+        state.you.battlefield[0].damage = 1;
+        state.stack.push(StackItem::Trigger {
+            source: Card::OrcishBowmasters,
+            kind: TriggerKind::BowmastersPing,
+            controller: Player::Opponent,
+        });
+        let ping = pass_twice(&state);
+        let dead = apply(
+            &ping,
+            &Action::Choose(Choice::Ping(your_permanent(Card::LaboratoryManiac))),
+        )
+        .unwrap();
+        assert!(dead.you.graveyard.is_empty());
+        assert_eq!(dead.you.exile, vec![Card::LaboratoryManiac]);
+    }
+
+    #[test]
+    fn leyline_empties_your_graveyard_everywhere() {
+        let state = against(
+            PlayerState {
+                hand: vec![Card::StreetWraith],
+                library: vec![Card::Island, Card::Swamp],
+                battlefield: vec![Permanent::untapped(Card::LotusPetal)],
+                graveyard: vec![Card::Doomsday],
+                mana_pool: ManaPool::of(Color::B, 2),
+                ..PlayerState::default()
+            },
+            &[Card::LeylineOfTheVoid],
+        );
+        // A resolved spell.
+        let after = resolve(state.clone(), Card::DarkRitual);
+        assert_eq!(after.you.graveyard, vec![Card::Doomsday]);
+        assert_eq!(after.you.exile, vec![Card::DarkRitual]);
+        // Cabal Ritual stays at three (nothing piles up) and is exiled too;
+        // Unearth has no targets.
+        let after = resolve(state.clone(), Card::CabalRitual);
+        assert_eq!(after.you.mana_pool.get(Color::B), 5);
+        assert_eq!(after.you.exile, vec![Card::CabalRitual]);
+        assert_eq!(
+            Card::Unearth.target_options(&state, Player::You),
+            Some(Vec::new())
+        );
+        // A surveil, a cycled card and a sacrificed Petal.
+        let mut sewers = state.clone();
+        sewers.pending = Some(PendingChoice {
+            player: Player::You,
+            kind: ChoiceKind::Surveil,
+            bin: None,
+            bin_owner: Player::You,
+        });
+        let after = apply(
+            &sewers,
+            &Action::Choose(Choice::Surveil { to_graveyard: true }),
+        )
+        .unwrap();
+        assert_eq!(after.you.exile, vec![Card::Island]);
+        let after = apply(
+            &state,
+            &Action::Cycle {
+                card: Card::StreetWraith,
+                payment: Payment::life(2),
+                sacrifice: None,
+            },
+        )
+        .unwrap();
+        assert_eq!(after.you.exile, vec![Card::StreetWraith]);
+        let after = apply(
+            &state,
+            &Action::SacrificeForMana {
+                source: Card::LotusPetal,
+                color: Color::U,
+            },
+        )
+        .unwrap();
+        assert_eq!(after.you.exile, vec![Card::LotusPetal]);
+        assert_eq!(after.you.graveyard, vec![Card::Doomsday]);
+    }
+
+    #[test]
+    fn bouncing_leyline_turns_the_graveyard_back_on() {
+        let mut state = against(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Teferi)],
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            },
+            &[Card::LeylineOfTheVoid],
+        );
+        state.stack.push(StackItem::Ability {
+            source: Card::Teferi,
+            kind: AbilityKind::TeferiMinusThree {
+                target: Some(Target::Permanent {
+                    owner: Player::Opponent,
+                    card: Card::LeylineOfTheVoid,
+                }),
+            },
+            controller: Player::You,
+        });
+        let after = pass_twice(&state);
+        assert_eq!(after.opponent.hand, vec![Card::LeylineOfTheVoid]);
+        assert!(after.opponent.battlefield.is_empty());
+        let after = resolve(after, Card::DarkRitual);
+        assert_eq!(after.you.graveyard, vec![Card::DarkRitual]);
+    }
+
+    #[test]
+    fn grafdiggers_cage_keeps_unearths_target_in_the_graveyard() {
+        let state = against(
+            PlayerState {
+                graveyard: vec![Card::Doomsday, Card::ThassasOracle],
+                library: vec![Card::Island],
+                ..PlayerState::default()
+            },
+            &[Card::GrafdiggersCage],
+        );
+        // Still a legal target, but nothing enters.
+        assert_eq!(
+            Card::Unearth.target_options(&state, Player::You),
+            Some(vec![your_graveyard(Card::ThassasOracle)])
+        );
+        let after = resolve_targeting(
+            state,
+            Card::Unearth,
+            Some(your_graveyard(Card::ThassasOracle)),
+        );
+        assert!(after.you.battlefield.is_empty());
+        assert!(after.stack.is_empty());
+        assert_eq!(
+            after.you.graveyard,
+            vec![Card::ThassasOracle, Card::Doomsday, Card::Unearth]
+        );
     }
 }

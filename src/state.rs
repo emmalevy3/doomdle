@@ -40,11 +40,13 @@ pub enum Target {
     Stack { index: usize, card: Card },
     /// A permanent on `owner`'s battlefield (Swords, Snuff Out, the Blasts).
     Permanent { owner: Player, card: Card },
+    /// A player (Orcish Bowmasters' ping).
+    Player(Player),
 }
 
 /// A card on the battlefield. Which player controls it is given by which
 /// battlefield it sits on. `loyalty` and `loyalty_used` are only meaningful
-/// for planeswalkers and stay 0/false otherwise.
+/// for planeswalkers and stay 0/false otherwise; `damage` only for creatures.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Permanent {
     pub card: Card,
@@ -52,11 +54,12 @@ pub struct Permanent {
     pub summoning_sick: bool,
     pub loyalty: u8,
     pub loyalty_used: bool,
+    pub damage: u8,
 }
 
 impl Permanent {
     /// A permanent that has been around since before this turn: untapped, not
-    /// summoning sick, a planeswalker at its starting loyalty.
+    /// summoning sick, a planeswalker at its starting loyalty, undamaged.
     pub fn untapped(card: Card) -> Permanent {
         Permanent {
             card,
@@ -64,6 +67,7 @@ impl Permanent {
             summoning_sick: false,
             loyalty: card.starting_loyalty(),
             loyalty_used: false,
+            damage: 0,
         }
     }
 
@@ -181,6 +185,9 @@ pub enum ChoiceKind {
     /// Thoughtseize, Duress, Grief: pick a nonland card (a noncreature one
     /// unless `creatures`) from `victim`'s hand for them to discard.
     DiscardFrom { victim: Player, creatures: bool },
+    /// Orcish Bowmasters: its controller picks who takes the 1 damage, the
+    /// other player or one of their creatures.
+    PingTarget,
 }
 
 /// A resolution that stopped for a player decision. Nobody gets priority
@@ -327,17 +334,6 @@ impl PlayerState {
         Some(self.hand.remove(pos))
     }
 
-    /// The one way a card reaches the graveyard, so Yawgmoth's Will's
-    /// "exile it instead" applies everywhere: resolved spells, discards,
-    /// sacrifices, mills and surveils alike.
-    pub(crate) fn put_in_graveyard(&mut self, card: Card) {
-        if self.yawgmoths_will {
-            self.exile.push(card);
-        } else {
-            self.graveyard.push(card);
-        }
-    }
-
     /// Removes one copy of `card` from the graveyard.
     pub(crate) fn remove_from_graveyard(&mut self, card: Card) -> Option<Card> {
         let pos = self.graveyard.iter().position(|&c| c == card)?;
@@ -347,15 +343,6 @@ impl PlayerState {
     /// Whether the graveyard holds a card of this kind (Flow State).
     pub fn graveyard_has(&self, kind: CardKind) -> bool {
         self.graveyard.iter().any(|c| c.kind() == kind)
-    }
-
-    /// Mills the top `n` cards (fewer if the library is smaller).
-    pub(crate) fn mill(&mut self, n: usize) {
-        let k = n.min(self.library.len());
-        let milled: Vec<Card> = self.library.drain(..k).collect();
-        for card in milled {
-            self.put_in_graveyard(card);
-        }
     }
 
     /// The library was shuffled: its order is unknown unless at most one card
@@ -463,17 +450,61 @@ impl State {
         }
     }
 
+    /// Whether `player` has a permanent with this card name.
+    pub fn controls(&self, player: Player, card: Card) -> bool {
+        self.player(player)
+            .battlefield
+            .iter()
+            .any(|p| p.card == card)
+    }
+
+    /// The one way a card reaches a graveyard, so the "exile it instead"
+    /// replacements apply everywhere: `player`'s own Yawgmoth's Will, or the
+    /// other player's Leyline of the Void.
+    pub(crate) fn put_in_graveyard(&mut self, player: Player, card: Card) {
+        let exile = self.player(player).yawgmoths_will
+            || self.controls(player.other(), Card::LeylineOfTheVoid);
+        let ps = self.player_mut(player);
+        if exile {
+            ps.exile.push(card);
+        } else {
+            ps.graveyard.push(card);
+        }
+    }
+
+    /// Mills `player`'s top `n` cards (fewer if the library is smaller).
+    pub(crate) fn mill(&mut self, player: Player, n: usize) {
+        let ps = self.player_mut(player);
+        let k = n.min(ps.library.len());
+        let milled: Vec<Card> = ps.library.drain(..k).collect();
+        for card in milled {
+            self.put_in_graveyard(player, card);
+        }
+    }
+
     /// One draw instruction of `n` cards. A draw from an empty library is a
     /// win with Laboratory Maniac or Jace in play, and otherwise a loss at the
-    /// next state-based check.
+    /// next state-based check. Narset caps your draws at one per turn, and a
+    /// draw she forbids simply doesn't happen (no replacement, no loss). Each
+    /// card actually drawn triggers the other player's Orcish Bowmasters.
     pub(crate) fn draw(&mut self, player: Player, n: usize) {
         if self.outcome.is_some() {
+            return;
+        }
+        let other = player.other();
+        let n = if self.controls(other, Card::Narset) {
+            n.min(1usize.saturating_sub(usize::from(self.player(player).cards_drawn_this_turn)))
+        } else {
+            n
+        };
+        if n == 0 {
             return;
         }
         if !self.player(player).can_see_top(n) {
             self.lose(LossReason::LibraryUnordered);
             return;
         }
+        let bowmasters = self.controls(other, Card::OrcishBowmasters);
         for _ in 0..n {
             let ps = self.player_mut(player);
             if ps.library.is_empty() {
@@ -487,14 +518,25 @@ impl State {
             let card = ps.library.remove(0);
             ps.hand.push(card);
             ps.cards_drawn_this_turn += 1;
+            if bowmasters {
+                self.stack.push(StackItem::Trigger {
+                    source: Card::OrcishBowmasters,
+                    kind: TriggerKind::BowmastersPing,
+                    controller: other,
+                });
+            }
         }
     }
 
     /// Puts `card` onto `player`'s battlefield and queues its enter trigger.
+    /// Under the other player's Archon of Emeria, nonbasic lands enter tapped.
     pub(crate) fn enter_battlefield(&mut self, player: Player, card: Card, tapped: bool) {
+        let archon = card.kind() == CardKind::Land
+            && !card.is_basic_land()
+            && self.controls(player.other(), Card::ArchonOfEmeria);
         self.player_mut(player)
             .battlefield
-            .push(Permanent::entering(card, tapped));
+            .push(Permanent::entering(card, tapped || archon));
         if let Some(kind) = card.etb_trigger() {
             self.stack.push(StackItem::Trigger {
                 source: card,
@@ -516,6 +558,25 @@ impl State {
         }
         if self.you.drew_from_empty {
             self.lose(LossReason::DrewFromEmptyLibrary);
+        }
+        // Creatures with lethal damage are destroyed.
+        for player in [Player::You, Player::Opponent] {
+            let dead: Vec<Card> = {
+                let ps = self.player_mut(player);
+                let mut dead = Vec::new();
+                ps.battlefield.retain(|p| {
+                    let lethal =
+                        p.card.kind() == CardKind::Creature && p.damage >= p.card.toughness();
+                    if lethal {
+                        dead.push(p.card);
+                    }
+                    !lethal
+                });
+                dead
+            };
+            for card in dead {
+                self.put_in_graveyard(player, card);
+            }
         }
     }
 
@@ -552,6 +613,9 @@ impl fmt::Display for Permanent {
                 f.write_str(" (activated)")?;
             }
         }
+        if self.damage > 0 {
+            write!(f, " ({} damage)", self.damage)?;
+        }
         Ok(())
     }
 }
@@ -562,6 +626,8 @@ impl fmt::Display for Target {
             Target::Graveyard { card, .. }
             | Target::Stack { card, .. }
             | Target::Permanent { card, .. } => write!(f, "{card}"),
+            Target::Player(Player::You) => f.write_str("you"),
+            Target::Player(Player::Opponent) => f.write_str("the opponent"),
         }
     }
 }
@@ -819,34 +885,59 @@ mod tests {
 
     #[test]
     fn mill_moves_top_cards_to_graveyard() {
-        let mut ps = PlayerState {
+        let mut state = main_phase(PlayerState {
             library: vec![Card::Island, Card::Swamp, Card::Plains],
             ..PlayerState::default()
-        };
-        ps.mill(2);
-        assert_eq!(ps.library, vec![Card::Plains]);
-        assert_eq!(ps.graveyard, vec![Card::Island, Card::Swamp]);
-        ps.mill(5);
-        assert!(ps.library.is_empty());
+        });
+        state.mill(Player::You, 2);
+        assert_eq!(state.you.library, vec![Card::Plains]);
+        assert_eq!(state.you.graveyard, vec![Card::Island, Card::Swamp]);
+        state.mill(Player::You, 5);
+        assert!(state.you.library.is_empty());
     }
 
     #[test]
     fn yawgmoths_will_sends_graveyard_bound_cards_to_exile() {
-        let mut ps = PlayerState {
+        let mut state = main_phase(PlayerState {
             library: vec![Card::Island, Card::Swamp],
             graveyard: vec![Card::Doomsday],
             ..PlayerState::default()
-        };
+        });
         assert!(!PlayerState::default().yawgmoths_will);
-        ps.put_in_graveyard(Card::Brainstorm);
-        assert_eq!(ps.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
+        state.put_in_graveyard(Player::You, Card::Brainstorm);
+        assert_eq!(state.you.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
 
-        ps.yawgmoths_will = true;
-        ps.put_in_graveyard(Card::Ponder);
-        ps.mill(1);
-        assert_eq!(ps.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
-        assert_eq!(ps.exile, vec![Card::Ponder, Card::Island]);
-        assert_eq!(ps.library, vec![Card::Swamp]);
+        state.you.yawgmoths_will = true;
+        state.put_in_graveyard(Player::You, Card::Ponder);
+        state.mill(Player::You, 1);
+        assert_eq!(state.you.graveyard, vec![Card::Doomsday, Card::Brainstorm]);
+        assert_eq!(state.you.exile, vec![Card::Ponder, Card::Island]);
+        assert_eq!(state.you.library, vec![Card::Swamp]);
+    }
+
+    #[test]
+    fn leyline_of_the_void_exiles_only_the_other_players_cards() {
+        let mut state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            ..PlayerState::default()
+        });
+        state
+            .opponent
+            .battlefield
+            .push(Permanent::untapped(Card::LeylineOfTheVoid));
+        state.put_in_graveyard(Player::You, Card::Brainstorm);
+        state.mill(Player::You, 1);
+        state.put_in_graveyard(Player::Opponent, Card::Counterspell);
+        assert!(state.you.graveyard.is_empty());
+        assert_eq!(state.you.exile, vec![Card::Brainstorm, Card::Island]);
+        assert_eq!(state.opponent.graveyard, vec![Card::Counterspell]);
+        // Your own Leyline would not touch your graveyard.
+        let mut mine = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::LeylineOfTheVoid)],
+            ..PlayerState::default()
+        });
+        mine.put_in_graveyard(Player::You, Card::Brainstorm);
+        assert_eq!(mine.you.graveyard, vec![Card::Brainstorm]);
     }
 
     #[test]

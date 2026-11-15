@@ -1469,3 +1469,292 @@ fn evoked_grief_takes_the_force() {
         }
     )));
 }
+
+// ---------------------------------------------------------------- stage 5
+
+fn board(cards: &[Card]) -> PlayerState {
+    PlayerState {
+        battlefield: cards.iter().map(|&c| Permanent::untapped(c)).collect(),
+        ..PlayerState::default()
+    }
+}
+
+/// Pair 31: Narset. Brainstorm into Lab Man draws nothing useful; Oracle with
+/// devotion for the pile doesn't draw at all.
+#[test]
+fn narset_stops_the_draw_lines() {
+    let narset = || board(&[Card::Narset]);
+    let one = [Card::Swamp];
+    assert_wins(
+        puzzle(
+            vec![Card::LaboratoryManiac, Card::Brainstorm],
+            islands(4),
+            one.to_vec(),
+        ),
+        &one,
+    );
+    assert_fails(
+        puzzle_vs(
+            vec![Card::LaboratoryManiac, Card::Brainstorm],
+            islands(4),
+            one.to_vec(),
+            narset(),
+        ),
+        &one,
+    );
+    let two = [Card::Swamp, Card::Plains];
+    assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            two.to_vec(),
+            narset(),
+        ),
+        &two,
+    );
+    // Pyroblast on Narset first brings the draws back.
+    let mut red = islands(4);
+    red.push(Permanent::untapped(Card::Mountain));
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::LaboratoryManiac, Card::Brainstorm, Card::Pyroblast],
+            red,
+            one.to_vec(),
+            narset(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::Pyroblast,
+            target: Some(Target::Permanent {
+                card: Card::Narset,
+                ..
+            }),
+            ..
+        }
+    )));
+}
+
+/// Pair 32: Orcish Bowmasters. Each draw pings; at low life the cantrip line
+/// kills you, and a lone Lab Man gets shot down.
+#[test]
+fn bowmasters_punish_draws() {
+    let bowmasters = || board(&[Card::OrcishBowmasters]);
+    let pile = [Card::ThassasOracle, Card::Swamp, Card::Plains];
+    // Brainstorm draws three: three pings. Life 8 is 4 after Doomsday.
+    let mut low = puzzle_vs(
+        vec![Card::Brainstorm],
+        islands(3),
+        pile.to_vec(),
+        bowmasters(),
+    );
+    low.you.life = 8;
+    assert_wins(
+        {
+            let mut p = low.clone();
+            p.opponent = PlayerState::default();
+            p
+        },
+        &pile,
+    );
+    let mut six = low.clone();
+    six.you.life = 6;
+    assert_fails(six, &pile);
+    let steps = assert_wins_vs(low, &pile);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::Ping(Target::Player(Player::You)))
+    )));
+    // Lab Man at 3 life against three cards: drawing them before Lab Man
+    // means three pings to the face, drawing them after means two on Lab
+    // Man. Either way the empty draw never comes with Lab Man alive.
+    let three = [Card::Swamp, Card::Plains, Card::Mountain];
+    let hand = || {
+        vec![
+            Card::LaboratoryManiac,
+            Card::Ponder,
+            Card::GitaxianProbe,
+            Card::GitaxianProbe,
+            Card::GitaxianProbe,
+        ]
+    };
+    let mut quiet = puzzle(hand(), islands(7), three.to_vec());
+    quiet.you.life = 6;
+    assert_wins(quiet, &three);
+    let mut shot = puzzle_vs(hand(), islands(7), three.to_vec(), bowmasters());
+    shot.you.life = 6;
+    assert_fails(shot, &three);
+    // Oracle as a backup: one draw to the face, then devotion covers two.
+    let mut backup = hand();
+    backup.push(Card::ThassasOracle);
+    let mut saved = puzzle_vs(backup, islands(9), three.to_vec(), bowmasters());
+    saved.you.life = 6;
+    assert_wins_vs(saved, &three);
+}
+
+/// Pair 33: Leyline of the Void. The Will + LED recast line has nothing to
+/// recast; a plain Oracle line doesn't care.
+#[test]
+fn leyline_turns_off_the_graveyard() {
+    let leyline = || board(&[Card::LeylineOfTheVoid]);
+    let lands = || {
+        vec![
+            Permanent::untapped(Card::LionsEyeDiamond),
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Swamp),
+        ]
+    };
+    let two = [Card::Island, Card::Island];
+    assert_wins(
+        puzzle(
+            vec![Card::YawgmothsWill, Card::ThassasOracle],
+            lands(),
+            two.to_vec(),
+        ),
+        &two,
+    );
+    assert_fails(
+        puzzle_vs(
+            vec![Card::YawgmothsWill, Card::ThassasOracle],
+            lands(),
+            two.to_vec(),
+            leyline(),
+        ),
+        &two,
+    );
+    assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            two.to_vec(),
+            leyline(),
+        ),
+        &two,
+    );
+}
+
+/// Pair 34: Grafdigger's Cage. Will can't recast Oracle from the graveyard,
+/// but a land sacrificed to Edge of Autumn can still be replayed from there.
+#[test]
+fn cage_blocks_graveyard_casts_but_not_land_plays() {
+    let cage = || board(&[Card::GrafdiggersCage]);
+    let led_board = || {
+        vec![
+            Permanent::untapped(Card::LionsEyeDiamond),
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Swamp),
+        ]
+    };
+    let two = [Card::Island, Card::Island];
+    assert_fails(
+        puzzle_vs(
+            vec![Card::YawgmothsWill, Card::ThassasOracle],
+            led_board(),
+            two.to_vec(),
+            cage(),
+        ),
+        &two,
+    );
+    // Edge of Autumn cycles away a tapped Island; Will replays it untapped
+    // from the graveyard for Oracle's second blue.
+    let board_with_tapped_island = || {
+        vec![
+            Permanent::tapped(Card::Island),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Swamp),
+            Permanent::untapped(Card::Swamp),
+        ]
+    };
+    let one = [Card::Plains];
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::YawgmothsWill, Card::ThassasOracle, Card::EdgeOfAutumn],
+            board_with_tapped_island(),
+            one.to_vec(),
+            cage(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::PlayLand {
+            card: Card::Island,
+            from: Zone::Graveyard,
+        }
+    )));
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle, Card::EdgeOfAutumn],
+            board_with_tapped_island(),
+            one.to_vec(),
+            cage(),
+        ),
+        &one,
+    );
+}
+
+/// Pair 35: Thalia. A line exactly on mana for Brainstorm fails; one more
+/// land wins; her tax also prices the opponent out of Counterspell.
+#[test]
+fn thalia_taxes_the_cantrip_and_the_counter() {
+    let thalia = || board(&[Card::Thalia]);
+    let pile = [Card::ThassasOracle, Card::Swamp, Card::Plains];
+    assert_wins(
+        puzzle(vec![Card::Brainstorm], islands(3), pile.to_vec()),
+        &pile,
+    );
+    assert_fails(
+        puzzle_vs(vec![Card::Brainstorm], islands(3), pile.to_vec(), thalia()),
+        &pile,
+    );
+    assert_wins_vs(
+        puzzle_vs(vec![Card::Brainstorm], islands(4), pile.to_vec(), thalia()),
+        &pile,
+    );
+    // Counterspell on two Islands costs three under Thalia.
+    let one = [Card::Swamp];
+    let mut taxed = thalia();
+    taxed.hand = vec![Card::Counterspell];
+    taxed.battlefield.extend(islands(2));
+    assert_wins_vs(
+        puzzle_vs(vec![Card::ThassasOracle], islands(2), one.to_vec(), taxed),
+        &one,
+    );
+}
+
+/// Pair 36: Archon of Emeria. Doomsday was your spell, so only abilities win:
+/// Doctor Doom already in play draws the last card.
+#[test]
+fn archon_leaves_only_abilities() {
+    let archon = || board(&[Card::ArchonOfEmeria]);
+    let one = [Card::Swamp];
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            islands(2),
+            one.to_vec(),
+            archon(),
+        ),
+        &one,
+    );
+    // Doctor Doom already in play draws the last card with an ability.
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            vec![Permanent::untapped(Card::DoctorDoom)],
+            one.to_vec(),
+            archon(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(a, Action::ActivateDoom)));
+    assert!(!has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell { .. }
+    )));
+}
