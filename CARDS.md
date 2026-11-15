@@ -59,7 +59,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Simplifications:** −8 is unreachable in one turn from loyalty 4, so the engine can omit it.
 
 ### Doctor Doom, Unrivaled
-- **Cost / type:** {2}{B}{B} — Legendary Creature — Human Sorcerer Villain
+- **Cost / type:** {2}{B}{B} — Legendary Creature — Human Sorcerer Villain. Toughness 4 (for Orcish Bowmasters).
 - **Effect:** Lifelink. {T}: You draw a card and lose 1 life. Then if your library has no cards in it, you win the game. (You win even if you have 0 life or didn't draw a card.)
 - **Gotchas:** The ability needs {T}, so summoning sickness applies. Doom works the turn he's cast only with haste from Lightning Greaves or Skateboard; otherwise he must start the puzzle on the battlefield. Each activation draws one card, and he can only tap once, so the library must have at most one card left when you activate. He wins even at 0 life. Not blue, so no devotion.
 - **Simplifications:** ignore lifelink.
@@ -391,37 +391,37 @@ These start the puzzle on the opponent's battlefield. Static effects need no opp
 - **Cost / type:** {1}{U}{U} — Legendary Planeswalker — Narset (loyalty 5)
 - **Effect:** Each opponent can't draw more than one card each turn. −2: Look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.
 - **Gotchas:** Counts draws from earlier in the turn, so if you drew in your draw step (see "Turn history"), you can't draw at all. Extra draws are simply ignored; a "draw 3" draws 0 or 1. Scryfall ruling: Lab Man and Jace *can't* replace a draw Narset forbids, so drawing from an empty library doesn't win. Lines that still work: Oracle with enough devotion, emptying the library by surveil, mill (Jace +1's mill still happens), Reckless Impulse's exile, fetching, Edge of Autumn's search; and Doctor Doom, whose win check happens even if the draw is ignored. Ponder and Brainstorm still reorder.
-- **Simplifications:** the −2 never matters (it's the opponent's).
+- **Simplifications:** the −2 never matters (it's the opponent's). The cap is enforced inside the engine's draw, so a forbidden draw simply doesn't happen: no Lab Man/Jace replacement, no loss, and no Bowmasters ping.
 
 ### Orcish Bowmasters
 - **Cost / type:** {1}{B} — Creature — Orc Archer. Flash.
 - **Effect:** When this creature enters and whenever an opponent draws a card except the first one they draw in each of their draw steps, this creature deals 1 damage to any target. Then amass Orcs 1.
 - **Gotchas:** The exception is only for the draw *step*, and the puzzle is in your main phase, so *every* card you draw pings. A draw replaced by Lab Man or Jace never happened, so it doesn't ping (and you've won anyway). Damage is dealt as each trigger resolves, so it adds to the life budget alongside Doomsday's halving, Probe, Wraith and fetches. You lose when the state-based check sees 0 life, so the timing of the last ping relative to the win matters.
-- **Simplifications:** the target is an opponent choice and becomes a search branch: you, or one of your creatures (Lab Man is a 2/2, so two pings kill it). This needs creature toughness and damage in the state. Ignore the Orc Army and its token.
+- **Simplifications:** the target is an opponent choice and becomes a search branch: you, or one of your creatures (Lab Man is a 2/2, so two pings kill it). This needs creature toughness and damage in the state. Ignore the Orc Army and its token. Bowmasters never enters mid-puzzle (the opponent only casts targeted spells), so its enter trigger isn't modeled. Damage stays for the turn and kills at the next state-based check; planeswalkers are never pinged. Toughness in this pool: Oracle 3, Lab Man 2, Grief 2, Doom 4, Street Wraith 4, Bowmasters 1, Thalia 1, Archon 3.
 
 ### Leyline of the Void
 - **Cost / type:** {2}{B}{B} — Enchantment
 - **Effect:** If this card is in your opening hand, you may begin the game with it on the battlefield. If a card would be put into an opponent's graveyard from anywhere, exile it instead.
 - **Gotchas:** Your graveyard stays empty all turn, including Doomsday itself. Off: Unearth, Yawgmoth's Will, Flow State's two-card mode, Cabal Ritual's threshold, Tamiyo's −3. Also off: the draws from Chromatic Star and Wizard's Rockets, which trigger on going to the graveyard; they're exiled instead, so nothing triggers. Still works: surveil and mill still remove cards from the library (into exile), and LED's discard still empties your hand.
-- **Simplifications:**
+- **Simplifications:** uses the same "one door into the graveyard" as Yawgmoth's Will, so a creature that dies or is sacrificed is exiled too. Bouncing Leyline (Teferi's −3) turns your graveyard back on immediately.
 
 ### Grafdigger's Cage
 - **Cost / type:** {1} — Artifact
 - **Effect:** Creature cards in graveyards and libraries can't enter the battlefield. Players can't cast spells from graveyards or libraries.
 - **Gotchas:** Symmetric, but only hurts you here. Off: Unearth (the target can't enter), casting spells from the graveyard under Yawgmoth's Will. Scryfall ruling: you can still *play lands* from your graveyard under Will. Cards exiled by Reckless Impulse are cast from exile, so they still work.
-- **Simplifications:**
+- **Simplifications:** Unearth is still castable (its target is legal) but the creature stays in the graveyard when it resolves.
 
 ### Thalia, Guardian of Thraben
 - **Cost / type:** {1}{W} — Legendary Creature — Human Soldier
 - **Effect:** First strike. Noncreature spells cost {1} more to cast.
 - **Gotchas:** Applies to alternative costs too, so "free" spells cost {1}: Force of Will, Gush, Daze, Pact, life-paid Probe. Evoked Grief is a creature spell, so it stays free. Artifacts are noncreature spells, so LED, Lotus, Petal and Moxen cost {1}. Creature spells (Oracle, Lab Man, Riddler, Tamiyo) and all abilities (cycling, equip, LED's activation) are unaffected. Symmetric, so it also taxes the opponent's counterspells.
-- **Simplifications:** ignore first strike.
+- **Simplifications:** ignore first strike. The {1} is added like any generic mana, on top of alternative costs too, and stacks with Defense Grid.
 
 ### Archon of Emeria
 - **Cost / type:** {2}{W} — Creature — Archon
 - **Effect:** Flying. Each player can't cast more than one spell each turn. Nonbasic lands your opponents control enter tapped.
 - **Gotchas:** Looks at the whole turn, so Doomsday was your one spell; you can't cast anything else. Wins have to come from abilities and lands: cycling (Street Wraith, Edge of Autumn, Miscalculation, Unearth), artifacts already in play (LED, Chromatic Star, Rockets, Spellbomb), planeswalkers already in play, or Doctor Doom already in play. Your nonbasic lands enter tapped, so a fetchland you play this turn can't be activated, and fetched duals give no mana. Basics are unaffected. It also limits the opponent to one spell on your turn.
-- **Simplifications:** ignore flying.
+- **Simplifications:** ignore flying. Your Doomsday counts as your one spell; the opponent is held to one spell too.
 
 ---
 
