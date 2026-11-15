@@ -491,42 +491,42 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 - **Cost / type:** {B} — Sorcery
 - **Effect:** Target player reveals their hand. You choose a nonland card from it. That player discards that card. You lose 2 life.
 - **Gotchas:** Costs 2 life on top of the mana.
-- **Simplifications:**
+- **Simplifications:** untargeted in the engine: the opponent is always the player chosen. Only you cast it (the opponent never casts sorceries). The 2 life is lost on resolution and can kill you.
 
 ### Duress
 - **Cost / type:** {B} — Sorcery
 - **Effect:** Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.
-- **Simplifications:**
+- **Simplifications:** untargeted in the engine: the opponent is always the player chosen. Only you cast it.
 
 ### Grief
 - **Cost / type:** {2}{B}{B} — Creature — Elemental Incarnation. Evoke—exile a black card from your hand.
 - **Effect:** Menace. When this creature enters, target opponent reveals their hand. You choose a nonland card from it. That player discards that card.
 - **Gotchas:** Evoke is free but pitches a black card. It's a creature spell, so Force of Negation and Spell Pierce can't counter it.
-- **Simplifications:** ignore menace.
+- **Simplifications:** ignore menace. An evoked Grief is sacrificed the moment it enters (no separate sacrifice trigger); its discard trigger still uses the stack, so Stifle can counter it. Only you cast it.
 
 ### Teferi, Time Raveler
 - **Cost / type:** {1}{W}{U} — Legendary Planeswalker — Teferi (starting loyalty 4)
 - **Effect:** Each opponent can cast spells only any time they could cast a sorcery. +1: Until your next turn, you may cast sorcery spells as though they had flash. −3: Return up to one target artifact, creature, or enchantment to its owner's hand. Draw a card.
 - **Gotchas:** Once he resolves, the opponent can't cast anything on your turn. −3 also draws a card, so it can draw from the pile (with no target if needed). Adds 1 devotion. Loyalty abilities are sorcery speed, once per turn.
-- **Simplifications:**
+- **Simplifications:** the static is symmetric and modeled as "the other player's instants can only be cast at sorcery speed", so with your Teferi out the opponent can't cast anything for the rest of the turn. +1 lasts the whole turn. −3 may target any artifact or creature on either battlefield, or nothing.
 
 ### Silence
 - **Cost / type:** {W} — Instant
 - **Effect:** Your opponents can't cast spells this turn.
 - **Gotchas:** It can be countered in response, and it doesn't stop activated abilities.
-- **Simplifications:**
+- **Simplifications:** a turn-long flag on the opponent. The opponent never casts Silence (untargeted spells are never responses, see Decisions).
 
 ### Veil of Summer
 - **Cost / type:** {G} — Instant
 - **Effect:** Draw a card if an opponent has cast a blue or black spell this turn. Spells you control can't be countered this turn. You and permanents you control gain hexproof from blue and from black until end of turn.
 - **Gotchas:** It can be countered itself. After it resolves, blue counterspells can still be *cast* but don't counter your spells. Hexproof from blue/black doesn't stop Pyroblast or Swords.
-- **Simplifications:**
+- **Simplifications:** turn-long flags. Counters are not even offered against a veiled player's spells (same outcome as "can't be countered", fewer branches); Mindbreak Trap still exiles them. Hexproof from blue and black is checked when targeting and again on resolution, so a Veil cast in response makes an already-cast Snuff Out fizzle. The opponent never casts Veil.
 
 ### Defense Grid
 - **Cost / type:** {2} — Artifact
 - **Effect:** Each spell costs {3} more to cast except during its controller's turn.
 - **Gotchas:** Symmetric no matter who controls it: on your turn, the opponent's spells cost 3 more, including alternative-cost Force of Will and Daze.
-- **Simplifications:**
+- **Simplifications:** the {3} is paid like any generic mana, on top of alternative costs too (Force of Will's pitch, Daze's Island, Pact of Negation's {0}); Grids on both battlefields stack. Only the opponent is ever taxed, since it is always your turn.
 
 ### Swords to Plowshares
 - **Cost / type:** {W} — Instant
