@@ -29,6 +29,9 @@ All stages (1–6c) are done: every card in `CARDS.md` is implemented. Modules:
 - `tests/puzzle_files.rs` — every `puzzles/*.json` must parse, round-trip and have a `solution` the solver confirms.
 - `puzzles/` — sample puzzle files; the folder doubles as the solver's regression corpus.
 
+## Handoff
+`HANDOFF.md` explains how the engine, solver, file format and tests fit together, the working agreements, known gaps, and the proposed roadmap to the website. Read it when starting a session.
+
 ## Rules source of truth
 - `CARDS.md` defines every card in the pool and exactly how it behaves *in this engine*. Read it before touching any card logic.
 - Never add a card that isn't in `CARDS.md`. Never change `CARDS.md` yourself; propose the change and I'll make it.
