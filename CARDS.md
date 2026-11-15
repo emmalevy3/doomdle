@@ -474,7 +474,7 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 - **Cost / type:** {U} — Instant. Storm.
 - **Effect:** Counter target instant or sorcery spell unless its controller pays {1}. Storm (copy it for each spell cast before it this turn).
 - **Gotchas:** Needs the storm count. Each copy is a separate {1} tax, so it scales with how many spells you've cast. It can't hit creatures, artifacts, or abilities.
-- **Simplifications:**
+- **Simplifications:** the storm count is every spell cast this turn by either player before Flusterstorm, Doomsday and countered spells included. The copies are made when the storm trigger resolves and their controller spreads them over the legal targets as a multiset (no choice when only one target exists); copies go to no zone when they resolve or are countered. Each copy's {1} is paid from floating mana, see Decisions.
 
 ### Spell Pierce
 - **Cost / type:** {U} — Instant
@@ -485,7 +485,7 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 - **Cost / type:** {R} — Instant
 - **Effect:** Choose one — Counter target spell if it's blue. / Destroy target permanent if it's blue.
 - **Gotchas:** Can destroy Oracle with its trigger on the stack, or Jace or Teferi. Can also counter your blue counterspell.
-- **Simplifications:**
+- **Simplifications:** only blue spells and blue permanents are ever offered as targets; the mode follows the target (counter a spell, destroy a permanent).
 
 ### Thoughtseize
 - **Cost / type:** {B} — Sorcery
@@ -532,13 +532,13 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 - **Cost / type:** {W} — Instant
 - **Effect:** Exile target creature. Its controller gains life equal to its power.
 - **Gotchas:** Exiling Oracle with its trigger on the stack drops your devotion by 2.
-- **Simplifications:**
+- **Simplifications:** the life gain is ignored.
 
 ### Snuff Out
 - **Cost / type:** {3}{B} — Instant. Alt: pay 4 life, if you control a Swamp.
 - **Effect:** Destroy target nonblack creature. It can't be regenerated.
 - **Gotchas:** Can kill Oracle (blue) but not Doctor Doom or Grief (black).
-- **Simplifications:**
+- **Simplifications:** none beyond the engine-wide ones; the alternative cost needs a Swamp-typed land and at least 4 life, and paying down to 0 loses.
 
 ### Stifle
 - **Cost / type:** {U} — Instant
@@ -550,25 +550,25 @@ These can be in your hand, the opponent's hand, or both. The opponent casts them
 - **Cost / type:** {U} — Instant. Replicate {1}.
 - **Effect:** Replicate {1} (copy it for each time you paid its replicate cost). Counter target triggered ability or colorless spell.
 - **Gotchas:** Like Stifle for triggers (Oracle's trigger, cantrip triggers, surveil, Tamiyo), but it *can't* hit activated abilities, so cycling, fetching and Doom's tap are safe. In exchange it counters colorless *spells*: LED, Lotus, Petal, Moxen, Sol Ring, Bauble, Star, Rockets, Spellbomb, Gleemox, Greaves, Skateboard. Replicate lets it answer several things at once if the opponent has mana.
-- **Simplifications:**
+- **Simplifications:** replicate is chosen on casting (as many times as the mana allows); the copies are made when the replicate trigger resolves and spread over the legal targets as a multiset, as for Flusterstorm.
 
 ### Surgical Extraction
 - **Cost / type:** {B/P} — Instant (pay {B} or 2 life)
 - **Effect:** Choose target card in a graveyard other than a basic land card. Search its owner's graveyard, hand, and library for any number of cards with the same name as that card and exile them. Then that player shuffles.
 - **Gotchas:** In response to Unearth, exiles Oracle or Lab Man from your graveyard. The bigger effect for piles: **you shuffle**, so any Surgical against you makes your library unordered, even if they target something irrelevant like Doomsday. It also reaches into your library and hand for same-named cards. Can't target basics.
-- **Simplifications:**
+- **Simplifications:** only cards in the other player's graveyard are offered as targets, never your own. The shuffle happens even when the target is the only copy; a target that has left the graveyard by resolution fizzles it, so there is no shuffle.
 
 ### Hydroblast
 - **Cost / type:** {U} — Instant
 - **Effect:** Choose one — Counter target spell if it's red. / Destroy target permanent if it's red.
 - **Gotchas:** Mirror of Pyroblast. Red spells in this pool: Pyroblast, Reckless Impulse, Manamorphose (red/green hybrid counts as red). Useful on your side to answer the opponent's Pyroblast on Oracle or Jace.
-- **Simplifications:**
+- **Simplifications:** mirror of Pyroblast: only red spells and red permanents are ever offered as targets.
 
 ### Mindbreak Trap
 - **Cost / type:** {2}{U}{U} — Instant — Trap
 - **Effect:** If an opponent cast three or more spells this turn, you may pay {0} rather than pay this spell's mana cost. Exile any number of target spells.
 - **Gotchas:** Doomsday counts, so after two more spells it's free for the opponent. Spells cast, not resolved, so countered spells count. It exiles rather than counters, so Cavern and Veil don't stop it. It can't touch abilities: once Oracle has *resolved*, its trigger is safe from Trap. It punishes long piles; the counter-strategy is winning in few spells or with abilities (cycling, Doom).
-- **Simplifications:**
+- **Simplifications:** always exiles every spell the other player controls on the stack; the single target it records is their topmost spell. Copies it exiles just vanish.
 
 ### Spell Snare
 - **Cost / type:** {U} — Instant
