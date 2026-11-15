@@ -1,0 +1,10 @@
+{
+  "id": "sample-1",
+  "title": "Brainstorm with Lion's Eye Diamond in response",
+  "you": {
+    "hand": ["Lion's Eye Diamond", "Brainstorm"],
+    "battlefield": ["Island"],
+    "library": ["Ancestral Recall", "Thassa's Oracle", "Lotus Petal", "Mox Sapphire", "Black Lotus"]
+  },
+  "solution": ["Ancestral Recall", "Thassa's Oracle", "Lotus Petal", "Mox Sapphire", "Black Lotus"]
+}

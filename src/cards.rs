@@ -10,6 +10,8 @@
 
 use std::fmt;
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 use crate::engine::{
     Choice, EngineError, multisets, ordered_selections, pay_mana, tax_payments,
     unordered_selections,
@@ -165,6 +167,95 @@ pub enum CreatureType {
     Villain,
     Wizard,
     Wraith,
+}
+
+impl CreatureType {
+    pub const ALL: [CreatureType; 15] = [
+        CreatureType::Archer,
+        CreatureType::Archon,
+        CreatureType::Elemental,
+        CreatureType::Human,
+        CreatureType::Incarnation,
+        CreatureType::Merfolk,
+        CreatureType::Moonfolk,
+        CreatureType::Orc,
+        CreatureType::Otter,
+        CreatureType::Soldier,
+        CreatureType::Sorcerer,
+        CreatureType::Sphinx,
+        CreatureType::Villain,
+        CreatureType::Wizard,
+        CreatureType::Wraith,
+    ];
+}
+
+impl fmt::Display for CreatureType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+/// A creature type by its printed name ("Wizard").
+impl std::str::FromStr for CreatureType {
+    type Err = UnknownName;
+
+    fn from_str(s: &str) -> Result<CreatureType, UnknownName> {
+        CreatureType::ALL
+            .into_iter()
+            .find(|t| t.to_string() == s)
+            .ok_or_else(|| UnknownName(s.to_string()))
+    }
+}
+
+/// A name that matches no card or creature type in the pool.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UnknownName(pub String);
+
+impl fmt::Display for UnknownName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "unknown name: {:?}", self.0)
+    }
+}
+
+impl std::error::Error for UnknownName {}
+
+/// A card by its printed name ("Thassa's Oracle").
+impl std::str::FromStr for Card {
+    type Err = UnknownName;
+
+    fn from_str(s: &str) -> Result<Card, UnknownName> {
+        Card::ALL
+            .into_iter()
+            .find(|c| c.name() == s)
+            .ok_or_else(|| UnknownName(s.to_string()))
+    }
+}
+
+/// Cards are written to puzzle files as their printed names.
+impl Serialize for Card {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.name())
+    }
+}
+
+impl<'de> Deserialize<'de> for Card {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Card, D::Error> {
+        let name = String::deserialize(deserializer)?;
+        name.parse().map_err(serde::de::Error::custom)
+    }
+}
+
+impl Serialize for CreatureType {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for CreatureType {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<CreatureType, D::Error> {
+        let name = String::deserialize(deserializer)?;
+        name.parse().map_err(serde::de::Error::custom)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -333,6 +424,104 @@ impl LoyaltyAbility {
 }
 
 impl Card {
+    /// Every card in the pool, in enum order.
+    pub const ALL: [Card; 94] = [
+        Card::ThassasOracle,
+        Card::JaceWielderOfMysteries,
+        Card::DoctorDoom,
+        Card::LaboratoryManiac,
+        Card::Doomsday,
+        Card::Unearth,
+        Card::YawgmothsWill,
+        Card::Counterspell,
+        Card::ForceOfWill,
+        Card::ForceOfNegation,
+        Card::Daze,
+        Card::SpellPierce,
+        Card::Miscalculation,
+        Card::MentalMisstep,
+        Card::SpellSnare,
+        Card::Stifle,
+        Card::PactOfNegation,
+        Card::Flusterstorm,
+        Card::ConsignToMemory,
+        Card::MindbreakTrap,
+        Card::Pyroblast,
+        Card::Hydroblast,
+        Card::SwordsToPlowshares,
+        Card::SnuffOut,
+        Card::SurgicalExtraction,
+        Card::Silence,
+        Card::VeilOfSummer,
+        Card::Teferi,
+        Card::DefenseGrid,
+        Card::Thoughtseize,
+        Card::Duress,
+        Card::Grief,
+        Card::Narset,
+        Card::OrcishBowmasters,
+        Card::LeylineOfTheVoid,
+        Card::GrafdiggersCage,
+        Card::Thalia,
+        Card::ArchonOfEmeria,
+        Card::NightsWhisper,
+        Card::Meditate,
+        Card::IdeasUnbound,
+        Card::Manamorphose,
+        Card::Gush,
+        Card::Timetwister,
+        Card::RecklessImpulse,
+        Card::SolRing,
+        Card::Gleemox,
+        Card::AetherSpellbomb,
+        Card::ChromaticStar,
+        Card::WizardsRockets,
+        Card::MishrasBauble,
+        Card::LightningGreaves,
+        Card::Skateboard,
+        Card::QuantumRiddler,
+        Card::TamiyoInquisitiveStudent,
+        Card::TamiyoSeasonedScholar,
+        Card::ThundertrapTrainer,
+        Card::CavernOfSouls,
+        Card::Brainstorm,
+        Card::Ponder,
+        Card::Preordain,
+        Card::Consider,
+        Card::AncestralRecall,
+        Card::GitaxianProbe,
+        Card::StreetWraith,
+        Card::EdgeOfAutumn,
+        Card::FlowState,
+        Card::FranticSearch,
+        Card::DarkRitual,
+        Card::CabalRitual,
+        Card::LionsEyeDiamond,
+        Card::BlackLotus,
+        Card::LotusPetal,
+        Card::MoxSapphire,
+        Card::MoxJet,
+        Card::Plains,
+        Card::Island,
+        Card::Swamp,
+        Card::Mountain,
+        Card::Forest,
+        Card::UndergroundSea,
+        Card::Tundra,
+        Card::VolcanicIsland,
+        Card::TropicalIsland,
+        Card::Scrubland,
+        Card::Badlands,
+        Card::Bayou,
+        Card::Plateau,
+        Card::Savannah,
+        Card::Taiga,
+        Card::UndercitySewers,
+        Card::MeticulousArchive,
+        Card::PollutedDelta,
+        Card::FloodedStrand,
+    ];
+
     pub fn name(self) -> &'static str {
         match self {
             Card::ThassasOracle => "Thassa's Oracle",

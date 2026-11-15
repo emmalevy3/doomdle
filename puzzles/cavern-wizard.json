@@ -1,0 +1,14 @@
+{
+  "id": "sample-2",
+  "title": "Cavern of Souls keeps Counterspell out",
+  "you": {
+    "hand": ["Thassa's Oracle"],
+    "battlefield": ["Island", "Island", {"card": "Cavern of Souls", "type": "Wizard"}],
+    "library": ["Swamp"]
+  },
+  "opponent": {
+    "hand": ["Counterspell"],
+    "battlefield": ["Island", "Island"]
+  },
+  "solution": ["Swamp"]
+}

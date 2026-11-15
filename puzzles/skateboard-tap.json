@@ -1,0 +1,14 @@
+{
+  "id": "sample-3",
+  "title": "Skateboard taps the opponent's mana",
+  "you": {
+    "hand": ["Skateboard", "Thassa's Oracle"],
+    "battlefield": ["Island", "Island", "Island", "Island"],
+    "library": ["Swamp"]
+  },
+  "opponent": {
+    "hand": ["Counterspell"],
+    "battlefield": ["Island", "Island"]
+  },
+  "solution": ["Swamp"]
+}

@@ -234,6 +234,21 @@ pub enum Verdict {
     Fails,
 }
 
+/// Searches every legal pile for one that wins: the pile (top first) and its
+/// strategy, or `None` if no pile does.
+pub fn solve_puzzle(puzzle: Puzzle) -> Result<Option<(Vec<Card>, Strategy)>, EngineError> {
+    let start = State::new(puzzle);
+    for action in legal_actions(&start) {
+        let Action::ChoosePile(pile) = &action else {
+            continue;
+        };
+        if let Some(strategy) = solve(&apply(&start, &action)?) {
+            return Ok(Some((pile.clone(), strategy)));
+        }
+    }
+    Ok(None)
+}
+
 /// Checks a pile for a puzzle: builds the post-Doomsday state and searches it.
 /// Returns an error only if the pile itself is not a legal Doomsday choice.
 pub fn verify(puzzle: Puzzle, pile: &[Card]) -> Result<Verdict, EngineError> {

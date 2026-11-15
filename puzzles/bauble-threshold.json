@@ -1,0 +1,11 @@
+{
+  "id": "sample-4",
+  "title": "Mishra's Bauble fills the graveyard for Cabal Ritual's threshold",
+  "you": {
+    "hand": ["Lotus Petal", "Gitaxian Probe", "Street Wraith", "Edge of Autumn", "Cabal Ritual", "Doctor Doom, Unrivaled", "Lightning Greaves", "Mishra's Bauble"],
+    "battlefield": ["Swamp", "Swamp"],
+    "library": ["Island", "Plains", "Mountain", "Forest"],
+    "land_drop": false
+  },
+  "solution": ["Island", "Plains", "Mountain", "Forest"]
+}
