@@ -335,19 +335,25 @@ pub enum AltCost {
     ReturnIsland(Card),
     /// Return these two Islands you control to hand (Gush); sorted.
     ReturnTwoIslands(Card, Card),
+    /// Warp (Quantum Riddler): the card's warp cost instead of its mana cost.
+    Warp,
 }
 
 /// What a player hands over for a spell or ability: mana from the pool, life
 /// (Phyrexian mana, Street Wraith's cycling, Force of Will), for an
-/// alternative cost the card it pitches or bounces, and how many times a
+/// alternative cost the card it pitches or bounces, how many times a
 /// replicate cost was paid (Consign to Memory; the mana for it is included
-/// in `mana`).
+/// in `mana`), whether offspring was paid (Thundertrap Trainer; included in
+/// `mana` too), and how much of `mana` comes from Caverns of Souls tapped as
+/// part of the cast rather than from the pool.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Payment {
     pub mana: ManaPool,
     pub life: u8,
     pub alt: Option<AltCost>,
     pub replicate: u8,
+    pub offspring: bool,
+    pub cavern: u8,
 }
 
 impl Payment {
@@ -356,6 +362,8 @@ impl Payment {
         life: 0,
         alt: None,
         replicate: 0,
+        offspring: false,
+        cavern: 0,
     };
 
     pub const fn mana(mana: ManaPool) -> Payment {
@@ -373,7 +381,11 @@ impl Payment {
     }
 
     pub fn is_free(&self) -> bool {
-        self.mana.is_empty() && self.life == 0 && self.alt.is_none() && self.replicate == 0
+        self.mana.is_empty()
+            && self.life == 0
+            && self.alt.is_none()
+            && self.replicate == 0
+            && !self.offspring
     }
 
     /// Every distinct way to pay `cost` from `pool` with `life` to spare. Each
@@ -434,6 +446,11 @@ impl fmt::Display for Payment {
         if !self.mana.is_empty() {
             parts.push(self.mana.to_string());
         }
+        match self.cavern {
+            0 => {}
+            1 => parts.push("1 of it from Cavern of Souls".to_string()),
+            n => parts.push(format!("{n} of it from Caverns of Souls")),
+        }
         if self.life > 0 {
             parts.push(format!("{} life", self.life));
         }
@@ -443,12 +460,16 @@ impl fmt::Display for Payment {
             Some(AltCost::ReturnTwoIslands(a, b)) => {
                 parts.push(format!("returning {a} and {b} to hand"))
             }
+            Some(AltCost::Warp) => parts.push("warped".to_string()),
             None => {}
         }
         match self.replicate {
             0 => {}
             1 => parts.push("replicated once".to_string()),
             n => parts.push(format!("replicated {n} times")),
+        }
+        if self.offspring {
+            parts.push("with offspring".to_string());
         }
         if parts.is_empty() {
             f.write_str("nothing")

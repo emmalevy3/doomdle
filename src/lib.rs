@@ -11,7 +11,7 @@ pub mod solver;
 pub mod state;
 
 pub use cards::{
-    AbilityKind, ActivatedAbility, Card, CardKind, CyclingCost, LandFilter, LandType,
+    AbilityKind, ActivatedAbility, Card, CardKind, CreatureType, CyclingCost, LandFilter, LandType,
     LoyaltyAbility, ManaAbility, TriggerKind,
 };
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};

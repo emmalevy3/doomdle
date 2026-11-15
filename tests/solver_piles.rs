@@ -2141,3 +2141,156 @@ fn spellbomb_saves_oracle_from_swords() {
         &one,
     );
 }
+
+// --------------------------------------------------------------- stage 6c
+
+/// Pair 49: a warped Quantum Riddler adds devotion and, with one card in
+/// hand, draws two on entering; Oracle alone can't see the pile's five.
+#[test]
+fn riddler_warps_in_and_draws_two() {
+    let five = [
+        Card::Swamp,
+        Card::Plains,
+        Card::Mountain,
+        Card::Forest,
+        Card::Tundra,
+    ];
+    let steps = assert_wins(
+        puzzle(
+            vec![Card::QuantumRiddler, Card::ThassasOracle],
+            islands(4),
+            five.to_vec(),
+        ),
+        &five,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::QuantumRiddler,
+            payment: doomdle::Payment {
+                alt: Some(doomdle::AltCost::Warp),
+                ..
+            },
+            ..
+        }
+    )));
+    let last = &steps.last().expect("steps").state;
+    assert_eq!(last.you.cards_drawn_this_turn, 2);
+    assert_fails(
+        puzzle(vec![Card::ThassasOracle], islands(4), five.to_vec()),
+        &five,
+    );
+}
+
+/// Pair 50: Tamiyo's devotion carries Oracle, unless Probe is the third
+/// draw of the turn and flips her first.
+#[test]
+fn tamiyo_flips_on_the_third_draw_and_loses_her_devotion() {
+    let four = [Card::Swamp, Card::Plains, Card::Mountain, Card::Forest];
+    let board = || {
+        let mut v = islands(2);
+        v.push(Permanent::untapped(Card::TamiyoInquisitiveStudent));
+        v
+    };
+    let with_draws = |drawn| {
+        let mut p = puzzle(
+            vec![Card::ThassasOracle, Card::GitaxianProbe],
+            board(),
+            four.to_vec(),
+        );
+        p.you.cards_drawn_this_turn = drawn;
+        p
+    };
+    assert_wins(with_draws(0), &four);
+    assert_fails(with_draws(2), &four);
+}
+
+/// Pair 51: the Seasoned Scholar's −3 brings Edge of Autumn back with the
+/// green mana to cast it again, fetching the pile down to Oracle's devotion;
+/// at loyalty 2 one Edge (cast or cycled) leaves three cards. (A three-card
+/// pile was no near-miss: cycling Edge for free was enough.)
+#[test]
+fn seasoned_scholar_returns_a_green_card_for_mana() {
+    let four = [Card::Swamp, Card::Plains, Card::Mountain, Card::Forest];
+    let board = |loyalty| {
+        let mut scholar = Permanent::untapped(Card::TamiyoSeasonedScholar);
+        scholar.loyalty = loyalty;
+        let mut v = islands(4);
+        v.push(scholar);
+        v.push(Permanent::untapped(Card::Forest));
+        v
+    };
+    let hand = || vec![Card::EdgeOfAutumn, Card::ThassasOracle];
+    let steps = assert_wins(puzzle(hand(), board(3), four.to_vec()), &four);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Loyalty {
+            source: Card::TamiyoSeasonedScholar,
+            ..
+        }
+    )));
+    assert_fails(puzzle(hand(), board(2), four.to_vec()), &four);
+}
+
+/// Pair 52: Thundertrap Trainer sees the whole four-card pile, takes the
+/// cantrip, and the scrambled rest is still small enough for Oracle; with
+/// five, one card stays unseen and the rest is too many.
+#[test]
+fn trainer_takes_a_cantrip_from_the_top_four() {
+    let four = [Card::Brainstorm, Card::Swamp, Card::Plains, Card::Mountain];
+    let hand = || vec![Card::ThundertrapTrainer, Card::ThassasOracle];
+    let steps = assert_wins(puzzle(hand(), islands(4), four.to_vec()), &four);
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::Choose(doomdle::Choice::TrainerPick(Some(Card::Brainstorm)))
+    )));
+    let five = [
+        Card::Brainstorm,
+        Card::Swamp,
+        Card::Plains,
+        Card::Mountain,
+        Card::Forest,
+    ];
+    assert_fails(puzzle(hand(), islands(4), five.to_vec()), &five);
+}
+
+/// Pair 53: Cavern of Souls naming Wizard makes Oracle uncounterable;
+/// naming Sphinx, it's just a land and Counterspell wins.
+#[test]
+fn cavern_makes_oracle_uncounterable() {
+    let one = [Card::Swamp];
+    let counterspell = || opponent(vec![Card::Counterspell], 2);
+    let board = |creature_type| {
+        vec![
+            Permanent::cavern(creature_type),
+            Permanent::untapped(Card::Island),
+            Permanent::untapped(Card::Island),
+        ]
+    };
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            board(doomdle::CreatureType::Wizard),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::ThassasOracle,
+            payment: doomdle::Payment { cavern: 1, .. },
+            ..
+        }
+    )));
+    assert_fails(
+        puzzle_vs(
+            vec![Card::ThassasOracle],
+            board(doomdle::CreatureType::Sphinx),
+            one.to_vec(),
+            counterspell(),
+        ),
+        &one,
+    );
+}

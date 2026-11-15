@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::cards::{AbilityKind, Card, CardKind, LandFilter, TriggerKind};
+use crate::cards::{AbilityKind, Card, CardKind, CreatureType, LandFilter, TriggerKind};
 use crate::engine::{Action, EngineError, apply};
 use crate::mana::ManaPool;
 
@@ -63,6 +63,11 @@ pub struct Permanent {
     pub greaves: bool,
     /// Equipped with Skateboard: haste.
     pub skateboard: bool,
+    /// A token copy (Thundertrap Trainer's offspring): a 1/1 that ceases to
+    /// exist instead of going anywhere when it leaves the battlefield.
+    pub token: bool,
+    /// Cavern of Souls' chosen creature type.
+    pub chosen_type: Option<CreatureType>,
 }
 
 impl Permanent {
@@ -78,7 +83,22 @@ impl Permanent {
             damage: 0,
             greaves: false,
             skateboard: false,
+            token: false,
+            chosen_type: None,
         }
+    }
+
+    /// An untapped Cavern of Souls that named `creature_type` when it entered.
+    pub fn cavern(creature_type: CreatureType) -> Permanent {
+        Permanent {
+            chosen_type: Some(creature_type),
+            ..Permanent::untapped(Card::CavernOfSouls)
+        }
+    }
+
+    /// How much damage kills it: the card's toughness, or 1 for a token copy.
+    pub fn toughness(&self) -> u8 {
+        if self.token { 1 } else { self.card.toughness() }
     }
 
     pub fn has_haste(&self) -> bool {
@@ -122,6 +142,13 @@ pub enum SpellMode {
     Copy,
     /// Cast for its evoke cost: the creature is sacrificed as it enters.
     Evoked,
+    /// Cast with extras: offspring paid (a token copy when it enters) and/or
+    /// Cavern of Souls mana spent (can't be countered). Never both false:
+    /// that is `Normal`.
+    With {
+        offspring: bool,
+        uncounterable: bool,
+    },
 }
 
 /// Something waiting to resolve. The top of the stack is the last element.
@@ -176,6 +203,34 @@ impl StackItem {
             }
         )
     }
+
+    /// A spell cast with Cavern of Souls mana.
+    pub fn uncounterable(&self) -> bool {
+        matches!(
+            self,
+            StackItem::Spell {
+                mode: SpellMode::With {
+                    uncounterable: true,
+                    ..
+                },
+                ..
+            }
+        )
+    }
+
+    /// A creature spell whose offspring cost was paid.
+    pub fn offspring(&self) -> bool {
+        matches!(
+            self,
+            StackItem::Spell {
+                mode: SpellMode::With {
+                    offspring: true,
+                    ..
+                },
+                ..
+            }
+        )
+    }
 }
 
 /// Which decision a paused resolution is waiting on.
@@ -215,6 +270,11 @@ pub enum ChoiceKind {
     PingTarget,
     /// Skateboard has entered: pick the permanent its trigger will tap.
     TapTarget,
+    /// Thundertrap Trainer's trigger: the top (up to) four cards are being
+    /// looked at; take one noncreature, nonland card or none.
+    TrainerPick,
+    /// Cavern of Souls is entering: name its creature type.
+    CavernType,
     /// Manamorphose: add `amount` mana in any combination of colors, then
     /// draw `then_draw` cards.
     AddMana { amount: u8, then_draw: u8 },
@@ -381,10 +441,12 @@ impl PlayerState {
 
     /// The one way a permanent leaves the battlefield. Equipment that leaves
     /// comes off whatever it was attached to; a creature that leaves takes
-    /// its equipment flags with it (the equipment stays, unattached).
-    pub(crate) fn take_permanent(&mut self, idx: usize) -> Card {
-        let card = self.battlefield.remove(idx).card;
-        match card {
+    /// its equipment flags with it (the equipment stays, unattached). Returns
+    /// the card that now changes zone: `None` for a token (it ceases to
+    /// exist), and the front face of a transformed Tamiyo.
+    pub(crate) fn take_permanent(&mut self, idx: usize) -> Option<Card> {
+        let perm = self.battlefield.remove(idx);
+        match perm.card {
             Card::LightningGreaves => self.battlefield.iter_mut().for_each(|p| p.greaves = false),
             Card::Skateboard => self
                 .battlefield
@@ -392,7 +454,7 @@ impl PlayerState {
                 .for_each(|p| p.skateboard = false),
             _ => {}
         }
-        card
+        (!perm.token).then(|| perm.card.front_face())
     }
 
     /// The library was shuffled: its order is unknown unless at most one card
@@ -529,8 +591,11 @@ impl State {
     /// battlefield, goes to the graveyard (or exile), and its "put into a
     /// graveyard from the battlefield" trigger goes on the stack if it really
     /// got there (Chromatic Star, Wizard's Rockets).
-    pub(crate) fn battlefield_to_graveyard(&mut self, player: Player, idx: usize) -> Card {
-        let card = self.player_mut(player).take_permanent(idx);
+    pub(crate) fn battlefield_to_graveyard(&mut self, player: Player, idx: usize) {
+        // A token ceases to exist instead.
+        let Some(card) = self.player_mut(player).take_permanent(idx) else {
+            return;
+        };
         if self.put_in_graveyard(player, card)
             && let Some(kind) = card.dies_trigger()
         {
@@ -540,7 +605,6 @@ impl State {
                 controller: player,
             });
         }
-        card
     }
 
     /// Mills `player`'s top `n` cards (fewer if the library is smaller).
@@ -555,14 +619,24 @@ impl State {
 
     /// One draw instruction of `n` cards. A draw from an empty library is a
     /// win with Laboratory Maniac or Jace in play, and otherwise a loss at the
-    /// next state-based check. Narset caps your draws at one per turn, and a
-    /// draw she forbids simply doesn't happen (no replacement, no loss). Each
-    /// card actually drawn triggers the other player's Orcish Bowmasters.
+    /// next state-based check. Quantum Riddler adds a card per Riddler when
+    /// the hand holds at most one card as the instruction starts. Narset caps
+    /// your draws at one per turn, and a draw she forbids simply doesn't
+    /// happen (no replacement, no loss). Each card actually drawn triggers the
+    /// other player's Orcish Bowmasters, and the third card of the turn
+    /// triggers Tamiyo's transformation.
     pub(crate) fn draw(&mut self, player: Player, n: usize) {
-        if self.outcome.is_some() {
+        if self.outcome.is_some() || n == 0 {
             return;
         }
         let other = player.other();
+        let ps = self.player(player);
+        let riddlers = ps
+            .battlefield
+            .iter()
+            .filter(|p| p.card == Card::QuantumRiddler)
+            .count();
+        let n = if ps.hand.len() <= 1 { n + riddlers } else { n };
         let n = if self.controls(other, Card::Narset) {
             n.min(1usize.saturating_sub(usize::from(self.player(player).cards_drawn_this_turn)))
         } else {
@@ -589,6 +663,11 @@ impl State {
             let card = ps.library.remove(0);
             ps.hand.push(card);
             ps.cards_drawn_this_turn += 1;
+            let tamiyo = ps.cards_drawn_this_turn == 3
+                && ps
+                    .battlefield
+                    .iter()
+                    .any(|p| p.card == Card::TamiyoInquisitiveStudent);
             if bowmasters {
                 self.stack.push(StackItem::Trigger {
                     source: Card::OrcishBowmasters,
@@ -596,14 +675,38 @@ impl State {
                     controller: other,
                 });
             }
+            if tamiyo {
+                self.stack.push(StackItem::Trigger {
+                    source: Card::TamiyoInquisitiveStudent,
+                    kind: TriggerKind::TamiyoTransform,
+                    controller: player,
+                });
+            }
+        }
+    }
+
+    /// Thundertrap Trainer's offspring: a token copy enters and fires the
+    /// card's enter trigger.
+    pub(crate) fn enter_token(&mut self, player: Player, card: Card) {
+        self.player_mut(player).battlefield.push(Permanent {
+            token: true,
+            ..Permanent::entering(card, false)
+        });
+        if let Some(kind) = card.etb_trigger() {
+            self.stack.push(StackItem::Trigger {
+                source: card,
+                kind,
+                controller: player,
+            });
         }
     }
 
     /// Puts `card` onto `player`'s battlefield and queues its enter trigger.
     /// Under the other player's Archon of Emeria, nonbasic lands enter tapped.
-    /// Skateboard's trigger needs a target before it can go on the stack, so
-    /// its controller is asked first (a pending choice; Skateboard only ever
-    /// enters from a resolving spell, when nothing else is pending).
+    /// Skateboard's trigger needs a target before it can go on the stack, and
+    /// Cavern of Souls names a creature type as it enters, so their
+    /// controller is asked first (a pending choice; both only ever enter from
+    /// a resolving spell or a land play, when nothing else is pending).
     pub(crate) fn enter_battlefield(&mut self, player: Player, card: Card, tapped: bool) {
         let archon = card.kind() == CardKind::Land
             && !card.is_basic_land()
@@ -611,10 +714,15 @@ impl State {
         self.player_mut(player)
             .battlefield
             .push(Permanent::entering(card, tapped || archon));
-        if card == Card::Skateboard {
+        let ask = match card {
+            Card::Skateboard => Some(ChoiceKind::TapTarget),
+            Card::CavernOfSouls => Some(ChoiceKind::CavernType),
+            _ => None,
+        };
+        if let Some(kind) = ask {
             self.pending = Some(PendingChoice {
                 player,
-                kind: ChoiceKind::TapTarget,
+                kind,
                 bin: None,
                 bin_owner: player,
             });
@@ -648,9 +756,7 @@ impl State {
                 .battlefield
                 .iter()
                 .enumerate()
-                .filter(|(_, p)| {
-                    p.card.kind() == CardKind::Creature && p.damage >= p.card.toughness()
-                })
+                .filter(|(_, p)| p.card.kind() == CardKind::Creature && p.damage >= p.toughness())
                 .map(|(idx, _)| idx)
                 .rev()
                 .collect();
@@ -702,6 +808,12 @@ impl fmt::Display for Permanent {
         if self.skateboard {
             f.write_str(" (equipped: Skateboard)")?;
         }
+        if self.token {
+            f.write_str(" (token)")?;
+        }
+        if let Some(creature_type) = self.chosen_type {
+            write!(f, " ({creature_type:?})")?;
+        }
         Ok(())
     }
 }
@@ -731,6 +843,17 @@ impl fmt::Display for StackItem {
                     SpellMode::Normal => {}
                     SpellMode::Copy => f.write_str("copy of ")?,
                     SpellMode::Evoked => f.write_str("evoked ")?,
+                    SpellMode::With {
+                        offspring,
+                        uncounterable,
+                    } => {
+                        if *uncounterable {
+                            f.write_str("uncounterable ")?;
+                        }
+                        if *offspring {
+                            f.write_str("offspring-paid ")?;
+                        }
+                    }
                 }
                 write!(f, "{card}")?;
                 if let Some(target) = target {

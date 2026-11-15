@@ -6,9 +6,10 @@
 use std::fmt;
 
 use crate::cards::{
-    self, AbilityKind, Card, CardKind, CyclingCost, LoyaltyAbility, ManaAbility, TriggerKind,
+    self, AbilityKind, Card, CardKind, CreatureType, CyclingCost, LoyaltyAbility, ManaAbility,
+    TriggerKind,
 };
-use crate::mana::{AltCost, Color, ManaPool, Payment};
+use crate::mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 use crate::state::{
     LossReason, Permanent, Phase, Player, PlayerState, SpellMode, StackItem, State, Target, Zone,
 };
@@ -49,6 +50,11 @@ pub enum Choice {
     AddMana(ManaPool),
     /// Skateboard: the permanent its enter trigger taps.
     Tap(Target),
+    /// Thundertrap Trainer: the noncreature, nonland card taken from the top
+    /// four, or `None` to take nothing.
+    TrainerPick(Option<Card>),
+    /// Cavern of Souls: the creature type it names as it enters.
+    CavernType(CreatureType),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -223,10 +229,13 @@ fn your_actions(state: &State) -> Vec<Action> {
         }
         if sorcery_speed && !perm.loyalty_used {
             for ability in perm.card.loyalty_abilities(state, Player::You) {
-                out.push(Action::Loyalty {
-                    source: perm.card,
-                    ability,
-                });
+                // A minus ability needs the loyalty to pay for it.
+                if i16::from(perm.loyalty) + i16::from(ability.loyalty_change()) >= 0 {
+                    out.push(Action::Loyalty {
+                        source: perm.card,
+                        ability,
+                    });
+                }
             }
         }
         for ability in perm.card.activated_abilities(state, Player::You) {
@@ -426,19 +435,37 @@ fn push_casts(out: &mut Vec<Action>, state: &State, player: Player, card: Card, 
 /// alternative costs.
 fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
     let ps = state.player(player);
-    let pools = match player {
-        Player::You => vec![ps.mana_pool],
-        Player::Opponent => reachable_pools(ps),
+    // Each pool to pay from, with how many Caverns of Souls were tapped for
+    // one mana of any color to reach it.
+    let mut pools: Vec<(ManaPool, u8)> = match player {
+        Player::You => vec![(ps.mana_pool, 0)],
+        Player::Opponent => reachable_pools(ps).into_iter().map(|p| (p, 0)).collect(),
     };
+    for k in 1..=matching_caverns(ps, card) {
+        for colors in multisets(&Color::ALL, usize::from(k)) {
+            let mut pool = ps.mana_pool;
+            for color in colors {
+                pool.add_mana(color, 1);
+            }
+            pools.push((pool, k));
+        }
+    }
     let tax = extra_generic(state, player, card);
     let mut out = Vec::new();
-    let mut add = |cost: &crate::mana::ManaCost, replicate: u8| -> bool {
+    // Adds every way to pay `cost` (plus tax) on top of `template`; returns
+    // whether there was any.
+    let mut add = |cost: &ManaCost, template: Payment| -> bool {
         let mut any = false;
-        for pool in &pools {
-            for payment in Payment::options(pool, &cost.with_generic(tax), ps.life) {
+        for &(pool, caverns) in &pools {
+            for payment in Payment::options(&pool, &cost.with_generic(tax), ps.life) {
+                let Some(payment) = with_caverns(ps.mana_pool, payment, caverns) else {
+                    continue;
+                };
                 let payment = Payment {
-                    replicate,
-                    ..payment
+                    mana: payment.mana,
+                    life: template.life + payment.life,
+                    cavern: payment.cavern,
+                    ..template
                 };
                 any = true;
                 if !out.contains(&payment) {
@@ -449,28 +476,81 @@ fn cast_payments(state: &State, player: Player, card: Card) -> Vec<Payment> {
         any
     };
     let base = card.mana_cost();
-    add(&base, 0);
+    add(&base, Payment::FREE);
     // Replicate: pay the extra cost as many times as the mana allows.
     if let Some(extra) = card.replicate_cost() {
         let mut cost = base;
         for times in 1.. {
             cost = cost.with_generic(extra.generic);
-            if !add(&cost, times) {
+            let template = Payment {
+                replicate: times,
+                ..Payment::FREE
+            };
+            if !add(&cost, template) {
                 break;
             }
         }
     }
+    // Offspring: an additional cost for a token copy.
+    if let Some(extra) = card.offspring_cost() {
+        let template = Payment {
+            offspring: true,
+            ..Payment::FREE
+        };
+        add(&base.with_generic(extra.generic), template);
+    }
     for alt in card.alternative_payments(state, player) {
-        for pool in &pools {
-            for mana in pool.payments_for(&crate::mana::ManaCost::FREE.with_generic(tax)) {
-                let payment = Payment { mana, ..alt };
-                if !out.contains(&payment) {
-                    out.push(payment);
-                }
-            }
-        }
+        let base = match alt.alt {
+            Some(AltCost::Warp) => card.warp_cost().unwrap_or(ManaCost::FREE),
+            _ => ManaCost::FREE,
+        };
+        add(&base, alt);
     }
     out
+}
+
+/// Untapped Caverns of Souls `ps` controls whose chosen type `card` (a
+/// creature spell) has.
+fn matching_caverns(ps: &PlayerState, card: Card) -> u8 {
+    if card.kind() != CardKind::Creature {
+        return 0;
+    }
+    ps.battlefield
+        .iter()
+        .filter(|p| {
+            p.card == Card::CavernOfSouls
+                && !p.tapped
+                && p.chosen_type
+                    .is_some_and(|t| card.creature_types().contains(&t))
+        })
+        .count() as u8
+}
+
+/// Records how much of `payment.mana` the real `pool` can't cover and must
+/// come from Caverns of Souls tapped on the spot. Only kept when that is
+/// exactly `caverns` colored mana, so each Cavern tap is actually used.
+fn with_caverns(pool: ManaPool, payment: Payment, caverns: u8) -> Option<Payment> {
+    // Without Caverns the mana may also come from lands tapped on the spot
+    // (the opponent), so there is nothing to check.
+    if caverns == 0 {
+        return Some(payment);
+    }
+    let (_, from_caverns) = split_by_pool(pool, &payment.mana);
+    (from_caverns.total() == caverns && from_caverns.get_colorless() == 0).then_some(Payment {
+        cavern: caverns,
+        ..payment
+    })
+}
+
+/// Splits `mana` into the part `pool` can pay and the rest.
+fn split_by_pool(pool: ManaPool, mana: &ManaPool) -> (ManaPool, ManaPool) {
+    let mut from_pool = ManaPool::EMPTY;
+    for color in Color::ALL {
+        from_pool.add_mana(color, mana.get(color).min(pool.get(color)));
+    }
+    from_pool.add_colorless(mana.get_colorless().min(pool.get_colorless()));
+    let rest = mana.minus(&from_pool).unwrap_or(ManaPool::EMPTY);
+    (from_pool, rest)
 }
 
 /// Generic mana added to every payment for `card` by `player`: Defense Grid's
@@ -857,12 +937,21 @@ fn resolve(state: &mut State, item: StackItem) -> Result<(), EngineError> {
                 {
                     state.battlefield_to_graveyard(controller, idx);
                 }
+                // Offspring: the token trigger goes on top of the enter
+                // trigger, so the token enters (and looks) first.
+                if item.offspring() {
+                    state.stack.push(StackItem::Trigger {
+                        source: card,
+                        kind: TriggerKind::OffspringToken,
+                        controller,
+                    });
+                }
                 Ok(())
             }
             CardKind::Instant | CardKind::Sorcery => {
                 let bin = match mode {
                     SpellMode::Copy => None,
-                    SpellMode::Normal | SpellMode::Evoked => Some(card),
+                    SpellMode::Normal | SpellMode::Evoked | SpellMode::With { .. } => Some(card),
                 };
                 cards::resolve_spell(state, card, controller, target, bin)
             }
@@ -911,7 +1000,11 @@ fn cast(
         return Err(illegal());
     }
     let ps = state.player_mut(player);
-    pay_mana(ps, &payment.mana).ok_or_else(illegal)?;
+    if payment.cavern > 0 {
+        pay_with_caverns(ps, &payment.mana, payment.cavern).ok_or_else(illegal)?;
+    } else {
+        pay_mana(ps, &payment.mana).ok_or_else(illegal)?;
+    }
     ps.life -= i16::from(payment.life);
     take_from_zone(ps, card, from).ok_or_else(illegal)?;
     match payment.alt {
@@ -926,7 +1019,7 @@ fn cast(
             bounce_own(ps, first).ok_or_else(illegal)?;
             bounce_own(ps, second).ok_or_else(illegal)?;
         }
-        None => {}
+        Some(AltCost::Warp) | None => {}
     }
     ps.spells_cast_this_turn += 1;
     if card.is_blue() || card.is_black() {
@@ -934,6 +1027,10 @@ fn cast(
     }
     let mode = match payment.alt {
         Some(AltCost::Pitch(_)) if card.evoke_pitch().is_some() => SpellMode::Evoked,
+        _ if payment.offspring || payment.cavern > 0 => SpellMode::With {
+            offspring: payment.offspring,
+            uncounterable: payment.cavern > 0,
+        },
         _ => SpellMode::Normal,
     };
     // Storm counts every spell cast before this one this turn, by anyone.
@@ -962,8 +1059,35 @@ fn cast(
 /// Returns one of `ps`'s own permanents named `card` to their hand.
 fn bounce_own(ps: &mut PlayerState, card: Card) -> Option<()> {
     let idx = ps.battlefield.iter().position(|p| p.card == card)?;
-    let card = ps.take_permanent(idx);
+    let card = ps.take_permanent(idx)?;
     ps.hand.push(card);
+    Some(())
+}
+
+/// Pays `mana` from the pool plus `caverns` Caverns of Souls tapped for one
+/// mana of any color each (the part the pool can't cover). `None` if the
+/// shortfall isn't exactly that, or there aren't enough untapped Caverns
+/// (any of the player's; the caller checked their types).
+fn pay_with_caverns(ps: &mut PlayerState, mana: &ManaPool, caverns: u8) -> Option<()> {
+    let (from_pool, from_caverns) = split_by_pool(ps.mana_pool, mana);
+    if from_caverns.total() != caverns || from_caverns.get_colorless() != 0 {
+        return None;
+    }
+    let mut untapped: Vec<usize> = ps
+        .battlefield
+        .iter()
+        .enumerate()
+        .filter(|(_, p)| p.card == Card::CavernOfSouls && !p.tapped && p.chosen_type.is_some())
+        .map(|(i, _)| i)
+        .collect();
+    if untapped.len() < usize::from(caverns) {
+        return None;
+    }
+    untapped.truncate(usize::from(caverns));
+    for idx in untapped {
+        ps.battlefield[idx].tapped = true;
+    }
+    ps.mana_pool = ps.mana_pool.minus(&from_pool)?;
     Some(())
 }
 
@@ -1344,6 +1468,11 @@ impl fmt::Display for Choice {
             Choice::Ping(target) => write!(f, "Orcish Bowmasters pings {target}"),
             Choice::AddMana(mana) => write!(f, "Add {mana}"),
             Choice::Tap(target) => write!(f, "Skateboard taps {target}"),
+            Choice::TrainerPick(Some(card)) => write!(f, "Thundertrap Trainer takes {card}"),
+            Choice::TrainerPick(None) => f.write_str("Thundertrap Trainer takes nothing"),
+            Choice::CavernType(creature_type) => {
+                write!(f, "Cavern of Souls names {creature_type:?}")
+            }
         }
     }
 }
@@ -1373,6 +1502,9 @@ impl fmt::Display for LoyaltyAbility {
             }
             LoyaltyAbility::TeferiMinusThree { target: None } => {
                 f.write_str("-3 with no target, drawing")
+            }
+            LoyaltyAbility::TamiyoMinusThree { target } => {
+                write!(f, "-3 returning {target} to hand")
             }
         }
     }

@@ -85,6 +85,13 @@ pub enum Card {
     MishrasBauble,
     LightningGreaves,
     Skateboard,
+    // Creatures and Cavern (stage 6c). `TamiyoSeasonedScholar` is Tamiyo's
+    // back face: it only ever exists on the battlefield.
+    QuantumRiddler,
+    TamiyoInquisitiveStudent,
+    TamiyoSeasonedScholar,
+    ThundertrapTrainer,
+    CavernOfSouls,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -137,6 +144,27 @@ pub enum CardKind {
     Enchantment,
     Planeswalker,
     Land,
+}
+
+/// Every creature subtype printed on a creature in the pool (Cavern of Souls
+/// names one).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum CreatureType {
+    Archer,
+    Archon,
+    Elemental,
+    Human,
+    Incarnation,
+    Merfolk,
+    Moonfolk,
+    Orc,
+    Otter,
+    Soldier,
+    Sorcerer,
+    Sphinx,
+    Villain,
+    Wizard,
+    Wraith,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -222,6 +250,15 @@ pub enum TriggerKind {
     DiesDraw,
     /// Skateboard entered: tap the target permanent.
     TapPermanent { target: Target },
+    /// Quantum Riddler enters: draw a card.
+    RiddlerEnters,
+    /// You drew your third card this turn: Tamiyo transforms.
+    TamiyoTransform,
+    /// Thundertrap Trainer enters: look at the top four, take a noncreature,
+    /// nonland card, the rest go to the bottom in a random order.
+    TrainerEnters,
+    /// Offspring was paid: a 1/1 token copy of the creature enters.
+    OffspringToken,
 }
 
 /// An activated ability a permanent offers right now, with its mana cost.
@@ -261,6 +298,10 @@ pub enum AbilityKind {
     BaubleLook,
     /// Equip: attach the source to target creature you control.
     Equip { target: Target },
+    /// Tamiyo, Seasoned Scholar −3: return target instant or sorcery card
+    /// from your graveyard to your hand; if it's green, add one mana of any
+    /// color.
+    TamiyoMinusThree { target: Target },
 }
 
 /// A loyalty ability a planeswalker can activate.
@@ -269,6 +310,7 @@ pub enum LoyaltyAbility {
     JacePlusOne { target: Player },
     TeferiPlusOne,
     TeferiMinusThree { target: Option<Target> },
+    TamiyoMinusThree { target: Target },
 }
 
 impl LoyaltyAbility {
@@ -276,7 +318,7 @@ impl LoyaltyAbility {
     pub fn loyalty_change(self) -> i8 {
         match self {
             LoyaltyAbility::JacePlusOne { .. } | LoyaltyAbility::TeferiPlusOne => 1,
-            LoyaltyAbility::TeferiMinusThree { .. } => -3,
+            LoyaltyAbility::TeferiMinusThree { .. } | LoyaltyAbility::TamiyoMinusThree { .. } => -3,
         }
     }
 
@@ -285,6 +327,7 @@ impl LoyaltyAbility {
             LoyaltyAbility::JacePlusOne { target } => AbilityKind::JacePlusOne { target },
             LoyaltyAbility::TeferiPlusOne => AbilityKind::TeferiPlusOne,
             LoyaltyAbility::TeferiMinusThree { target } => AbilityKind::TeferiMinusThree { target },
+            LoyaltyAbility::TamiyoMinusThree { target } => AbilityKind::TamiyoMinusThree { target },
         }
     }
 }
@@ -345,6 +388,11 @@ impl Card {
             Card::MishrasBauble => "Mishra's Bauble",
             Card::LightningGreaves => "Lightning Greaves",
             Card::Skateboard => "Skateboard",
+            Card::QuantumRiddler => "Quantum Riddler",
+            Card::TamiyoInquisitiveStudent => "Tamiyo, Inquisitive Student",
+            Card::TamiyoSeasonedScholar => "Tamiyo, Seasoned Scholar",
+            Card::ThundertrapTrainer => "Thundertrap Trainer",
+            Card::CavernOfSouls => "Cavern of Souls",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -393,8 +441,14 @@ impl Card {
             | Card::Grief
             | Card::OrcishBowmasters
             | Card::Thalia
-            | Card::ArchonOfEmeria => CardKind::Creature,
-            Card::JaceWielderOfMysteries | Card::Teferi | Card::Narset => CardKind::Planeswalker,
+            | Card::ArchonOfEmeria
+            | Card::QuantumRiddler
+            | Card::TamiyoInquisitiveStudent
+            | Card::ThundertrapTrainer => CardKind::Creature,
+            Card::JaceWielderOfMysteries
+            | Card::Teferi
+            | Card::Narset
+            | Card::TamiyoSeasonedScholar => CardKind::Planeswalker,
             Card::LeylineOfTheVoid => CardKind::Enchantment,
             Card::Doomsday
             | Card::Unearth
@@ -472,7 +526,52 @@ impl Card {
             | Card::UndercitySewers
             | Card::MeticulousArchive
             | Card::PollutedDelta
-            | Card::FloodedStrand => CardKind::Land,
+            | Card::FloodedStrand
+            | Card::CavernOfSouls => CardKind::Land,
+        }
+    }
+
+    /// Creature subtypes, from CARDS.md's type lines.
+    pub fn creature_types(self) -> &'static [CreatureType] {
+        use CreatureType::*;
+        match self {
+            Card::ThassasOracle => &[Merfolk, Wizard],
+            Card::DoctorDoom => &[Human, Sorcerer, Villain],
+            Card::LaboratoryManiac => &[Human, Wizard],
+            Card::StreetWraith => &[Wraith],
+            Card::Grief => &[Elemental, Incarnation],
+            Card::OrcishBowmasters => &[Orc, Archer],
+            Card::Thalia => &[Human, Soldier],
+            Card::ArchonOfEmeria => &[Archon],
+            Card::QuantumRiddler => &[Sphinx],
+            Card::TamiyoInquisitiveStudent => &[Moonfolk, Wizard],
+            Card::ThundertrapTrainer => &[Otter, Wizard],
+            _ => &[],
+        }
+    }
+
+    /// The card a permanent becomes again when it leaves the battlefield:
+    /// Tamiyo's back face turns back into her front face.
+    pub fn front_face(self) -> Card {
+        match self {
+            Card::TamiyoSeasonedScholar => Card::TamiyoInquisitiveStudent,
+            card => card,
+        }
+    }
+
+    /// Warp: an alternative mana cost (the end-step exile is ignored).
+    pub fn warp_cost(self) -> Option<ManaCost> {
+        match self {
+            Card::QuantumRiddler => Some(ManaCost::colored(Color::U, 1).with_generic(1)),
+            _ => None,
+        }
+    }
+
+    /// Offspring: an additional cost for a 1/1 token copy on entering.
+    pub fn offspring_cost(self) -> Option<ManaCost> {
+        match self {
+            Card::ThundertrapTrainer => Some(ManaCost::FREE.with_generic(4)),
+            _ => None,
         }
     }
 
@@ -537,6 +636,9 @@ impl Card {
             | Card::WizardsRockets
             | Card::Skateboard => ManaCost::FREE.with_generic(1),
             Card::LightningGreaves => ManaCost::FREE.with_generic(2),
+            Card::QuantumRiddler => ManaCost::colored(Color::U, 2).with_generic(3),
+            Card::TamiyoInquisitiveStudent => ManaCost::colored(Color::U, 1),
+            Card::ThundertrapTrainer => ManaCost::colored(Color::U, 1).with_generic(1),
             _ => ManaCost::FREE,
         }
     }
@@ -545,10 +647,11 @@ impl Card {
     /// it.
     pub fn toughness(self) -> u8 {
         match self {
-            Card::ThassasOracle | Card::ArchonOfEmeria => 3,
-            Card::LaboratoryManiac | Card::Grief => 2,
+            Card::ThassasOracle | Card::ArchonOfEmeria | Card::TamiyoInquisitiveStudent => 3,
+            Card::LaboratoryManiac | Card::Grief | Card::ThundertrapTrainer => 2,
             Card::DoctorDoom | Card::StreetWraith => 4,
             Card::OrcishBowmasters | Card::Thalia => 1,
+            Card::QuantumRiddler => 6,
             _ => 0,
         }
     }
@@ -571,11 +674,16 @@ impl Card {
             || (cost.hybrid > 0 && matches!(color, Color::R | Color::G))
     }
 
+    /// Cards with a color indicator instead of colored pips: Pact of Negation
+    /// costs {0} and Tamiyo's back face has no cost, both are blue.
+    fn blue_by_indicator(self) -> bool {
+        matches!(self, Card::PactOfNegation | Card::TamiyoSeasonedScholar)
+    }
+
     /// Blue cards, for Force of Will's and Force of Negation's pitch and
-    /// Pyroblast. Pact of Negation costs {0} but is blue by its color
-    /// indicator.
+    /// Pyroblast.
     pub fn is_blue(self) -> bool {
-        self.has_pip(Color::U) || self == Card::PactOfNegation
+        self.has_pip(Color::U) || self.blue_by_indicator()
     }
 
     /// Red cards, for Hydroblast.
@@ -588,10 +696,15 @@ impl Card {
         self.has_pip(Color::B)
     }
 
+    /// Green cards, for Tamiyo's −3.
+    pub fn is_green(self) -> bool {
+        self.has_pip(Color::G)
+    }
+
     /// Colorless cards, for Consign to Memory: no colored pip and no color
     /// indicator.
     pub fn is_colorless(self) -> bool {
-        !Color::ALL.iter().any(|&c| self.has_pip(c)) && self != Card::PactOfNegation
+        !Color::ALL.iter().any(|&c| self.has_pip(c)) && !self.blue_by_indicator()
     }
 
     /// The replicate cost, paid any number of times on casting.
@@ -610,9 +723,12 @@ impl Card {
     /// Whether the engine models casting this card at all. Street Wraith is
     /// cycling-only per CARDS.md; Doomsday is only ever the spell the puzzle
     /// starts with (a second Doomsday from the graveyard under Yawgmoth's Will
-    /// is out of scope for now).
+    /// is out of scope for now); Tamiyo's back face is never a card in hand.
     pub fn castable(self) -> bool {
-        !matches!(self, Card::StreetWraith | Card::Doomsday)
+        !matches!(
+            self,
+            Card::StreetWraith | Card::Doomsday | Card::TamiyoSeasonedScholar
+        )
     }
 
     /// For a targeted spell, every distinct legal target `player` could pick
@@ -633,13 +749,14 @@ impl Card {
                 })
                 .collect()
         };
-        // Spells to counter. A veiled player's spells can't be countered, so
-        // they are not offered (same outcome, fewer dead branches).
+        // Spells to counter. A veiled player's spells and spells cast with
+        // Cavern of Souls mana can't be countered, so they are not offered
+        // (same outcome, fewer dead branches).
         let spell_where = |pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
-            if state.player(other).veiled {
-                return Vec::new();
-            }
-            stack_targets(&|item| matches!(item, StackItem::Spell { card, .. } if pred(*card)))
+            stack_targets(&|item| {
+                matches!(item, StackItem::Spell { card, .. } if pred(*card))
+                    && !cant_be_countered(state, item)
+            })
         };
         let permanents_where = |owner: Player, pred: &dyn Fn(Card) -> bool| -> Vec<Target> {
             permanent_targets(state, player, owner, self, pred)
@@ -737,6 +854,11 @@ impl Card {
                 .collect()
         };
         match self {
+            // Warp: the mana is added by the caster from `warp_cost`.
+            Card::QuantumRiddler => vec![Payment {
+                alt: Some(AltCost::Warp),
+                ..Payment::FREE
+            }],
             // "Pay 1 life and exile a blue card from your hand."
             Card::ForceOfWill if ps.life >= 1 => pitches(1, Card::is_blue),
             // "Exile a blue card from your hand. Activate only if it's not
@@ -870,6 +992,9 @@ impl Card {
             Card::SolRing => Some(ManaAbility::TapColorless(2)),
             Card::ChromaticStar => Some(ManaAbility::Filter { x: false }),
             Card::WizardsRockets => Some(ManaAbility::Filter { x: true }),
+            // Its colored mana is only ever tapped as part of casting a
+            // creature of the chosen type (see `cast_payments`).
+            Card::CavernOfSouls => Some(ManaAbility::TapColorless(1)),
             _ if self.kind() == CardKind::Land && !self.land_types().is_empty() => {
                 Some(ManaAbility::Tap)
             }
@@ -893,6 +1018,8 @@ impl Card {
             Card::ThassasOracle => Some(TriggerKind::OracleEnters),
             Card::UndercitySewers | Card::MeticulousArchive => Some(TriggerKind::Surveil),
             Card::Grief => Some(TriggerKind::GriefEnters),
+            Card::QuantumRiddler => Some(TriggerKind::RiddlerEnters),
+            Card::ThundertrapTrainer => Some(TriggerKind::TrainerEnters),
             _ => None,
         }
     }
@@ -902,6 +1029,7 @@ impl Card {
         match self {
             Card::JaceWielderOfMysteries | Card::Teferi => 4,
             Card::Narset => 5,
+            Card::TamiyoSeasonedScholar => 2,
             _ => 0,
         }
     }
@@ -937,6 +1065,29 @@ impl Card {
                             target: Some(target),
                         }
                     }));
+                }
+                out
+            }
+            // "Return target instant or sorcery card from your graveyard to
+            // your hand." The +2 and −7 are ignored (CARDS.md).
+            Card::TamiyoSeasonedScholar => {
+                let mut cards: Vec<Card> = state
+                    .player(player)
+                    .graveyard
+                    .iter()
+                    .copied()
+                    .filter(|c| matches!(c.kind(), CardKind::Instant | CardKind::Sorcery))
+                    .collect();
+                cards.sort();
+                cards.dedup();
+                let mut out = Vec::new();
+                for card in cards {
+                    out.push(LoyaltyAbility::TamiyoMinusThree {
+                        target: Target::Graveyard {
+                            owner: player,
+                            card,
+                        },
+                    });
                 }
                 out
             }
@@ -1034,6 +1185,7 @@ impl fmt::Display for AbilityKind {
             AbilityKind::SpellbombDraw => f.write_str("draw"),
             AbilityKind::BaubleLook => f.write_str("look"),
             AbilityKind::Equip { target } => write!(f, "equip targeting {target}"),
+            AbilityKind::TamiyoMinusThree { target } => write!(f, "-3 targeting {target}"),
         }
     }
 }
@@ -1323,8 +1475,9 @@ fn remove_permanent(
         return;
     };
     if exile {
-        let card = state.player_mut(owner).take_permanent(idx);
-        state.player_mut(owner).exile.push(card);
+        if let Some(card) = state.player_mut(owner).take_permanent(idx) {
+            state.player_mut(owner).exile.push(card);
+        }
     } else {
         state.battlefield_to_graveyard(owner, idx);
     }
@@ -1454,9 +1607,11 @@ fn counter(state: &mut State, target: Option<Target>, exile: bool) {
     }
 }
 
-/// Veil of Summer: "spells you control can't be countered this turn".
+/// Veil of Summer ("spells you control can't be countered this turn") and
+/// Cavern of Souls mana.
 fn cant_be_countered(state: &State, item: &StackItem) -> bool {
-    matches!(item, StackItem::Spell { controller, .. } if state.player(*controller).veiled)
+    item.uncounterable()
+        || matches!(item, StackItem::Spell { controller, .. } if state.player(*controller).veiled)
 }
 
 /// "Counter target spell unless its controller pays {amount}": the target's
@@ -1576,6 +1731,27 @@ pub(crate) fn resolve_trigger(
                 }
             }
         }
+        TriggerKind::RiddlerEnters => state.draw(controller, 1),
+        // "Exile Tamiyo, then return her to the battlefield transformed": a
+        // fresh permanent with the back face, loyalty 2. Nothing if she left.
+        TriggerKind::TamiyoTransform => {
+            let ps = state.player_mut(controller);
+            if let Some(idx) = ps
+                .battlefield
+                .iter()
+                .position(|p| p.card == Card::TamiyoInquisitiveStudent && !p.token)
+            {
+                ps.take_permanent(idx);
+                ps.battlefield
+                    .push(Permanent::entering(Card::TamiyoSeasonedScholar, false));
+            }
+        }
+        TriggerKind::TrainerEnters => {
+            if look_at_top(state, controller, 4) > 0 {
+                return pause(state, controller, None, ChoiceKind::TrainerPick);
+            }
+        }
+        TriggerKind::OffspringToken => state.enter_token(controller, Card::ThundertrapTrainer),
     }
     Ok(())
 }
@@ -1628,6 +1804,26 @@ pub(crate) fn resolve_ability(
         }
         AbilityKind::SpellbombBounce { target } => bounce(state, controller, source, target),
         AbilityKind::SpellbombDraw => state.draw(controller, 1),
+        // Nothing if the card left the graveyard; a green card also adds one
+        // mana of any color, chosen as a decision.
+        AbilityKind::TamiyoMinusThree { target } => {
+            if let Target::Graveyard { owner, card } = target
+                && let Some(card) = state.player_mut(owner).remove_from_graveyard(card)
+            {
+                state.player_mut(owner).hand.push(card);
+                if card.is_green() {
+                    return pause(
+                        state,
+                        controller,
+                        None,
+                        ChoiceKind::AddMana {
+                            amount: 1,
+                            then_draw: 0,
+                        },
+                    );
+                }
+            }
+        }
         AbilityKind::BaubleLook => {}
         // Attach `source` to the first targetable creature named by the
         // target, taking it off whatever wore it before.
@@ -1655,8 +1851,10 @@ fn bounce(state: &mut State, player: Player, source: Card, target: Target) {
     };
     if let Some(idx) = find_target(state, player, source, target) {
         let ps = state.player_mut(owner);
-        let card = ps.take_permanent(idx);
-        ps.hand.push(card);
+        // A token ceases to exist instead.
+        if let Some(card) = ps.take_permanent(idx) {
+            ps.hand.push(card);
+        }
     }
 }
 
@@ -1799,6 +1997,21 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
                     .map(Choice::Tap),
             );
         }
+        ChoiceKind::TrainerPick => {
+            let k = ps.library.len().min(4);
+            let mut found: Vec<Card> = ps.library[..k]
+                .iter()
+                .copied()
+                .filter(|c| trainer_can_take(*c))
+                .collect();
+            found.sort();
+            found.dedup();
+            out.extend(found.into_iter().map(|c| Choice::TrainerPick(Some(c))));
+            out.push(Choice::TrainerPick(None));
+        }
+        ChoiceKind::CavernType => {
+            out.extend(cavern_type_options(ps).into_iter().map(Choice::CavernType));
+        }
         ChoiceKind::AddMana { amount, .. } => {
             for colors in multisets(&Color::ALL, usize::from(amount)) {
                 let mut pool = ManaPool::EMPTY;
@@ -1810,6 +2023,29 @@ pub(crate) fn choice_options(state: &State, pending: &PendingChoice) -> Vec<Choi
         }
     }
     out
+}
+
+/// "A noncreature, nonland card": what Thundertrap Trainer may take.
+fn trainer_can_take(card: Card) -> bool {
+    !matches!(card.kind(), CardKind::Creature | CardKind::Land)
+}
+
+/// The creature types Cavern of Souls may name: those of the creature cards
+/// `ps` has anywhere, or Wizard alone when there are none.
+fn cavern_type_options(ps: &PlayerState) -> Vec<CreatureType> {
+    let mut types: Vec<CreatureType> = [&ps.hand, &ps.library, &ps.graveyard, &ps.impulse]
+        .into_iter()
+        .flatten()
+        .copied()
+        .chain(ps.battlefield.iter().map(|p| p.card))
+        .flat_map(|c| c.creature_types().iter().copied())
+        .collect();
+    types.sort();
+    types.dedup();
+    if types.is_empty() {
+        types.push(CreatureType::Wizard);
+    }
+    types
 }
 
 /// The tapped lands `ps` controls, one entry per permanent.
@@ -2017,6 +2253,37 @@ pub(crate) fn apply_choice(
             let ps = state.player_mut(player);
             ps.mana_pool = ps.mana_pool.plus(mana);
             state.draw(player, usize::from(then_draw));
+        }
+        // The pick goes to hand (not a draw); the other looked-at cards go to
+        // the bottom in a random order, which leaves the library unordered
+        // when there are two or more of them.
+        (ChoiceKind::TrainerPick, Choice::TrainerPick(pick)) => {
+            let ps = state.player_mut(player);
+            let k = ps.library.len().min(4);
+            let mut rest: Vec<Card> = ps.library.drain(..k).collect();
+            if let Some(card) = pick {
+                let pos = rest
+                    .iter()
+                    .position(|c| c == card && trainer_can_take(*c))
+                    .ok_or_else(illegal)?;
+                ps.hand.push(rest.remove(pos));
+            }
+            if rest.len() >= 2 {
+                ps.library_ordered = false;
+            }
+            ps.library.extend(rest);
+        }
+        (ChoiceKind::CavernType, Choice::CavernType(creature_type)) => {
+            let ps = state.player_mut(player);
+            if !cavern_type_options(ps).contains(creature_type) {
+                return Err(illegal());
+            }
+            let cavern = ps
+                .battlefield
+                .iter_mut()
+                .find(|p| p.card == Card::CavernOfSouls && p.chosen_type.is_none())
+                .ok_or_else(illegal)?;
+            cavern.chosen_type = Some(*creature_type);
         }
         _ => return Err(illegal()),
     }
@@ -5508,5 +5775,530 @@ mod tests {
         assert!(done.pending.is_none());
         assert_eq!(done.you.life, 20);
         assert_eq!(done.you.battlefield[0].damage, 0);
+    }
+
+    // ------------------------------------------------------------ stage 6c
+
+    fn cast_from_hand(card: Card, payment: Payment) -> Action {
+        Action::CastSpell {
+            card,
+            payment,
+            target: None,
+            from: Zone::Hand,
+        }
+    }
+
+    #[test]
+    fn creature_data_6c() {
+        use CreatureType::*;
+        assert_eq!(Card::QuantumRiddler.kind(), CardKind::Creature);
+        assert_eq!(Card::TamiyoInquisitiveStudent.kind(), CardKind::Creature);
+        assert_eq!(Card::TamiyoSeasonedScholar.kind(), CardKind::Planeswalker);
+        assert_eq!(Card::ThundertrapTrainer.kind(), CardKind::Creature);
+        assert_eq!(Card::CavernOfSouls.kind(), CardKind::Land);
+        assert_eq!(Card::QuantumRiddler.mana_cost().mana_value(), 5);
+        assert_eq!(Card::QuantumRiddler.blue_devotion(), 2);
+        assert_eq!(
+            Card::QuantumRiddler.warp_cost(),
+            Some(ManaCost::colored(Color::U, 1).with_generic(1))
+        );
+        assert_eq!(Card::TamiyoInquisitiveStudent.blue_devotion(), 1);
+        assert_eq!(Card::TamiyoSeasonedScholar.blue_devotion(), 0);
+        assert_eq!(Card::TamiyoSeasonedScholar.starting_loyalty(), 2);
+        assert!(Card::TamiyoSeasonedScholar.is_blue());
+        assert!(!Card::TamiyoSeasonedScholar.is_colorless());
+        assert!(!Card::TamiyoSeasonedScholar.castable());
+        assert_eq!(
+            Card::TamiyoSeasonedScholar.front_face(),
+            Card::TamiyoInquisitiveStudent
+        );
+        assert_eq!(Card::ThundertrapTrainer.mana_cost().mana_value(), 2);
+        assert_eq!(
+            Card::ThundertrapTrainer.offspring_cost(),
+            Some(ManaCost::FREE.with_generic(4))
+        );
+        assert_eq!(Card::QuantumRiddler.toughness(), 6);
+        assert_eq!(Card::TamiyoInquisitiveStudent.toughness(), 3);
+        assert_eq!(Card::ThundertrapTrainer.toughness(), 2);
+        assert_eq!(Card::QuantumRiddler.creature_types(), &[Sphinx]);
+        assert_eq!(
+            Card::TamiyoInquisitiveStudent.creature_types(),
+            &[Moonfolk, Wizard]
+        );
+        assert_eq!(Card::ThundertrapTrainer.creature_types(), &[Otter, Wizard]);
+        assert_eq!(Card::ThassasOracle.creature_types(), &[Merfolk, Wizard]);
+        assert_eq!(Card::Brainstorm.creature_types(), &[]);
+        assert_eq!(
+            Card::CavernOfSouls.mana_ability(),
+            Some(ManaAbility::TapColorless(1))
+        );
+        assert!(Card::CavernOfSouls.land_types().is_empty());
+        assert_eq!(
+            Card::QuantumRiddler.etb_trigger(),
+            Some(TriggerKind::RiddlerEnters)
+        );
+        assert_eq!(
+            Card::ThundertrapTrainer.etb_trigger(),
+            Some(TriggerKind::TrainerEnters)
+        );
+        assert!(Card::EdgeOfAutumn.is_green() && Card::VeilOfSummer.is_green());
+        assert!(!Card::Brainstorm.is_green());
+    }
+
+    #[test]
+    fn quantum_riddler_draws_one_more_with_a_small_hand() {
+        let five = vec![
+            Card::Island,
+            Card::Swamp,
+            Card::Plains,
+            Card::Mountain,
+            Card::Forest,
+        ];
+        let with_riddler = |hand: Vec<Card>| {
+            main_phase(PlayerState {
+                hand,
+                library: five.clone(),
+                battlefield: vec![Permanent::untapped(Card::QuantumRiddler)],
+                ..PlayerState::default()
+            })
+        };
+        // Empty hand: Brainstorm draws four, then asks for the put-back.
+        let asked = resolve(with_riddler(vec![]), Card::Brainstorm);
+        assert_eq!(asked.you.hand.len(), 4);
+        assert_eq!(asked.you.cards_drawn_this_turn, 4);
+        assert_eq!(
+            asked.pending.map(|p| p.kind),
+            Some(ChoiceKind::BrainstormPutBack)
+        );
+        // One card in hand: Probe draws two. Two in hand: just one.
+        let one = resolve(with_riddler(vec![Card::Swamp]), Card::GitaxianProbe);
+        assert_eq!(one.you.hand.len(), 3);
+        let two = resolve(
+            with_riddler(vec![Card::Swamp, Card::Swamp]),
+            Card::GitaxianProbe,
+        );
+        assert_eq!(two.you.hand.len(), 3);
+        // Its own enter draw gets the bonus.
+        let entered = resolve(
+            main_phase(PlayerState {
+                library: five.clone(),
+                ..PlayerState::default()
+            }),
+            Card::QuantumRiddler,
+        );
+        assert_eq!(
+            entered.stack,
+            vec![StackItem::Trigger {
+                source: Card::QuantumRiddler,
+                kind: TriggerKind::RiddlerEnters,
+                controller: Player::You,
+            }]
+        );
+        assert_eq!(pass_twice(&entered).you.hand.len(), 2);
+        // Narset still caps the whole instruction at one.
+        let mut narset = with_riddler(vec![]);
+        narset
+            .opponent
+            .battlefield
+            .push(Permanent::untapped(Card::Narset));
+        assert_eq!(resolve(narset, Card::AncestralRecall).you.hand.len(), 1);
+
+        // Warp: {1}{U} instead of {3}{U}{U}, devotion 2 all the same.
+        let state = main_phase(PlayerState {
+            hand: vec![Card::QuantumRiddler],
+            mana_pool: ManaPool::of(Color::U, 1).with(Color::B, 1),
+            ..PlayerState::default()
+        });
+        let warped = Payment {
+            mana: ManaPool::of(Color::U, 1).with(Color::B, 1),
+            alt: Some(AltCost::Warp),
+            ..Payment::FREE
+        };
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&cast_from_hand(Card::QuantumRiddler, warped)));
+        assert!(
+            !actions
+                .iter()
+                .any(|a| matches!(a, Action::CastSpell { payment, .. } if payment.alt.is_none()))
+        );
+        assert_eq!(warped.to_string(), "UB and warped");
+        let cast = apply(&state, &cast_from_hand(Card::QuantumRiddler, warped)).unwrap();
+        assert!(cast.you.mana_pool.is_empty());
+        assert_eq!(pass_twice(&cast).you.blue_devotion(), 2);
+    }
+
+    #[test]
+    fn tamiyo_transforms_on_the_third_draw() {
+        let five = vec![
+            Card::Island,
+            Card::Swamp,
+            Card::Plains,
+            Card::Mountain,
+            Card::Forest,
+        ];
+        let state = versus(
+            PlayerState {
+                library: five,
+                battlefield: vec![Permanent::untapped(Card::TamiyoInquisitiveStudent)],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                hand: vec![Card::Stifle],
+                battlefield: vec![Permanent::untapped(Card::Island)],
+                ..PlayerState::default()
+            },
+        );
+        assert_eq!(state.you.blue_devotion(), 1);
+        // The first two draws do nothing.
+        assert!(resolve(state.clone(), Card::GitaxianProbe).stack.is_empty());
+        // Brainstorm's third draw queues the transform behind the put-back.
+        let asked = resolve(state.clone(), Card::Brainstorm);
+        assert_eq!(
+            asked.stack,
+            vec![StackItem::Trigger {
+                source: Card::TamiyoInquisitiveStudent,
+                kind: TriggerKind::TamiyoTransform,
+                controller: Player::You,
+            }]
+        );
+        let pending = apply(
+            &asked,
+            &Action::Choose(Choice::BrainstormPutBack([Card::Island, Card::Swamp])),
+        )
+        .unwrap();
+        // Stifle can counter the transform.
+        assert_eq!(
+            Card::Stifle.target_options(&pending, Player::Opponent),
+            Some(vec![on_stack(0, Card::TamiyoInquisitiveStudent)])
+        );
+        let flipped = pass_twice(&pending);
+        assert_eq!(
+            flipped.you.battlefield,
+            vec![Permanent::entering(Card::TamiyoSeasonedScholar, false)]
+        );
+        assert_eq!(flipped.you.battlefield[0].loyalty, 2);
+        assert_eq!(flipped.you.blue_devotion(), 0);
+        assert!(
+            flipped.you.battlefield[0]
+                .to_string()
+                .contains("(loyalty 2)")
+        );
+        // Loyalty 2: the −3 can't be used the turn she flips.
+        assert!(
+            !legal_actions(&flipped)
+                .iter()
+                .any(|a| matches!(a, Action::Loyalty { .. }))
+        );
+        // Stifled, she stays a creature.
+        let mut stifled = pending.clone();
+        stifled.stack.push(their_spell(
+            Card::Stifle,
+            Some(on_stack(0, Card::TamiyoInquisitiveStudent)),
+        ));
+        let stayed = pass_twice(&pass_twice(&stifled));
+        assert_eq!(
+            stayed.you.battlefield,
+            vec![Permanent::untapped(Card::TamiyoInquisitiveStudent)]
+        );
+        // The back face is blue: Pyroblast destroys it, and the front face is
+        // what reaches the graveyard.
+        let burnt = resolve_targeting(
+            flipped,
+            Card::Pyroblast,
+            Some(your_permanent(Card::TamiyoSeasonedScholar)),
+        );
+        assert!(burnt.you.battlefield.is_empty());
+        assert!(
+            burnt
+                .you
+                .graveyard
+                .contains(&Card::TamiyoInquisitiveStudent)
+        );
+    }
+
+    #[test]
+    fn tamiyo_minus_three_returns_a_spell_and_a_green_one_adds_mana() {
+        let mut scholar = Permanent::untapped(Card::TamiyoSeasonedScholar);
+        scholar.loyalty = 3;
+        let state = main_phase(PlayerState {
+            graveyard: vec![
+                Card::Brainstorm,
+                Card::EdgeOfAutumn,
+                Card::Island,
+                Card::ThassasOracle,
+            ],
+            battlefield: vec![scholar],
+            ..PlayerState::default()
+        });
+        let minus_three = |card| Action::Loyalty {
+            source: Card::TamiyoSeasonedScholar,
+            ability: LoyaltyAbility::TamiyoMinusThree {
+                target: your_graveyard(card),
+            },
+        };
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&minus_three(Card::Brainstorm)));
+        assert!(actions.contains(&minus_three(Card::EdgeOfAutumn)));
+        assert!(!actions.contains(&minus_three(Card::Island)));
+        assert!(!actions.contains(&minus_three(Card::ThassasOracle)));
+        assert_eq!(
+            minus_three(Card::Brainstorm).to_string(),
+            "Tamiyo, Seasoned Scholar: -3 returning Brainstorm to hand"
+        );
+
+        let back = pass_twice(&apply(&state, &minus_three(Card::Brainstorm)).unwrap());
+        assert_eq!(back.you.hand, vec![Card::Brainstorm]);
+        assert_eq!(back.you.battlefield[0].loyalty, 0);
+        assert!(back.pending.is_none());
+
+        let green = pass_twice(&apply(&state, &minus_three(Card::EdgeOfAutumn)).unwrap());
+        assert_eq!(green.you.hand, vec![Card::EdgeOfAutumn]);
+        assert_eq!(
+            green.pending.map(|p| p.kind),
+            Some(ChoiceKind::AddMana {
+                amount: 1,
+                then_draw: 0
+            })
+        );
+        let paid = apply(
+            &green,
+            &Action::Choose(Choice::AddMana(ManaPool::of(Color::U, 1))),
+        )
+        .unwrap();
+        assert_eq!(paid.you.mana_pool, ManaPool::of(Color::U, 1));
+        assert_eq!(paid.you.cards_drawn_this_turn, 0);
+    }
+
+    #[test]
+    fn thundertrap_trainer_looks_at_four_and_offspring_makes_a_token() {
+        let state = main_phase(PlayerState {
+            hand: vec![Card::ThundertrapTrainer],
+            library: vec![
+                Card::Brainstorm,
+                Card::ThassasOracle,
+                Card::Island,
+                Card::DarkRitual,
+                Card::Swamp,
+            ],
+            mana_pool: ManaPool::of(Color::U, 6),
+            ..PlayerState::default()
+        });
+        let plain = cast_from_hand(
+            Card::ThundertrapTrainer,
+            Payment::mana(ManaPool::of(Color::U, 2)),
+        );
+        let offspring = cast_from_hand(
+            Card::ThundertrapTrainer,
+            Payment {
+                mana: ManaPool::of(Color::U, 6),
+                offspring: true,
+                ..Payment::FREE
+            },
+        );
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&plain));
+        assert!(actions.contains(&offspring));
+        assert_eq!(
+            offspring.to_string(),
+            "Cast Thundertrap Trainer paying UUUUUU and with offspring"
+        );
+
+        let cast = apply(&state, &offspring).unwrap();
+        assert!(cast.stack[0].offspring());
+        assert!(cast.stack[0].to_string().starts_with("offspring-paid "));
+        let entered = pass_twice(&cast);
+        assert_eq!(
+            entered.stack.iter().map(|i| i.card()).collect::<Vec<_>>(),
+            vec![Card::ThundertrapTrainer; 2]
+        );
+        assert!(matches!(
+            entered.stack[1],
+            StackItem::Trigger {
+                kind: TriggerKind::OffspringToken,
+                ..
+            }
+        ));
+        // The token enters with its own look on top.
+        let token_in = pass_twice(&entered);
+        assert_eq!(token_in.you.battlefield.len(), 2);
+        assert_eq!(
+            token_in.you.battlefield.iter().filter(|p| p.token).count(),
+            1
+        );
+        assert_eq!(token_in.you.blue_devotion(), 2);
+        let token = token_in.you.battlefield.iter().find(|p| p.token).unwrap();
+        assert_eq!(token.toughness(), 1);
+        assert!(token.to_string().contains("(token)"));
+        assert_eq!(token_in.stack.len(), 2);
+
+        // Only noncreature, nonland cards may be taken.
+        let asked = pass_twice(&token_in);
+        assert_eq!(
+            legal_actions(&asked),
+            vec![
+                Action::Choose(Choice::TrainerPick(Some(Card::Brainstorm))),
+                Action::Choose(Choice::TrainerPick(Some(Card::DarkRitual))),
+                Action::Choose(Choice::TrainerPick(None)),
+            ]
+        );
+        let took = apply(
+            &asked,
+            &Action::Choose(Choice::TrainerPick(Some(Card::Brainstorm))),
+        )
+        .unwrap();
+        assert_eq!(took.you.hand, vec![Card::Brainstorm]);
+        assert_eq!(took.you.cards_drawn_this_turn, 0);
+        // The untouched Swamp is now on top, the three others under it in a
+        // random order.
+        assert_eq!(
+            took.you.library,
+            vec![
+                Card::Swamp,
+                Card::ThassasOracle,
+                Card::Island,
+                Card::DarkRitual
+            ]
+        );
+        assert!(!took.you.library_ordered);
+
+        // A token that leaves the battlefield goes nowhere.
+        let mut gone = took.clone();
+        let idx = gone.you.battlefield.iter().position(|p| p.token).unwrap();
+        gone.battlefield_to_graveyard(Player::You, idx);
+        assert_eq!(gone.you.battlefield.len(), 1);
+        assert!(!gone.you.graveyard.contains(&Card::ThundertrapTrainer));
+
+        // One card left over keeps the order known.
+        let short = main_phase(PlayerState {
+            library: vec![Card::Brainstorm, Card::Island],
+            ..PlayerState::default()
+        });
+        let asked = pass_twice(&resolve(short, Card::ThundertrapTrainer));
+        let took = apply(
+            &asked,
+            &Action::Choose(Choice::TrainerPick(Some(Card::Brainstorm))),
+        )
+        .unwrap();
+        assert_eq!(took.you.library, vec![Card::Island]);
+        assert!(took.you.library_ordered);
+    }
+
+    #[test]
+    fn cavern_of_souls_names_a_type_and_makes_that_type_uncounterable() {
+        // Played from hand, it asks for a type among the creatures you own.
+        let state = main_phase(PlayerState {
+            hand: vec![Card::CavernOfSouls, Card::ThassasOracle],
+            library: vec![Card::QuantumRiddler],
+            ..PlayerState::default()
+        });
+        let played = apply(
+            &state,
+            &Action::PlayLand {
+                card: Card::CavernOfSouls,
+                from: Zone::Hand,
+            },
+        )
+        .unwrap();
+        assert_eq!(played.pending.map(|p| p.kind), Some(ChoiceKind::CavernType));
+        assert_eq!(
+            legal_actions(&played),
+            vec![
+                Action::Choose(Choice::CavernType(CreatureType::Merfolk)),
+                Action::Choose(Choice::CavernType(CreatureType::Sphinx)),
+                Action::Choose(Choice::CavernType(CreatureType::Wizard)),
+            ]
+        );
+        let named = apply(
+            &played,
+            &Action::Choose(Choice::CavernType(CreatureType::Wizard)),
+        )
+        .unwrap();
+        assert_eq!(
+            named.you.battlefield[0].chosen_type,
+            Some(CreatureType::Wizard)
+        );
+        assert!(named.you.battlefield[0].to_string().contains("(Wizard)"));
+
+        // A matching creature may use one mana of any color from it, and
+        // then can't be countered.
+        let state = versus(
+            PlayerState {
+                hand: vec![Card::ThassasOracle],
+                library: vec![Card::Swamp],
+                mana_pool: ManaPool::of(Color::U, 1),
+                battlefield: vec![Permanent::cavern(CreatureType::Wizard)],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                hand: vec![Card::Counterspell],
+                battlefield: vec![Permanent::untapped(Card::Island); 2],
+                ..PlayerState::default()
+            },
+        );
+        let with_cavern = cast_from_hand(
+            Card::ThassasOracle,
+            Payment {
+                mana: ManaPool::of(Color::U, 2),
+                cavern: 1,
+                ..Payment::FREE
+            },
+        );
+        let actions = legal_actions(&state);
+        assert!(actions.contains(&with_cavern));
+        assert_eq!(
+            actions
+                .iter()
+                .filter(|a| matches!(a, Action::CastSpell { .. }))
+                .count(),
+            1
+        );
+        assert_eq!(
+            with_cavern.to_string(),
+            "Cast Thassa's Oracle paying UU and 1 of it from Cavern of Souls"
+        );
+        let cast = apply(&state, &with_cavern).unwrap();
+        assert!(cast.you.mana_pool.is_empty());
+        assert!(cast.you.battlefield[0].tapped);
+        assert!(cast.stack[0].uncounterable());
+        assert!(cast.stack[0].to_string().starts_with("uncounterable "));
+        let theirs = apply(&cast, &Action::Pass).unwrap();
+        assert_eq!(
+            Card::Counterspell.target_options(&theirs, Player::Opponent),
+            Some(vec![])
+        );
+        assert_eq!(legal_actions(&theirs), vec![Action::Pass]);
+        // Even a Counterspell somehow aimed at it does nothing.
+        let mut forced = theirs.clone();
+        forced.stack.push(their_spell(
+            Card::Counterspell,
+            Some(on_stack(0, Card::ThassasOracle)),
+        ));
+        let after = pass_twice(&forced);
+        assert_eq!(after.stack.len(), 1);
+        // `theirs` already held one pass, so Oracle resolves on the next
+        // pass and its trigger two passes later.
+        let resolved = pass_twice(&after);
+        assert!(
+            resolved
+                .you
+                .battlefield
+                .iter()
+                .any(|p| p.card == Card::ThassasOracle)
+        );
+        let won = apply(&resolved, &Action::Pass).unwrap();
+        assert_eq!(won.outcome, Some(Outcome::Win));
+
+        // The wrong type only gives {C}: Oracle's {U}{U} can't be paid.
+        let mut sphinx = state.clone();
+        sphinx.you.battlefield = vec![Permanent::cavern(CreatureType::Sphinx)];
+        let actions = legal_actions(&sphinx);
+        assert!(
+            !actions
+                .iter()
+                .any(|a| matches!(a, Action::CastSpell { .. }))
+        );
+        assert!(actions.contains(&Action::TapForColorless {
+            source: Card::CavernOfSouls
+        }));
     }
 }
