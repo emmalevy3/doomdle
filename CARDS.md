@@ -78,13 +78,13 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {2} — Artifact — Equipment
 - **Effect:** Equipped creature has haste and shroud. (It can't be the target of spells or abilities.) Equip {0}
 - **Gotchas:** Equipping is sorcery speed but free, so total cost is {2}. Haste only has to be there when you activate Doom's {T} ability. Shroud blocks your own targeting too (e.g. Aether Spellbomb's bounce), and it stops the opponent's Swords and Snuff Out on Doom. Once Greaves is on the only creature, nothing can re-equip that creature.
-- **Simplifications:** ignore combat; haste matters only for Doom's {T} ability.
+- **Simplifications:** ignore combat; haste matters only for Doom's {T} ability. Equipment is tracked per creature (which creature wears what); equipping moves it off the previous wearer, and the equipment leaving the battlefield takes it off. A second copy of the same equipment on one creature isn't distinguished. Shroud blocks your own targeting (Aether Spellbomb's bounce, equip) as well as the opponent's (Swords, Snuff Out, the Blasts, Bowmasters' ping, Teferi's −3).
 
 ### Skateboard
 - **Cost / type:** {1} — Artifact — Equipment
 - **Effect:** When this Equipment enters, tap target permanent. Equipped creature gets +1/+0 and has haste. Equip {1}
 - **Gotchas:** Total cost is {2} ({1} to cast, {1} to equip, sorcery speed), the same as Greaves but split, and it doesn't give shroud. The enter trigger is mandatory and targets *any* permanent, so with nothing better, target a land you already tapped so you don't lose mana. It can also tap an opponent's land to deny counterspell mana.
-- **Simplifications:** ignore the +1/+0.
+- **Simplifications:** ignore the +1/+0. The trigger's target is chosen the moment Skateboard enters (a decision before the trigger goes on the stack); any permanent of either player is allowed, Skateboard itself or an already-tapped permanent included, which is how to waste it. A shrouded creature can't be chosen.
 
 ---
 
@@ -240,7 +240,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {1} — Artifact
 - **Effect:** {U}, Sacrifice this artifact: Return target creature to its owner's hand. {1}, Sacrifice this artifact: Draw a card.
 - **Gotchas:** Costs 2 total to draw a card. Mental Misstep target.
-- **Simplifications:** model both modes; the bounce can save a creature from the opponent's response or reset an enter trigger.
+- **Simplifications:** model both modes; the bounce can save a creature from the opponent's response or reset an enter trigger. The bounce may target either player's creature. Sacrificing doesn't need {T}, so a Spellbomb tapped by Skateboard still works.
 
 ---
 
@@ -280,13 +280,13 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {1} — Artifact
 - **Effect:** {1}, {T}, Sacrifice this artifact: Add one mana of any color. When this artifact is put into a graveyard from the battlefield, draw a card.
 - **Gotchas:** Costs 1 to cast and 1 to activate, for one mana back plus a draw. It's a color filter that cantrips. The draw triggers no matter how it hits the graveyard. Mental Misstep target.
-- **Simplifications:**
+- **Simplifications:** the activation is a mana ability (no stack); the draw trigger uses the stack. It only triggers if the Star really reaches the graveyard: under your Yawgmoth's Will or the opponent's Leyline of the Void it is exiled instead and nothing is drawn.
 
 ### Wizard's Rockets
 - **Cost / type:** {1} — Artifact
 - **Effect:** This artifact enters tapped. {X}, {T}, Sacrifice this artifact: Add X mana in any combination of colors. When this artifact is put into a graveyard from the battlefield, draw a card.
 - **Gotchas:** It enters tapped, so it can't be activated the turn it's cast; it only works if it starts the puzzle on the battlefield. With X=0 it's a free draw; with X>0 it filters colors. The draw triggers however it reaches the graveyard.
-- **Simplifications:**
+- **Simplifications:** same as Chromatic Star: a mana ability, the draw trigger on the stack, no trigger when exiled instead (Yawgmoth's Will, Leyline). Every X the pool can pay is offered, with every way to pay it and every combination of colors back; colorless mana out is never offered.
 
 ### Cabal Ritual
 - **Cost / type:** {1}{B} — Instant
@@ -314,7 +314,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {0} — Artifact
 - **Effect:** {T}, Sacrifice this artifact: Look at the top card of target player's library. Draw a card at the beginning of the next turn's upkeep.
 - **Gotchas:** The draw never happens in a one-turn puzzle. Its uses are as a free spell for storm and as a free card into the graveyard for threshold.
-- **Simplifications:** ignore the delayed draw and the look.
+- **Simplifications:** ignore the delayed draw and the look. The target is always you. The ability still uses the stack (Stifle could counter it, pointlessly) and needs {T}, so a Bauble tapped by Skateboard can't be activated.
 
 ---
 
@@ -397,7 +397,7 @@ These start the puzzle on the opponent's battlefield. Static effects need no opp
 - **Cost / type:** {1}{B} — Creature — Orc Archer. Flash.
 - **Effect:** When this creature enters and whenever an opponent draws a card except the first one they draw in each of their draw steps, this creature deals 1 damage to any target. Then amass Orcs 1.
 - **Gotchas:** The exception is only for the draw *step*, and the puzzle is in your main phase, so *every* card you draw pings. A draw replaced by Lab Man or Jace never happened, so it doesn't ping (and you've won anyway). Damage is dealt as each trigger resolves, so it adds to the life budget alongside Doomsday's halving, Probe, Wraith and fetches. You lose when the state-based check sees 0 life, so the timing of the last ping relative to the win matters.
-- **Simplifications:** the target is an opponent choice and becomes a search branch: you, or one of your creatures (Lab Man is a 2/2, so two pings kill it). This needs creature toughness and damage in the state. Ignore the Orc Army and its token. Bowmasters never enters mid-puzzle (the opponent only casts targeted spells), so its enter trigger isn't modeled. Damage stays for the turn and kills at the next state-based check; planeswalkers are never pinged. Toughness in this pool: Oracle 3, Lab Man 2, Grief 2, Doom 4, Street Wraith 4, Bowmasters 1, Thalia 1, Archon 3.
+- **Simplifications:** the target is an opponent choice and becomes a search branch: you, or one of your creatures (Lab Man is a 2/2, so two pings kill it). This needs creature toughness and damage in the state. Ignore the Orc Army and its token. Bowmasters never enters mid-puzzle (the opponent only casts targeted spells), so its enter trigger isn't modeled. Damage stays for the turn and kills at the next state-based check; planeswalkers are never pinged. Under your Veil of Summer (hexproof from black) neither you nor your creatures can be pinged, and the trigger does nothing; a creature with Lightning Greaves can't be pinged either. Toughness in this pool: Oracle 3, Lab Man 2, Grief 2, Doom 4, Street Wraith 4, Bowmasters 1, Thalia 1, Archon 3.
 
 ### Leyline of the Void
 - **Cost / type:** {2}{B}{B} — Enchantment
