@@ -126,7 +126,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {4}{U} — Instant. Alt: return two Islands you control to their owner's hand.
 - **Effect:** You may return two Islands you control to their owner's hand rather than pay this spell's mana cost. Draw two cards.
 - **Gotchas:** Tap the Islands for mana first, then return them as the cost, so it's free and the mana floats. One returned land can be replayed if a land drop remains (Sewers or Archive can surveil again). It competes with Daze for Islands, and the returned lands make your hand bigger (bad for Quantum Riddler). Mana value 5, so Mental Misstep can't hit it.
-- **Simplifications:**
+- **Simplifications:** the two Islands are any two lands with the Island type (basic Islands or blue duals) and may share a name; the pair is unordered. Returning them is an alternative cost, so Thalia's {1} still applies. The floating mana stays.
 
 ### Quantum Riddler
 - **Cost / type:** {3}{U}{U} — Creature — Sphinx. Warp {1}{U}.
@@ -144,7 +144,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {1}{R/G} — Instant
 - **Effect:** Add two mana in any combination of colors. Draw a card.
 - **Gotchas:** Net free, and it fixes colors. You choose the colors before drawing. Counts as an instant for Flow State and as a spell for storm. Mana value 2.
-- **Simplifications:**
+- **Simplifications:** the {R/G} pip is the only hybrid mana in the pool; the engine offers paying it with red or with green. The two colors are chosen as a decision when Manamorphose resolves, before the card is drawn. Manamorphose counts as both red and green (Pyroblast can't target it; Hydroblast can't either).
 
 ### Frantic Search
 - **Cost / type:** {2}{U} — Instant
@@ -162,7 +162,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {2}{U} — Sorcery
 - **Effect:** Each player shuffles their hand and graveyard into their library, then draws seven cards.
 - **Gotchas:** Timetwister itself isn't shuffled in. The library becomes unordered, but if it has exactly 7 cards you draw it all and can win with Oracle. If it has more, the rest stays unordered. If it has fewer, you'd draw from an empty library and lose, unless Lab Man or Jace turns the extra draw into a win. Your hand is shuffled in first, so with Quantum Riddler you draw 8.
-- **Simplifications:** only allowed in puzzles where the opponent holds no interaction, since it gives them a new, unknown hand and breaks open information. In those puzzles, ignore the opponent's shuffle.
+- **Simplifications:** only allowed in puzzles where the opponent holds no interaction, since it gives them a new, unknown hand and breaks open information. In those puzzles, ignore the opponent's shuffle. The restriction is a puzzle-authoring rule, not enforced by the engine; the opponent's hand, graveyard and library are left untouched and the opponent draws nothing.
 
 ### Brainstorm
 - **Cost / type:** {U} — Instant
@@ -198,7 +198,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {1}{B} — Sorcery
 - **Effect:** You draw two cards and lose 2 life.
 - **Gotchas:** Life loss can kill you after Doomsday halves your life. Losing happens at the next state-based check, so a win during the same resolution still counts.
-- **Simplifications:**
+- **Simplifications:** none.
 
 ### Ideas Unbound
 - **Cost / type:** {U}{U} — Sorcery — Arcane
@@ -210,7 +210,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {1}{R} — Sorcery
 - **Effect:** Exile the top two cards of your library. Until the end of your next turn, you may play those cards.
 - **Gotchas:** Shrinks the library by 2 without *drawing*, so it doesn't trigger Jace's replacement. You still pay costs and follow timing for exiled cards. A land among them uses your land drop.
-- **Simplifications:**
+- **Simplifications:** the exiled cards live in their own "may play" zone, separate from the rest of exile. Playing them follows normal casting rules (Grafdigger's Cage and Narset don't apply, since they aren't the graveyard or draws). Cards left there at the end of the turn stay exiled.
 
 ### Gitaxian Probe
 - **Cost / type:** {U/P} — Sorcery (pay {U} or 2 life)
@@ -308,7 +308,7 @@ Beyond hand / library / graveyard / mana / life, these cards need the engine to 
 - **Cost / type:** {1} — Artifact
 - **Effect:** {T}: Add {C}{C}.
 - **Gotchas:** Colorless only, so it can't pay {U}{U} for Oracle or {B}{B}{B} for Doomsday. Good for puzzles with enough mana but the wrong colors.
-- **Simplifications:**
+- **Simplifications:** colorless mana is tracked separately and only ever pays generic costs. The opponent's Sol Ring is part of their tap plans too.
 
 ### Mishra's Bauble
 - **Cost / type:** {0} — Artifact
