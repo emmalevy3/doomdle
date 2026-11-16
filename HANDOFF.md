@@ -253,7 +253,15 @@ preloaded. The proposal, kept in the plan file as well:
    write a file, `cargo run -- puzzles/<date>.json`, commit; the corpus test
    guards every file. A static site can't hide future puzzles from someone
    reading the bundle; only a backend could.
-12. **CI and deploy** (was 10): GitHub Actions running fmt, clippy, test, the
+12. **Launch on emmanems.com** (in progress): Doomdle on Cloudflare Pages,
+    deployed by `.github/workflows/ci.yml`; a router Worker in `site/` puts
+    it at emmanems.com/doomdle beside the user's Emmadle (a separate
+    Cloudflare Worker, plain static files, at /emmadle) and a landing page at
+    the root. The user's steps: add emmanems.com to Cloudflare, switch the
+    nameservers at Squarespace, create the Pages project, add the API token
+    and account id as GitHub secrets, push. Emmadle's share link (in its own
+    project's game.js) must change to https://emmanems.com/emmadle/.
+    Original proposal (was 10): GitHub Actions running fmt, clippy, test, the
     wasm build and smoke test, then the Pages deploy on `main`. Also handle
     browser caching after a deploy (the dev server's stuck "Loading…" came
     from mixed cached and new modules), e.g. versioned file names.

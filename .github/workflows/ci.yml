@@ -1,0 +1,78 @@
+# Checks every push and pull request; on main, deploys Doomdle to Cloudflare
+# Pages and the emmanems.com router Worker. The deploy steps run only once the
+# repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID exist.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      HAS_CLOUDFLARE: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+      DEPLOY: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: |
+          cargo clippy --all-targets -- -D warnings
+          cargo clippy --all-targets --features wasm -- -D warnings
+
+      - name: Tests
+        run: cargo test
+
+      - name: Build the WebAssembly
+        run: |
+          npm install -g wasm-pack
+          wasm-pack build --target web --out-dir web/pkg --features wasm
+
+      - name: Smoke test
+        run: node wasm/smoke.mjs
+
+      - name: Router tests
+        run: node site/route.test.mjs
+
+      - name: Assemble the site
+        run: |
+          rsync -a --exclude tools --exclude 'pkg/.gitignore' --exclude 'pkg/package.json' \
+            --exclude '*.d.ts' web/ dist/
+          ls -R dist | head -40
+
+      - name: Deploy Doomdle to Cloudflare Pages
+        if: env.DEPLOY == 'true' && env.HAS_CLOUDFLARE == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=doomdle --branch=main
+
+      - name: Deploy the emmanems.com router
+        if: env.DEPLOY == 'true' && env.HAS_CLOUDFLARE == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: site
+          command: deploy

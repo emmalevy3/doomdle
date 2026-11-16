@@ -1,0 +1,5 @@
+# Cloudflare Pages response headers. Browsers may keep copies but must check
+# with the server (a cheap ETag request) before using them, so after a deploy
+# nobody runs a mix of old and new scripts.
+/*
+  Cache-Control: no-cache
