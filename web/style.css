@@ -718,6 +718,39 @@ dialog::backdrop {
   font-family: var(--display);
 }
 
+/* ------------------------------------------------------------ dragging */
+
+.drag-ghost {
+  position: fixed;
+  z-index: 60;
+  margin: 0;
+  pointer-events: none;
+  opacity: 0.9;
+  transform: rotate(3deg);
+  box-shadow: 0 16px 40px var(--shadow), 0 0 18px rgb(91 143 214 / 0.5);
+}
+
+body.dragging,
+body.dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.slot.drop-target .slot-empty,
+.slot.drop-target .card {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: 2px;
+}
+
+.pool.drop-target {
+  border-color: var(--accent-glow);
+}
+
+.card img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 /* ------------------------------------------------------------ sharing */
 
 .share-buttons {
