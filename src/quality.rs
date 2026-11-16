@@ -13,6 +13,11 @@ use crate::engine::{Action, EngineError, apply, legal_actions};
 use crate::solver::{Search, SearchResult};
 use crate::state::{Puzzle, State};
 
+/// Each rating worker's stack. The solver recurses once per step of a line,
+/// and a long line overflowed the 2 MiB a spawned thread gets by default
+/// (the main thread has 8 MiB). This is address space, not memory used.
+const WORKER_STACK: usize = 256 * 1024 * 1024;
+
 /// A worker's memo is cleared past this many states, to bound memory.
 const MEMO_CAP: usize = 250_000;
 
@@ -349,10 +354,15 @@ fn search_piles(
     }
     let chunk = piles.len().div_ceil(threads);
     thread::scope(|scope| {
-        let workers: Vec<_> = piles
+        let workers = piles
             .chunks(chunk)
-            .map(|run| scope.spawn(move || search_run(start, run, budget)))
-            .collect();
+            .map(|run| {
+                thread::Builder::new()
+                    .stack_size(WORKER_STACK)
+                    .spawn_scoped(scope, move || search_run(start, run, budget))
+                    .map_err(|_| EngineError::Internal("could not start a rating worker"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
         let mut results = Vec::with_capacity(piles.len());
         for worker in workers {
             match worker.join() {

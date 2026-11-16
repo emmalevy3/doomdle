@@ -18,7 +18,8 @@
 //! Both write the puzzles they keep to `puzzles/generated/` (gitignored).
 //! Options: `--count N` (0: run until stopped), `--seed S`, `--budget B` (per pile), and for
 //! `generate` `--max-ideas K`, `--max-sets K`, `--max-share P` (percent),
-//! `--min-decoys D`, `--order-matters`, `--difficulty easy|medium|hard`.
+//! `--min-decoys D`, `--order-matters`, `--difficulty easy|medium|hard`,
+//! `--start N` (resume a seed's deals at attempt N).
 
 use std::collections::HashSet;
 use std::error::Error;
@@ -131,6 +132,7 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
         "--max-share",
         "--min-decoys",
         "--difficulty",
+        "--start",
         "--order-matters",
     ];
     for (i, arg) in args.iter().enumerate() {
@@ -196,7 +198,8 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
     let (mut screened, mut rejected, mut repeats, mut kept_count) = (0, 0, 0, 0);
     let mut tiers = [0usize; 3]; // easy, medium, hard
     let mut kept: Vec<Rating> = Vec::new(); // only for the survey's summary
-    let mut n = 0;
+    // --start resumes a seed's sequence of deals at a given attempt number.
+    let mut n: u64 = flag(args, "--start")?.unwrap_or(0);
     while count == 0 || kept_count < count {
         match attempt(seed, n, &options)? {
             Attempt::Screened => screened += 1,
