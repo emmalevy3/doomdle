@@ -1,0 +1,19 @@
+# The emmanems.com router (see worker.js). Deployed by CI on pushes to main.
+name = "emmanems-router"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = false
+
+# Custom domains: Cloudflare creates the DNS records and certificates itself,
+# once emmanems.com's nameservers point at Cloudflare.
+routes = [
+  { pattern = "emmanems.com", custom_domain = true },
+  { pattern = "www.emmanems.com", custom_domain = true },
+]
+
+[vars]
+# The Pages project's address; confirm it once the project exists (if
+# "doomdle" was taken, Cloudflare adds a suffix such as doomdle-abc.pages.dev).
+DOOMDLE_ORIGIN = "https://doomdle.pages.dev"
+# Emmadle's existing Worker.
+EMMADLE_ORIGIN = "https://emmadle.emmachomsky.workers.dev"
