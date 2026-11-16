@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Doomdle</title>
+    <meta name="description" content="A daily Magic: The Gathering puzzle: build the Doomsday pile that wins this turn." />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header>
+      <p class="brand">Doomdle</p>
+      <h1 id="title">Loading…</h1>
+      <p id="date" class="date"></p>
+      <p class="rules">
+        Doomsday is resolving. Choose five cards from your library and graveyard and order
+        them, top first, so that you win this turn against everything the opponent can do.
+      </p>
+    </header>
+
+    <main>
+      <section id="board" class="board" aria-label="Game state"></section>
+      <section id="builder" class="builder" aria-label="Pile builder"></section>
+      <p id="status" class="status" role="status"></p>
+      <ol id="history" class="history" aria-label="Your attempts"></ol>
+      <section id="reveal" class="reveal"></section>
+    </main>
+
+    <footer>
+      Card images from <a href="https://scryfall.com">Scryfall</a>. Magic: The Gathering is
+      © Wizards of the Coast. Doomdle is unofficial fan content.
+    </footer>
+
+    <dialog id="zoom" aria-label="Card">
+      <div class="zoom-body"></div>
+    </dialog>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-//! Every file in `puzzles/` must parse, round-trip, and have a solution the
+//! Every file in `web/puzzles/` must parse, round-trip, and have a solution the
 //! solver confirms.
 
 use std::fs;
@@ -8,7 +8,7 @@ use doomdle::{DEFAULT_BUDGET, PuzzleFile, Verdict, verify, verify_within};
 #[test]
 fn every_puzzle_file_parses_and_its_solution_wins() {
     let mut checked = 0;
-    for entry in fs::read_dir("puzzles").expect("puzzles directory") {
+    for entry in fs::read_dir("web/puzzles").expect("puzzles directory") {
         let path = entry.expect("directory entry").path();
         if path.extension().is_none_or(|e| e != "json") {
             continue;

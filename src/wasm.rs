@@ -17,3 +17,10 @@ pub fn verify_pile(puzzle_json: &str, pile_json: &str) -> String {
 pub fn solve_puzzle(puzzle_json: &str) -> String {
     crate::api::solve_json(puzzle_json)
 }
+
+/// Every card in the pool by printed name, as a JSON array (for tools such
+/// as the card image fetcher).
+#[wasm_bindgen]
+pub fn card_names() -> String {
+    crate::api::card_names_json()
+}

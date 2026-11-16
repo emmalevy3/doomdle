@@ -4,8 +4,8 @@
 //!
 //! ```text
 //! cargo run
-//! cargo run -- puzzles/cavern-wizard.json
-//! cargo run -- puzzles/cavern-wizard.json "Swamp"
+//! cargo run -- web/puzzles/cavern-wizard.json
+//! cargo run -- web/puzzles/cavern-wizard.json "Swamp"
 //! ```
 
 use std::error::Error;

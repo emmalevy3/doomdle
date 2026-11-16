@@ -7,6 +7,7 @@
 pub mod api;
 pub mod cards;
 pub mod engine;
+pub mod feedback;
 pub mod mana;
 pub mod puzzle_file;
 pub mod solver;
@@ -14,12 +15,13 @@ pub mod state;
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
-pub use api::{DEFAULT_BUDGET, solve_json, verify_json};
+pub use api::{DEFAULT_BUDGET, card_names_json, solve_json, verify_json};
 pub use cards::{
     AbilityKind, ActivatedAbility, Card, CardKind, CreatureType, CyclingCost, LandFilter, LandType,
     LoyaltyAbility, ManaAbility, TriggerKind,
 };
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
+pub use feedback::{ClosestLine, Culprits, closest_line, opponent_culprits};
 pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 pub use puzzle_file::{FormatError, PermanentEntry, PermanentFile, PlayerFile, PuzzleFile};
 pub use solver::{

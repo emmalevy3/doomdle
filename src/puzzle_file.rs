@@ -47,6 +47,10 @@ pub struct PuzzleFile {
     /// The intended winning pile, top first.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub solution: Option<Vec<Card>>,
+    /// How many piles a player may try on this puzzle; missing means the
+    /// site's default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempts: Option<u8>,
 }
 
 /// One player's side. Every field has a default: 20 life, empty zones, no
@@ -174,6 +178,7 @@ impl PuzzleFile {
             you: PlayerFile::from_player_state(&puzzle.you),
             opponent: PlayerFile::from_player_state(&puzzle.opponent),
             solution,
+            attempts: None,
         }
     }
 }
@@ -372,13 +377,15 @@ mod tests {
     "hand": ["Counterspell"],
     "battlefield": ["Island", "Island"]
   },
-  "solution": ["Swamp", "Brainstorm"]
+  "solution": ["Swamp", "Brainstorm"],
+  "attempts": 5
 }"#;
 
     #[test]
     fn example_parses_into_the_right_puzzle() {
         let file = PuzzleFile::parse(EXAMPLE).unwrap();
         assert_eq!(file.id.as_deref(), Some("2026-01-05"));
+        assert_eq!(file.attempts, Some(5));
         assert_eq!(file.solution, Some(vec![Card::Swamp, Card::Brainstorm]));
         let puzzle = file.puzzle();
         let you = &puzzle.you;
@@ -422,6 +429,7 @@ mod tests {
             }
         );
         assert_eq!(file.solution, None);
+        assert_eq!(file.attempts, None);
     }
 
     #[test]

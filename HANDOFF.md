@@ -2,7 +2,7 @@
 
 Written for whoever (or whichever model) continues this work. Read `CLAUDE.md`
 first (rules and module map), then this file, then `CARDS.md` before touching
-any card logic. Everything here is current as of stage 7 (the WebAssembly bridge).
+any card logic. Everything here is current as of stage 8 (the site).
 
 ## Status in one paragraph
 
@@ -15,8 +15,8 @@ test in `tests/puzzle_files.rs` over `puzzles/*.json`. `cargo fmt --check`,
 Dependencies: `serde` (derive), `serde_json`, and `wasm-bindgen` behind the
 `wasm` feature. Stage 7 put the verifier in the browser: `wasm-pack build
 --target web --features wasm` builds `pkg/`, and `node wasm/smoke.mjs` checks
-it. The next stage is the site (see "Roadmap"), which needs the user's open
-decisions first.
+it. Stage 8 added the site in `web/` and failure feedback. The next stage is 9,
+the dated daily puzzles (see "Roadmap").
 
 ## How a game is represented
 
@@ -146,8 +146,8 @@ pair. Never add a card that isn't in CARDS.md; never edit CARDS.md unasked
   by printed name, `mana_pool` as a symbol string, optional `solution`.
   Fields that can't be true as Doomsday resolves (exile, impulse, Silence,
   Veil, unordered library) deliberately don't exist. `parse`, `to_json`,
-  `puzzle`, `from_puzzle`. Example files in `puzzles/`.
-- CLI (`src/main.rs`): `cargo run` (sample), `cargo run -- file.json` (search
+  `puzzle`, `from_puzzle`. Example files in `web/puzzles/`.
+- CLI (`src/main.rs`): `cargo run` (sample), `cargo run -- web/puzzles/file.json` (search
   for a winning pile), `cargo run -- file.json "Card" ...` (verify a pile).
 
 ## Testing patterns
@@ -209,7 +209,7 @@ preloaded. The proposal, kept in the plan file as well:
    CLI, a node budget in `solve` so a browser tab can't freeze, and a Node
    smoke script over the built `.wasm`. The library already has no
    filesystem, thread, clock or randomness use.
-8. **The site**: `web/` with Vite + TypeScript, no framework; views for the
+8. **The site** (done, see CLAUDE.md: `web/`, `src/feedback.rs`). Decided: site in this repo, plain files, 3 attempts adjustable per site and per puzzle, Scryfall images, failure feedback = which opponent card stops it + the closest line. Originally proposed: `web/` with Vite + TypeScript, no framework; views for the
    state, a pile builder, submit and verdict; card images via Scryfall by
    name; static hosting (GitHub Pages). Open product decisions: attempts per
    day, feedback on a failed pile (the engine exposes `LossReason` and the
@@ -223,5 +223,6 @@ preloaded. The proposal, kept in the plan file as well:
 10. **CI**: GitHub Actions running fmt, clippy, test, the wasm build and smoke
     test, then the site build and Pages deploy on `main`.
 
-Decisions still the user's: site in this repo or separate; the game rules
-above; images vs text; whether hiding future puzzles matters.
+Decisions made for stage 8: the site lives here under `web/`; three attempts
+by default (`web/config.js`, overridable per puzzle); Scryfall images; hiding
+future puzzles doesn't matter, but the page must open on today's puzzle.
