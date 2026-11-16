@@ -8,8 +8,10 @@ pub mod api;
 pub mod cards;
 pub mod engine;
 pub mod feedback;
+pub mod generate;
 pub mod mana;
 pub mod puzzle_file;
+pub mod quality;
 pub mod solver;
 pub mod state;
 #[cfg(feature = "wasm")]
@@ -22,8 +24,10 @@ pub use cards::{
 };
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
 pub use feedback::{ClosestLine, Culprits, closest_line, opponent_culprits};
+pub use generate::{Attempt, GenerateOptions, Rng, attempt, deal};
 pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 pub use puzzle_file::{FormatError, PermanentEntry, PermanentFile, PlayerFile, PuzzleFile};
+pub use quality::{Criteria, RateOptions, Rating, WinningSet, rate};
 pub use solver::{
     PileSearch, SearchResult, Step, Strategy, Verdict, solve, solve_puzzle, solve_puzzle_within,
     solve_within, verify, verify_within,

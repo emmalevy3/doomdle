@@ -17,8 +17,11 @@ Dependencies: `serde` (derive), `serde_json`, and `wasm-bindgen` behind the
 --target web --out-dir web/pkg --features wasm` builds `web/pkg/`, and `node
 wasm/smoke.mjs` checks it. Stage 8 added the site in `web/` and failure
 feedback; stage 9 restyled it (dark blue-black Magic look) and laid it out from
-the user's sketch. The next stage is 10, puzzle quality and a generator (see
-"Roadmap").
+the user's sketch. Stage 10 added puzzle ratings (`src/quality.rs`) and a
+generator (`src/generate.rs`, the `rate`/`survey`/`generate` CLI commands).
+Open: the user chose to *measure first* before deciding how rare winning piles
+must be ("a few answers" vs "under 1% of piles"); the survey numbers are the
+input for that decision.
 
 ## How a game is represented
 
@@ -220,7 +223,7 @@ preloaded. The proposal, kept in the plan file as well:
    ritual" pass (pentagram, "Begin the ritual") as too occult: keep it dark
    but make it feel like Magic. Layout follows the user's sketch (see
    CLAUDE.md, `web/`).
-10. **Puzzle quality and a generator** (next). The user's point: the
+10. **Puzzle quality and a generator** (done; thresholds still to choose). The user's point: the
     challenge must be in choosing and ordering the pile, not in finding the
     line, since the solver plays the line. Proposed solver-measured quality
     checks: more candidates than slots (decoys), few winning piles among all

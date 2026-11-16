@@ -184,20 +184,50 @@ pub fn solve_within(start: &State, max_nodes: usize) -> SearchResult {
     Search::new(max_nodes).run(start).0
 }
 
-/// One search with its memo and remaining budget.
-struct Search {
+/// One search with its memo and remaining budget. The memo is keyed on the
+/// whole game state, so it can be reused across searches from different
+/// starting states (see [`Search::run_again`]).
+pub(crate) struct Search {
     memo: HashMap<State, Memo>,
     remaining: usize,
     gave_up: bool,
 }
 
 impl Search {
-    fn new(max_nodes: usize) -> Search {
+    pub(crate) fn new(max_nodes: usize) -> Search {
         Search {
             memo: HashMap::new(),
             remaining: max_nodes,
             gave_up: false,
         }
+    }
+
+    /// Searches `start` with a fresh budget of `max_nodes`, keeping the memo
+    /// from earlier runs. A run that gives up clears the memo, because its
+    /// "lost" entries may only mean "not explored". Returns the result and the
+    /// number of new states visited.
+    pub(crate) fn run_again(&mut self, start: &State, max_nodes: usize) -> (SearchResult, usize) {
+        self.remaining = max_nodes;
+        self.gave_up = false;
+        let result = match self.search(start) {
+            Some(strategy) => SearchResult::Won(strategy),
+            None if self.gave_up => SearchResult::GaveUp,
+            None => SearchResult::Lost,
+        };
+        if self.gave_up {
+            self.memo.clear();
+        }
+        (result, max_nodes - self.remaining)
+    }
+
+    /// How many states the memo holds.
+    pub(crate) fn memo_len(&self) -> usize {
+        self.memo.len()
+    }
+
+    /// Forgets every remembered state (to bound memory).
+    pub(crate) fn forget(&mut self) {
+        self.memo.clear();
     }
 
     /// The result and the number of states visited.
