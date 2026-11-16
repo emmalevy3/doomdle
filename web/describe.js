@@ -76,9 +76,6 @@ export function localDate(now = new Date()) {
 
 const SQUARE = { win: "🟩", answered: "🟨", reached: "🟥", unreached: "⬛" };
 
-/** Discord refuses messages longer than this. */
-export const DISCORD_LIMIT = 2000;
-
 /** The attempts that count: checked, not given up. */
 function counted(attempts) {
   return attempts.filter((a) => a.result.ok && !a.result.gave_up);
@@ -117,9 +114,8 @@ export function shareText({ id, attempts, allowed, pileSize, link }) {
 }
 
 /**
- * The result for Discord: after a win, the winning pile and its line follow
- * in a spoiler. Kept under Discord's message limit by dropping the line,
- * then the pile, if needed.
+ * The result for Discord: after a win, the winning pile follows in a spoiler.
+ * (The full line is too long to share; the pile is the answer.)
  */
 export function discordText({ id, attempts, allowed, pileSize, link }) {
   const plain = shareText({ id, attempts, allowed, pileSize, link });
@@ -127,12 +123,5 @@ export function discordText({ id, attempts, allowed, pileSize, link }) {
   if (!win) {
     return plain;
   }
-  const pile = `Pile (top first): ${win.pile.join(", ")}`;
-  const spoiler = (body) => `${plain}\n||\`\`\`text\n${body}\n\`\`\`||`;
-  const full = spoiler(win.result.line ? `${pile}\n\n${win.result.line}` : pile);
-  if (full.length <= DISCORD_LIMIT) {
-    return full;
-  }
-  const short = spoiler(`${pile}\n\n(line too long for Discord)`);
-  return short.length <= DISCORD_LIMIT ? short : plain;
+  return `${plain}\n||${win.pile.join(" → ")}||`;
 }

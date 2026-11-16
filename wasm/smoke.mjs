@@ -19,7 +19,6 @@ import {
   shareRows,
   shareText,
   discordText,
-  DISCORD_LIMIT,
 } from "../web/describe.js";
 
 const { verify_pile, solve_puzzle } = api;
@@ -204,7 +203,6 @@ check(
     noFeedback: ["⬛⬛"],
   },
 );
-const longLine = "step\n".repeat(800);
 check(
   "share text",
   {
@@ -212,19 +210,12 @@ check(
     lost: shareText({ ...share, attempts: [miss(5), miss(4), miss(3)] }),
     discord: discordText({ ...share, attempts: [won("1. Play Swamp.")] }),
     discordLost: discordText({ ...share, attempts: [miss(5)] }),
-    discordLong: discordText({ ...share, attempts: [won(longLine)] }).includes(
-      "(line too long for Discord)",
-    ),
-    discordFits: discordText({ ...share, attempts: [won(longLine)] }).length <= DISCORD_LIMIT,
   },
   {
     won: "Doomdle 2026-11-16 2/3\n🟥🟥🟥⬛⬛\n🟩🟩🟩🟩🟩\nhttps://example.org/",
     lost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\n🟥⬛⬛⬛⬛\n🟥🟥⬛⬛⬛\nhttps://example.org/",
-    discord:
-      "Doomdle 2026-11-16 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/\n||```text\nPile (top first): Swamp, Island\n\n1. Play Swamp.\n```||",
+    discord: "Doomdle 2026-11-16 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/\n||Swamp → Island||",
     discordLost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\nhttps://example.org/",
-    discordLong: true,
-    discordFits: true,
   },
 );
 
