@@ -24,7 +24,7 @@ pub use cards::{
 };
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
 pub use feedback::{ClosestLine, Culprits, closest_line, opponent_culprits};
-pub use generate::{Attempt, GenerateOptions, Rng, attempt, deal};
+pub use generate::{Attempt, GenerateOptions, Rng, attempt, deal, fingerprint};
 pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 pub use puzzle_file::{FormatError, PermanentEntry, PermanentFile, PlayerFile, PuzzleFile};
 pub use quality::{Criteria, Difficulty, RateOptions, Rating, WinningSet, rate};

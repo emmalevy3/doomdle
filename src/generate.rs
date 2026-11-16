@@ -405,6 +405,23 @@ pub enum Attempt {
     Rejected(Vec<String>),
 }
 
+/// A key that is equal for two files describing the same game state, whatever
+/// their id, title, solution or the order their zones are listed in. Used to
+/// keep a generator run from saving a puzzle that already exists.
+pub fn fingerprint(file: &PuzzleFile) -> String {
+    let mut bare = file.clone();
+    bare.id = None;
+    bare.title = None;
+    bare.solution = None;
+    bare.difficulty = None;
+    bare.attempts = None;
+    // The candidates have no order before the pile is chosen; `State::new`
+    // sorts the other zones.
+    bare.you.library.sort();
+    bare.opponent.library.sort();
+    format!("{:?}", crate::state::State::new(bare.puzzle()))
+}
+
 /// Deals and judges one puzzle. `seed` and `attempt` name it: the same pair
 /// always deals the same puzzle, and the id records them (`gen-<seed>-<attempt>`).
 pub fn attempt(seed: u64, attempt: u64, options: &GenerateOptions) -> Result<Attempt, EngineError> {
@@ -474,6 +491,20 @@ mod tests {
         assert!(!affordable(Card::PollutedDelta, 1));
         assert!(!payable(&DRAW, 2).contains(&Card::NightsWhisper));
         assert!(payable(&DRAW, 2).contains(&Card::GitaxianProbe));
+    }
+
+    #[test]
+    fn fingerprints_ignore_names_and_zone_order() {
+        let a = deal(&mut Rng::new(3));
+        let mut b = a.clone();
+        b.id = Some("other".to_string());
+        b.title = Some("Other".to_string());
+        b.solution = Some(vec![Card::Island]);
+        b.difficulty = Some(Difficulty::Hard);
+        b.you.library.reverse();
+        assert_eq!(fingerprint(&a), fingerprint(&b));
+        let c = deal(&mut Rng::new(4));
+        assert_ne!(fingerprint(&a), fingerprint(&c));
     }
 
     #[test]

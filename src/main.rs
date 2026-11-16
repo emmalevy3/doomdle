@@ -15,7 +15,7 @@
 //! `survey` deals random puzzles and tabulates the ratings of the ones that
 //! clear the agreed bar; `generate` does the same with optional extra limits.
 //! Both write the puzzles they keep to `puzzles/generated/` (gitignored).
-//! Options: `--count N`, `--seed S`, `--budget B` (per pile), and for
+//! Options: `--count N` (0: run until stopped), `--seed S`, `--budget B` (per pile), and for
 //! `generate` `--max-ideas K`, `--max-sets K`, `--max-share P` (percent),
 //! `--min-decoys D`, `--order-matters`, `--difficulty easy|medium|hard`.
 
@@ -26,7 +26,8 @@ use std::{env, fs, process};
 
 use doomdle::{
     Attempt, Card, Criteria, Difficulty, GenerateOptions, Permanent, PlayerState, Puzzle,
-    PuzzleFile, RateOptions, Rating, State, Verdict, attempt, rate, solve_puzzle, verify,
+    PuzzleFile, RateOptions, Rating, State, Verdict, attempt, fingerprint, rate, solve_puzzle,
+    verify,
 };
 
 fn main() {
@@ -158,7 +159,28 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
     }
 
     fs::create_dir_all(OUT_DIR)?;
-    println!("Seed {seed}; keeping {count}; writing to {OUT_DIR}/\n");
+    // Every puzzle already generated or on the site, so no run repeats one.
+    let mut known = std::collections::HashSet::new();
+    for dir in [OUT_DIR, "web/puzzles"] {
+        for entry in fs::read_dir(dir)? {
+            let path = entry?.path();
+            if path.extension().is_some_and(|e| e == "json")
+                && let Ok(text) = fs::read_to_string(&path)
+                && let Ok(file) = PuzzleFile::parse(&text)
+            {
+                known.insert(fingerprint(&file));
+            }
+        }
+    }
+    let goal = if count == 0 {
+        "until stopped".to_string()
+    } else {
+        count.to_string()
+    };
+    println!(
+        "Seed {seed}; keeping {goal}; {} puzzles already known; writing to {OUT_DIR}/\n",
+        known.len()
+    );
     if survey {
         println!(
             "{:<18} {:<6} {:>5} {:>6} {:>5} {:>5} {:>8} {:>6} {:>5}",
@@ -166,14 +188,23 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
         );
     }
     let started = Instant::now();
-    let (mut screened, mut rejected) = (0, 0);
-    let mut kept: Vec<Rating> = Vec::new();
+    let (mut screened, mut rejected, mut repeats, mut kept_count) = (0, 0, 0, 0);
+    let mut tiers = [0usize; 3]; // easy, medium, hard
+    let mut kept: Vec<Rating> = Vec::new(); // only for the survey's summary
     let mut n = 0;
-    while kept.len() < count {
+    while count == 0 || kept_count < count {
         match attempt(seed, n, &options)? {
             Attempt::Screened => screened += 1,
             Attempt::Rejected(_) => rejected += 1,
+            Attempt::Kept(file, _) if !known.insert(fingerprint(&file)) => repeats += 1,
             Attempt::Kept(file, rating) => {
+                kept_count += 1;
+                match rating.difficulty() {
+                    Some(Difficulty::Easy) => tiers[0] += 1,
+                    Some(Difficulty::Medium) => tiers[1] += 1,
+                    Some(Difficulty::Hard) => tiers[2] += 1,
+                    None => {}
+                }
                 let id = file.id.clone().unwrap_or_else(|| format!("gen-{seed}-{n}"));
                 let path = Path::new(OUT_DIR).join(format!("{id}.json"));
                 fs::write(&path, file.to_json()?)?;
@@ -192,17 +223,24 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
                         rating.decoys.len(),
                         if rating.order_matters() { "yes" } else { "no" }
                     );
+                    kept.push(*rating);
                 } else {
-                    println!("{} -> {}\n{rating}", id, path.display());
+                    println!(
+                        "[{:.0?}] #{kept_count} {} -> {} (so far {} easy, {} medium, {} hard)\n{rating}",
+                        started.elapsed(),
+                        id,
+                        path.display(),
+                        tiers[0],
+                        tiers[1],
+                        tiers[2]
+                    );
                 }
-                kept.push(*rating);
             }
         }
         n += 1;
     }
     println!(
-        "\nDealt {n}: {screened} had no winning pile, {rejected} fell short, {} kept, in {:.1?}.",
-        kept.len(),
+        "\nDealt {n}: {screened} had no winning pile, {rejected} fell short, {repeats} repeated a known puzzle, {kept_count} kept, in {:.1?}.",
         started.elapsed()
     );
     if survey {
