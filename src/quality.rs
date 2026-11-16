@@ -32,8 +32,9 @@ pub enum Difficulty {
 pub const HARD_BELOW: f64 = 0.005;
 /// Shares below this (and at least [`HARD_BELOW`]) are Medium.
 pub const MEDIUM_BELOW: f64 = 0.02;
-/// Shares up to this (and at least [`MEDIUM_BELOW`]) are Easy.
-pub const EASY_UP_TO: f64 = 0.08;
+/// Shares up to this (and at least [`MEDIUM_BELOW`]) are Easy. Set from
+/// play-testing: 2.86% of piles winning felt easy but fine, 5.36% too easy.
+pub const EASY_UP_TO: f64 = 0.03;
 
 impl Difficulty {
     /// The tier for a share of winning piles, or `None` if it is too easy.
@@ -738,7 +739,9 @@ mod tests {
         assert_eq!(Difficulty::from_share(0.0199), Some(Difficulty::Medium));
         assert_eq!(Difficulty::from_share(MEDIUM_BELOW), Some(Difficulty::Easy));
         assert_eq!(Difficulty::from_share(EASY_UP_TO), Some(Difficulty::Easy));
-        assert_eq!(Difficulty::from_share(0.0801), None);
+        assert_eq!(Difficulty::from_share(0.0286), Some(Difficulty::Easy));
+        assert_eq!(Difficulty::from_share(0.0301), None);
+        assert_eq!(Difficulty::from_share(0.0536), None);
         assert_eq!("HARD".parse::<Difficulty>(), Ok(Difficulty::Hard));
         assert!("brutal".parse::<Difficulty>().is_err());
     }

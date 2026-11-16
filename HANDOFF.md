@@ -226,7 +226,7 @@ preloaded. The proposal, kept in the plan file as well:
 10. **Puzzle quality and a generator** (done). The "few answers vs under 1%"
     question was settled by play-testing: the share of winning piles tracks
     how hard a puzzle feels, so it now sorts puzzles into Easy/Medium/Hard
-    (cutoffs 0.5%, 2%, 8%; over 8% is discarded), stored as `difficulty` in
+    (cutoffs 0.5%, 2%, 3%; over 3% is discarded: 2.86% felt easy but fine and 5.36% too easy in play-testing), stored as `difficulty` in
     the file and shown on the page and in the share text. Stage 11 should mix
     tiers across the week. The user also asked for: no floating mana in
     generated puzzles (easy to miss), no unpayable life-cost cards, a bigger
