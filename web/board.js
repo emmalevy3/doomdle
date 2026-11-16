@@ -10,6 +10,11 @@ export function setImages(map) {
   images = map ?? {};
 }
 
+/** The largest image URL for `name`, or undefined if there is none. */
+export function largeImage(name) {
+  return images[name]?.large ?? images[name]?.normal;
+}
+
 /** The dialog that shows a card large. */
 export function setZoomDialog(dialog) {
   zoom = dialog;
@@ -28,7 +33,7 @@ function el(tag, className, text) {
 
 /**
  * One card: its Scryfall image, or a text tile if there is none. `badges` are
- * short labels shown on the card (tapped, loyalty, ...).
+ * short labels shown on the card (loyalty, Cavern type, ...).
  */
 export function cardElement(name, { badges = [], onClick } = {}) {
   const card = el("button", "card");
@@ -84,7 +89,6 @@ function permanent(entry) {
 
 function permanentBadges(p) {
   const badges = [];
-  if (p.tapped) badges.push("tapped");
   if (p.summoning_sick) badges.push("summoning sick");
   if (p.loyalty !== undefined) badges.push(`loyalty ${p.loyalty}`);
   if (p.type) badges.push(p.type);
@@ -95,7 +99,40 @@ function permanentBadges(p) {
 
 function zone(label, entries, toCard) {
   const section = el("section", "zone");
-  section.append(el("h3", null, label));
+  section.append(el("h3", null, label), cardRow(entries, toCard));
+  return section;
+}
+
+/** A battlefield card, turned sideways in a square frame when tapped. */
+function permanentCard(p) {
+  const card = cardElement(p.card, { badges: permanentBadges(p) });
+  if (!p.tapped) {
+    return card;
+  }
+  card.classList.add("tapped");
+  card.title = `${p.card} (tapped)`;
+  const frame = el("span", "tapped-frame");
+  frame.append(card);
+  return frame;
+}
+
+/** Small labelled values: [label, value] pairs. */
+function stats(items) {
+  const list = el("ul", "stats");
+  for (const [label, value] of items) {
+    const item = el("li", "stat");
+    item.append(el("span", "stat-label", label), el("span", "stat-value", value));
+    list.append(item);
+  }
+  return list;
+}
+
+/** A panel: a heading, then whatever `children` are. */
+function panel(target, heading, ...children) {
+  target.replaceChildren(el("h2", null, heading), ...children);
+}
+
+function cardRow(entries, toCard) {
   const row = el("div", "cards");
   if (entries.length === 0) {
     row.append(el("p", "empty", "Nothing"));
@@ -103,52 +140,41 @@ function zone(label, entries, toCard) {
   for (const entry of entries) {
     row.append(toCard(entry));
   }
-  section.append(row);
-  return section;
+  return row;
 }
 
-function facts(items) {
-  const list = el("ul", "facts");
-  for (const item of items) {
-    list.append(el("li", null, item));
-  }
-  return list;
-}
-
-/** Your side and the opponent's, from the parsed puzzle file. */
-export function renderBoard(container, puzzle) {
+/**
+ * The game state from the parsed puzzle file, drawn into three panels:
+ * `you` (your stats and battlefield), `hand` (your hand) and `them` (the
+ * opponent's stats, revealed hand and battlefield).
+ */
+export function renderBoard({ you: yourPanel, hand: handPanel, them: theirPanel }, puzzle) {
   const you = puzzle.you ?? {};
   const them = puzzle.opponent ?? {};
   const life = you.life ?? 20;
-  container.replaceChildren();
 
-  const mine = el("div", "side");
-  mine.append(el("h2", null, "You"));
-  const yourFacts = [
-    `Life ${life}, ${lifeAfterDoomsday(life)} after Doomsday`,
-    you.land_drop === false ? "Land drop used" : "Land drop available",
+  const yourStats = [
+    ["Life", `${life} → ${lifeAfterDoomsday(life)}`],
+    ["Land drop", you.land_drop === false ? "used" : "✓"],
   ];
-  if (you.mana_pool) yourFacts.push(`Floating mana: ${you.mana_pool}`);
-  if (you.spells_cast) yourFacts.push(`Spells cast before Doomsday: ${you.spells_cast}`);
-  if (you.cards_drawn) yourFacts.push(`Cards drawn this turn: ${you.cards_drawn}`);
-  if (you.yawgmoths_will) yourFacts.push("Yawgmoth's Will is active");
-  mine.append(facts(yourFacts));
-  mine.append(zone("Hand", you.hand ?? [], (name) => cardElement(name)));
-  mine.append(
-    zone("Battlefield", (you.battlefield ?? []).map(permanent), (p) =>
-      cardElement(p.card, { badges: permanentBadges(p) }),
-    ),
+  if (you.mana_pool) yourStats.push(["Floating", you.mana_pool]);
+  if (you.spells_cast) yourStats.push(["Spells cast", String(you.spells_cast)]);
+  if (you.cards_drawn) yourStats.push(["Cards drawn", String(you.cards_drawn)]);
+  if (you.yawgmoths_will) yourStats.push(["Yawgmoth's Will", "active"]);
+  panel(
+    yourPanel,
+    "Your board",
+    stats(yourStats),
+    zone("Battlefield", (you.battlefield ?? []).map(permanent), permanentCard),
   );
 
-  const theirs = el("div", "side opponent");
-  theirs.append(el("h2", null, "Opponent"));
-  theirs.append(facts([`Life ${them.life ?? 20}`]));
-  theirs.append(zone("Hand (open)", them.hand ?? [], (name) => cardElement(name)));
-  theirs.append(
-    zone("Battlefield", (them.battlefield ?? []).map(permanent), (p) =>
-      cardElement(p.card, { badges: permanentBadges(p) }),
-    ),
-  );
+  panel(handPanel, "Your hand", cardRow(you.hand ?? [], (name) => cardElement(name)));
 
-  container.append(mine, theirs);
+  panel(
+    theirPanel,
+    "Opponent",
+    stats([["Life", String(them.life ?? 20)]]),
+    zone("Hand (revealed)", them.hand ?? [], (name) => cardElement(name)),
+    zone("Battlefield", (them.battlefield ?? []).map(permanent), permanentCard),
+  );
 }

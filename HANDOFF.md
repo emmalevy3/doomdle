@@ -2,21 +2,23 @@
 
 Written for whoever (or whichever model) continues this work. Read `CLAUDE.md`
 first (rules and module map), then this file, then `CARDS.md` before touching
-any card logic. Everything here is current as of stage 8 (the site).
+any card logic. Everything here is current as of stage 9 (the site's look and layout).
 
 ## Status in one paragraph
 
 All 79 cards in `CARDS.md` are implemented (94 `Card` variants: basics and
 duals are listed individually, and Tamiyo's back face is its own variant). The
-engine, AND/OR solver and a JSON puzzle format are done. `cargo test` runs 286
-tests: 216 unit, 69 solver pile pairs in `tests/solver_piles.rs`, 1 corpus
-test in `tests/puzzle_files.rs` over `puzzles/*.json`. `cargo fmt --check`,
+engine, AND/OR solver and a JSON puzzle format are done. `cargo test` runs 301
+tests: 231 unit, 69 solver pile pairs in `tests/solver_piles.rs`, 1 corpus
+test in `tests/puzzle_files.rs` over `web/puzzles/*.json`. `cargo fmt --check`,
 `cargo clippy --all-targets -- -D warnings` and the tests are all green.
 Dependencies: `serde` (derive), `serde_json`, and `wasm-bindgen` behind the
 `wasm` feature. Stage 7 put the verifier in the browser: `wasm-pack build
---target web --features wasm` builds `pkg/`, and `node wasm/smoke.mjs` checks
-it. Stage 8 added the site in `web/` and failure feedback. The next stage is 9,
-the dated daily puzzles (see "Roadmap").
+--target web --out-dir web/pkg --features wasm` builds `web/pkg/`, and `node
+wasm/smoke.mjs` checks it. Stage 8 added the site in `web/` and failure
+feedback; stage 9 restyled it (dark blue-black Magic look) and laid it out from
+the user's sketch. The next stage is 10, puzzle quality and a generator (see
+"Roadmap").
 
 ## How a game is represented
 
@@ -214,14 +216,31 @@ preloaded. The proposal, kept in the plan file as well:
    name; static hosting (GitHub Pages). Open product decisions: attempts per
    day, feedback on a failed pile (the engine exposes `LossReason` and the
    line), whether to reveal the winning line, share text.
-9. **Daily puzzles preloaded**: `puzzles/YYYY-MM-DD.json`, a bundling step
+9. **The site's look and layout** (done). The user rejected the first "dark
+   ritual" pass (pentagram, "Begin the ritual") as too occult: keep it dark
+   but make it feel like Magic. Layout follows the user's sketch (see
+   CLAUDE.md, `web/`).
+10. **Puzzle quality and a generator** (next). The user's point: the
+    challenge must be in choosing and ordering the pile, not in finding the
+    line, since the solver plays the line. Proposed solver-measured quality
+    checks: more candidates than slots (decoys), few winning piles among all
+    legal piles, order matters, obvious piles fail. A Rust generator builds
+    random states from the card pool and keeps the interesting ones for the
+    user to review. Generated puzzles must use a full 5-card pile chosen from
+    more candidates; hand-made ones may use fewer (the user can make small
+    ones interesting by hand). The current samples are engine fixtures, not
+    daily puzzles (`bauble-threshold` offers 4 cards for 4 slots, so there is
+    nothing to choose).
+11. **Daily puzzles preloaded** (was 9): `puzzles/YYYY-MM-DD.json`, a bundling step
    that copies them into the site's static assets with `solution` stripped,
    the page picks today's date locally and fetches that file; authoring is
    write a file, `cargo run -- puzzles/<date>.json`, commit; the corpus test
    guards every file. A static site can't hide future puzzles from someone
    reading the bundle; only a backend could.
-10. **CI**: GitHub Actions running fmt, clippy, test, the wasm build and smoke
-    test, then the site build and Pages deploy on `main`.
+12. **CI and deploy** (was 10): GitHub Actions running fmt, clippy, test, the
+    wasm build and smoke test, then the Pages deploy on `main`. Also handle
+    browser caching after a deploy (the dev server's stuck "Loading…" came
+    from mixed cached and new modules), e.g. versioned file names.
 
 Decisions made for stage 8: the site lives here under `web/`; three attempts
 by default (`web/config.js`, overridable per puzzle); Scryfall images; hiding

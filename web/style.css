@@ -1,41 +1,52 @@
-:root {
-  --bg: #f7f5f0;
-  --surface: #ffffff;
-  --text: #1d1b18;
-  --muted: #6b665d;
-  --border: #ddd8cc;
-  --accent: #6b3fa0;
-  --accent-text: #ffffff;
-  --win: #2e7d4f;
-  --lose: #a33a2c;
-  --card-w: clamp(64px, 17vw, 108px);
-  color-scheme: light dark;
-}
+/* Doomdle: a dark, blue-black Magic table. Dark only; every colour is a token here. */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #15141a;
-    --surface: #201f27;
-    --text: #ecebf0;
-    --muted: #a19fae;
-    --border: #36343f;
-    --accent: #a88ad6;
-    --accent-text: #15141a;
-    --win: #6ccf95;
-    --lose: #ee8577;
-  }
+:root {
+  --bg: #0b0d12;
+  --bg-deep: #05060a;
+  --surface: #141721;
+  --surface-raised: #1b1f2b;
+  --text: #ece4d2;
+  --muted: #8d8a85;
+  --gold: #c6a15b;
+  --gold-dim: #4f4430;
+  --accent: #2c5d9a;
+  --accent-glow: #5b8fd6;
+  --win: #7fb069;
+  --lose: #c4404f;
+
+  /* The five mana colours, for the header pips. */
+  --mana-w: #f4edd2;
+  --mana-u: #3f86c9;
+  --mana-b: #2a2430;
+  --mana-r: #d2533b;
+  --mana-g: #3f8a52;
+  --shadow: rgb(0 0 0 / 0.6);
+
+  --card-w: clamp(62px, 17vw, 104px);
+  --card-h: calc(var(--card-w) * 88 / 63);
+
+  --display: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+  --body: "Cormorant Garamond", "Garamond", "Georgia", serif;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  color-scheme: dark;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background: var(--bg-deep);
+}
+
 body {
   margin: 0;
-  padding: 0 16px 32px;
-  background: var(--bg);
+  min-height: 100vh;
+  padding: 0 16px 40px;
+  background: radial-gradient(ellipse at 50% 0%, #151c2c 0%, var(--bg) 45%, var(--bg-deep) 100%) fixed;
   color: var(--text);
-  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 500 18px/1.5 var(--body);
 }
 
 header,
@@ -45,76 +56,304 @@ footer {
   margin: 0 auto;
 }
 
+/* ------------------------------------------------------------ header */
+
 header {
-  padding: 20px 0 8px;
+  padding: 14px 0 4px;
+  text-align: center;
 }
 
-.brand {
+.brandline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.wordmark {
   margin: 0;
-  color: var(--accent);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font: 700 clamp(1.5rem, 5vw, 2.1rem) / 1 var(--display);
+  letter-spacing: 0.16em;
+  /* The tracking adds space after the last letter too; this re-centres it. */
+  margin-right: -0.16em;
   text-transform: uppercase;
-  font-size: 0.85rem;
+  color: var(--text);
+  text-shadow: 0 0 18px rgb(91 143 214 / 0.35);
+}
+
+.pips {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+}
+
+.pip {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  box-shadow: inset 0 -2px 3px rgb(0 0 0 / 0.35), 0 1px 3px var(--shadow);
+}
+
+.pip.w {
+  background: var(--mana-w);
+}
+
+.pip.u {
+  background: var(--mana-u);
+}
+
+.pip.b {
+  background: var(--mana-b);
+}
+
+.pip.r {
+  background: var(--mana-r);
+}
+
+.pip.g {
+  background: var(--mana-g);
 }
 
 h1 {
-  margin: 4px 0;
-  font-size: 1.6rem;
+  margin: 8px 0 0;
+  font: 500 clamp(1.05rem, 3.5vw, 1.3rem) / 1.3 var(--display);
+  letter-spacing: 0.04em;
 }
 
 h2 {
-  margin: 0 0 6px;
-  font-size: 1.15rem;
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--gold-dim);
+  font: 500 0.92rem / 1.3 var(--display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
 }
 
 h3 {
-  margin: 14px 0 6px;
-  font-size: 0.95rem;
+  margin: 10px 0 6px;
+  font: 500 0.78rem / 1.3 var(--display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--muted);
-  font-weight: 600;
 }
 
-.date,
+.date {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.layout-toggle {
+  margin-top: 6px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+}
+
+.layout-toggle[aria-pressed="true"] {
+  color: var(--gold);
+}
+
 .rules {
-  margin: 0 0 6px;
+  max-width: 46em;
+  margin: 6px auto 0;
+  font-size: 0.98rem;
+  font-style: italic;
   color: var(--muted);
 }
 
-.board {
+/* ------------------------------------------------------------ layout */
+
+/* Wide screens: the candidates in a narrow column on the left; your board and
+   hand in the middle; the opponent and the pile on the right; the attempt
+   history underneath. Phones: one column, the pile first. */
+.table {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin: 12px 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "pile" "pool" "hand" "you" "them" "log";
+  gap: 12px;
+  margin-top: 12px;
 }
 
-@media (min-width: 820px) {
-  .board {
-    grid-template-columns: 1fr 1fr;
+/* The layout toggle (phones only): the opponent's side on top, like a real
+   table. Kept inside the phone media query so it can't override the wide grid. */
+@media (max-width: 999px) {
+  .opponent-top .table {
+    grid-template-areas: "pile" "pool" "them" "you" "hand" "log";
   }
 }
 
-.side,
-.builder {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
+.pool {
+  grid-area: pool;
 }
 
-.facts {
-  margin: 0;
-  padding-left: 18px;
+#you {
+  grid-area: you;
 }
+
+.hand {
+  grid-area: hand;
+}
+
+#them {
+  grid-area: them;
+}
+
+.pile-area {
+  grid-area: pile;
+}
+
+.log {
+  grid-area: log;
+}
+
+.panel {
+  --card-w: clamp(54px, 15vw, 84px);
+  --card-h: calc(var(--card-w) * 88 / 63);
+  background: linear-gradient(180deg, var(--surface-raised), var(--surface));
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  padding: 12px;
+  box-shadow: 0 10px 30px var(--shadow), inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+/* Phones: card rows scroll sideways instead of wrapping, to save height. */
+@media (max-width: 999px) {
+  .panel .cards {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 4px 2px 6px;
+  }
+}
+
+@media (min-width: 1000px) {
+  header,
+  main,
+  footer {
+    max-width: 1760px;
+  }
+
+  .table {
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "pool you  them"
+      "pool hand pile"
+      ".    log  log";
+  }
+
+  /* The side-order toggle is for phones only; wide screens keep one layout. */
+  .layout-toggle {
+    display: none;
+  }
+
+  .panel {
+    --card-w: clamp(60px, 4.8vw, 96px);
+    --card-h: calc(var(--card-w) * 88 / 63);
+  }
+
+  .pool {
+    --card-w: clamp(104px, 8vw, 146px);
+    --card-h: calc(var(--card-w) * 88 / 63);
+  }
+
+  .pile-area {
+    --card-w: clamp(64px, 5.4vw, 108px);
+    --card-h: calc(var(--card-w) * 88 / 63);
+  }
+}
+
+/* ------------------------------------------------------------ the pick stack */
+
+/* Candidates overlap so only each card's name bar shows; hovering one shows
+   it in full beside the stack (the peek, placed by pile.js). */
+.pick-stack {
+  display: flex;
+  overflow-x: auto;
+  padding: 4px 2px 6px;
+}
+
+.pick-stack .card + .card {
+  margin-left: calc(var(--card-w) * -0.55);
+}
+
+@media (min-width: 1000px) {
+  .pick-stack {
+    flex-direction: column;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .pick-stack .card + .card {
+    margin-left: 0;
+    margin-top: calc(var(--card-h) * -0.84);
+  }
+}
+
+.pick-stack .card:not(:disabled):hover,
+.pick-stack .card:focus-visible {
+  transform: translateX(6px);
+}
+
+.pick-stack .card[aria-disabled="true"]:not(.used) {
+  cursor: default;
+}
+
+.peek {
+  position: fixed;
+  z-index: 50;
+  width: min(300px, 40vw);
+  border-radius: 14px;
+  box-shadow: 0 0 30px rgb(91 143 214 / 0.4), 0 20px 50px var(--shadow);
+  pointer-events: none;
+}
+
+.peek[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------ stats */
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 10px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 0.95rem;
+}
+
+.stat-label {
+  color: var(--muted);
+}
+
+.stat-value {
+  font-family: var(--display);
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------ cards */
 
 .cards {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
-.empty,
-.slot-empty {
+.empty {
   margin: 0;
   color: var(--muted);
   font-style: italic;
@@ -122,16 +361,19 @@ h3 {
 
 .card {
   position: relative;
+  flex: none;
   width: var(--card-w);
   aspect-ratio: 63 / 88;
   padding: 0;
   border: 0;
-  border-radius: 6px;
-  background: var(--border);
+  border-radius: 5px;
+  background: var(--surface-raised);
   overflow: hidden;
   cursor: pointer;
   font: inherit;
   color: inherit;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease, opacity 160ms ease;
 }
 
 .card img {
@@ -141,12 +383,35 @@ h3 {
   object-fit: cover;
 }
 
-.card:disabled {
-  cursor: default;
+.card:not(:disabled):hover,
+.card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px var(--shadow), 0 0 0 1px var(--gold), 0 0 16px rgb(91 143 214 / 0.35);
+  outline: none;
 }
 
 .card.used {
-  opacity: 0.3;
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+/* A tapped permanent lies sideways inside a square frame, so rows stay level. */
+.tapped-frame {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--card-h);
+  height: var(--card-h);
+}
+
+.card.tapped {
+  transform: rotate(90deg);
+}
+
+.card.tapped:hover,
+.card.tapped:focus-visible {
+  transform: rotate(90deg) translateX(-3px);
 }
 
 .text-card {
@@ -154,12 +419,11 @@ h3 {
   align-items: center;
   justify-content: center;
   padding: 6px;
-  border: 1px solid var(--muted);
-  background: var(--surface);
+  border: 1px solid var(--gold-dim);
 }
 
 .card-name {
-  font-size: 0.75rem;
+  font: 500 0.7rem / 1.2 var(--display);
   text-align: center;
 }
 
@@ -174,17 +438,40 @@ h3 {
 }
 
 .badge {
-  padding: 0 4px;
-  border-radius: 4px;
-  background: rgb(0 0 0 / 0.75);
-  color: #fff;
-  font-size: 0.65rem;
+  padding: 0 5px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  background: rgb(5 4 6 / 0.85);
+  color: var(--gold);
+  font: 500 0.6rem / 1.5 var(--display);
+}
+
+/* ------------------------------------------------------------ the pile */
+
+.pile-area {
+  border-color: rgb(44 93 154 / 0.55);
+  background:
+    radial-gradient(ellipse at 50% 30%, rgb(44 93 154 / 0.12), transparent 70%),
+    linear-gradient(180deg, var(--surface-raised), var(--surface));
+}
+
+.pile-area h2 {
+  text-align: center;
+  color: var(--text);
+}
+
+.hint {
+  margin: 0 0 8px;
+  text-align: center;
+  font-style: italic;
+  color: var(--muted);
 }
 
 .slots {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -194,13 +481,14 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   min-width: var(--card-w);
 }
 
 .slot-label {
-  color: var(--muted);
-  font-size: 0.8rem;
+  font: 500 0.75rem / 1 var(--display);
+  letter-spacing: 0.12em;
+  color: var(--gold);
 }
 
 .slot-empty {
@@ -209,9 +497,15 @@ h3 {
   justify-content: center;
   width: var(--card-w);
   aspect-ratio: 63 / 88;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border: 1px solid var(--gold-dim);
+  border-radius: 5px;
+  background: repeating-linear-gradient(135deg, transparent 0 6px, rgb(184 154 91 / 0.04) 6px 7px), var(--bg-deep);
+  box-shadow: inset 0 0 14px var(--shadow);
+  color: var(--gold-dim);
+}
+
+.slot.filled .card {
+  box-shadow: 0 4px 12px var(--shadow), 0 0 14px rgb(91 143 214 / 0.4);
 }
 
 .slot-controls {
@@ -219,55 +513,122 @@ h3 {
   gap: 4px;
 }
 
+.pile-area.complete {
+  border-color: var(--win);
+  box-shadow: 0 10px 30px var(--shadow), 0 0 28px rgb(127 176 105 / 0.25);
+}
+
+.pile-area.complete .slot.filled .card {
+  box-shadow: 0 4px 12px var(--shadow), 0 0 16px rgb(127 176 105 / 0.5);
+}
+
+/* ------------------------------------------------------------ buttons */
+
 button {
-  font: inherit;
+  font: 500 0.95rem / 1.3 var(--display);
+  letter-spacing: 0.06em;
   color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--gold-dim);
+  border-radius: 3px;
+  padding: 8px 16px;
   cursor: pointer;
+  transition: box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: default;
 }
 
 button.small {
-  padding: 0 7px;
+  padding: 0 8px;
+  font-size: 0.8rem;
+}
+
+button.small:not(:disabled):hover {
+  border-color: var(--gold);
 }
 
 button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
+  background: linear-gradient(180deg, #3a6fb0, var(--accent));
+  border-color: var(--accent-glow);
+  color: #f6f1e4;
+  letter-spacing: 0.08em;
+}
+
+button.primary:not(:disabled):hover,
+button.primary:focus-visible {
+  box-shadow: 0 0 18px rgb(91 143 214 / 0.6);
+  outline: none;
+}
+
+button.quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+button.quiet:not(:disabled):hover {
+  color: var(--text);
 }
 
 .actions {
   display: flex;
+  justify-content: center;
   gap: 8px;
-  margin-top: 12px;
+  margin: 10px 0 2px;
+}
+
+/* ------------------------------------------------------------ attempts */
+
+.pile-area .status,
+.pile-area .marks {
+  text-align: center;
+  justify-content: center;
 }
 
 .status {
-  margin: 16px 0 8px;
-  font-weight: 600;
+  margin: 10px 0 4px;
+  font: 500 1.05rem / 1.4 var(--display);
+  letter-spacing: 0.04em;
+}
+
+.marks {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 1.15rem;
+}
+
+.mark.unused {
+  color: var(--gold-dim);
+}
+
+.mark.failed {
+  color: var(--lose);
+}
+
+.mark.won {
+  color: var(--win);
+  text-shadow: 0 0 10px rgb(127 176 105 / 0.6);
 }
 
 .history {
   margin: 0;
   padding: 0;
   list-style: none;
+  text-align: left;
 }
 
 .attempt {
   margin-bottom: 10px;
-  padding: 10px 12px;
-  border-left: 4px solid var(--lose);
+  padding: 10px 14px;
+  border: 1px solid var(--gold-dim);
+  border-left: 3px solid var(--lose);
+  border-radius: 3px;
   background: var(--surface);
-  border-radius: 6px;
 }
 
 .attempt.won {
@@ -280,13 +641,29 @@ button.primary {
 
 .attempt-pile {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+}
+
+.attempt-verdict {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.line summary {
+  cursor: pointer;
+  color: var(--gold);
+  font-style: italic;
 }
 
 .line pre {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 3px;
+  background: var(--bg-deep);
   overflow-x: auto;
   white-space: pre-wrap;
-  font-size: 0.85rem;
+  font: 0.8rem / 1.5 var(--mono);
+  color: var(--text);
 }
 
 .reveal:empty {
@@ -294,11 +671,24 @@ button.primary {
 }
 
 .reveal {
-  padding: 12px 14px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  text-align: left;
 }
+
+.reveal h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.reveal .slots {
+  margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------------ zoom */
 
 dialog {
   padding: 0;
@@ -307,28 +697,83 @@ dialog {
 }
 
 dialog::backdrop {
-  background: rgb(0 0 0 / 0.7);
+  background: rgb(5 4 6 / 0.8);
+  backdrop-filter: blur(4px);
 }
 
 .zoom-body img {
   display: block;
   width: min(90vw, 488px);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: 0 0 40px rgb(91 143 214 / 0.45), 0 20px 60px var(--shadow);
 }
 
 .zoom-name {
+  margin: 0;
   padding: 24px;
+  border: 1px solid var(--gold-dim);
   background: var(--surface);
   color: var(--text);
-  border-radius: 10px;
+  border-radius: 4px;
+  font-family: var(--display);
 }
 
-footer {
-  margin-top: 28px;
+/* ------------------------------------------------------------ phone preview */
+
+/* ?view=phone: the page in a phone-sized frame (see app.js). */
+.phone-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.phone-label {
+  margin: 0 0 10px;
+  font: 500 0.8rem / 1.3 var(--display);
+  letter-spacing: 0.12em;
   color: var(--muted);
-  font-size: 0.8rem;
+}
+
+.phone-frame {
+  width: 410px;
+  max-width: 100%;
+  height: 864px;
+  border: 10px solid #000;
+  border-radius: 36px;
+  outline: 1px solid var(--gold-dim);
+  background: var(--bg);
+  box-shadow: 0 20px 60px var(--shadow);
+}
+
+/* ------------------------------------------------------------ footer */
+
+footer {
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--gold-dim);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 footer a {
-  color: inherit;
+  color: var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+
+  .card:not(:disabled):hover,
+  .card:focus-visible {
+    transform: none;
+  }
+
+  .card.tapped,
+  .card.tapped:hover,
+  .card.tapped:focus-visible {
+    transform: rotate(90deg);
+  }
 }

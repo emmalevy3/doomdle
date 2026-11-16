@@ -3,28 +3,51 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0d12" />
     <title>Doomdle</title>
     <meta name="description" content="A daily Magic: The Gathering puzzle: build the Doomsday pile that wins this turn." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap"
+    />
     <link rel="stylesheet" href="style.css" />
     <script type="module" src="app.js"></script>
   </head>
   <body>
     <header>
-      <p class="brand">Doomdle</p>
+      <div class="brandline">
+        <p class="wordmark">Doomdle</p>
+        <p class="pips" aria-hidden="true">
+          <span class="pip w"></span><span class="pip u"></span><span class="pip b"></span><span class="pip r"></span><span class="pip g"></span>
+        </p>
+      </div>
       <h1 id="title">Loading…</h1>
       <p id="date" class="date"></p>
+      <button id="layout-toggle" class="quiet layout-toggle" type="button" aria-pressed="false">
+        ⇅ Opponent on top
+      </button>
       <p class="rules">
         Doomsday is resolving. Choose five cards from your library and graveyard and order
         them, top first, so that you win this turn against everything the opponent can do.
       </p>
     </header>
 
-    <main>
-      <section id="board" class="board" aria-label="Game state"></section>
-      <section id="builder" class="builder" aria-label="Pile builder"></section>
-      <p id="status" class="status" role="status"></p>
-      <ol id="history" class="history" aria-label="Your attempts"></ol>
-      <section id="reveal" class="reveal"></section>
+    <main class="table">
+      <section id="pool" class="panel pool" aria-label="Cards to pick from"></section>
+      <section id="you" class="panel side" aria-label="Your board"></section>
+      <section id="hand" class="panel hand" aria-label="Your hand"></section>
+      <section id="them" class="panel side opponent" aria-label="Opponent"></section>
+      <div id="pile-area" class="panel pile-area">
+        <section id="pile" aria-label="Doomsday pile"></section>
+        <p id="status" class="status" role="status"></p>
+        <div id="marks" class="marks" aria-hidden="true"></div>
+      </div>
+      <section class="log">
+        <ol id="history" class="history" aria-label="Your attempts"></ol>
+        <section id="reveal" class="reveal"></section>
+      </section>
     </main>
 
     <footer>

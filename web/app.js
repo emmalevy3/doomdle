@@ -3,29 +3,39 @@
 import { ATTEMPTS, REVEAL_ON_LOSS } from "./config.js";
 import { renderBoard, setImages, setZoomDialog } from "./board.js";
 import { verdictSentence, localDate } from "./describe.js";
-import { createPileBuilder } from "./pile.js";
-import { loadRecord, saveRecord } from "./storage.js";
+import { createPileBuilder, pileRow } from "./pile.js";
+import { loadRecord, loadSetting, saveRecord, saveSetting } from "./storage.js";
 
 const $ = (id) => document.getElementById(id);
 
 // ---------------------------------------------------------------- verifier
 
-const worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
 const waiting = new Map();
 let nextId = 0;
-worker.addEventListener("message", (event) => {
-  const resolve = waiting.get(event.data.id);
-  waiting.delete(event.data.id);
-  resolve?.(event.data.result);
-});
-worker.addEventListener("error", () => {
-  for (const resolve of waiting.values()) {
-    resolve({ ok: false, error: "the verifier failed to load" });
+let worker = null;
+
+/** The verifier worker, started on first use. */
+function verifier() {
+  if (worker) {
+    return worker;
   }
-  waiting.clear();
-});
+  worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
+  worker.addEventListener("message", (event) => {
+    const resolve = waiting.get(event.data.id);
+    waiting.delete(event.data.id);
+    resolve?.(event.data.result);
+  });
+  worker.addEventListener("error", () => {
+    for (const resolve of waiting.values()) {
+      resolve({ ok: false, error: "the verifier failed to load" });
+    }
+    waiting.clear();
+  });
+  return worker;
+}
 
 function ask(request) {
+  const worker = verifier();
   return new Promise((resolve) => {
     const id = nextId++;
     waiting.set(id, resolve);
@@ -67,7 +77,29 @@ function lineDetails(summary, line) {
   return details;
 }
 
+/**
+ * Which side sits on top: "you" (the default) or "opponent" (like a real
+ * table). Remembered in this browser; the CSS reads the body class.
+ */
+function setUpLayoutToggle() {
+  const button = $("layout-toggle");
+  button.setAttribute("aria-label", "Swap which side is on top");
+  const apply = (order) => {
+    const opponentTop = order === "opponent";
+    document.body.classList.toggle("opponent-top", opponentTop);
+    button.setAttribute("aria-pressed", String(opponentTop));
+    button.textContent = opponentTop ? "⇅ Put you on top" : "⇅ Put the opponent on top";
+  };
+  apply(loadSetting("order", "you"));
+  button.addEventListener("click", () => {
+    const order = document.body.classList.contains("opponent-top") ? "you" : "opponent";
+    saveSetting("order", order);
+    apply(order);
+  });
+}
+
 async function main() {
+  setUpLayoutToggle();
   setZoomDialog($("zoom"));
   $("zoom").addEventListener("click", () => $("zoom").close());
 
@@ -92,9 +124,9 @@ async function main() {
 
   $("title").textContent = puzzle.title ?? "Doomdle";
   $("date").textContent = id;
-  renderBoard($("board"), puzzle);
+  renderBoard({ you: $("you"), hand: $("hand"), them: $("them") }, puzzle);
 
-  const builder = createPileBuilder($("builder"), puzzle, submit);
+  const builder = createPileBuilder({ pool: $("pool"), pile: $("pile") }, puzzle, submit);
 
   function solved() {
     return record.attempts.some((a) => a.result.wins);
@@ -122,17 +154,31 @@ async function main() {
     });
   }
 
+  /** One mark per allowed attempt: ✦ won, ✕ failed, ○ unused. */
+  function renderMarks() {
+    const counted = record.attempts.filter((a) => a.result.ok && !a.result.gave_up);
+    const marks = $("marks");
+    marks.replaceChildren();
+    for (let i = 0; i < allowed; i++) {
+      const attempt = counted[i];
+      const [symbol, kind] = !attempt ? ["○", "unused"] : attempt.result.wins ? ["✦", "won"] : ["✕", "failed"];
+      marks.append(el("span", `mark ${kind}`, symbol));
+    }
+  }
+
   async function renderStatus() {
     const left = allowed - used();
+    renderMarks();
+    $("pile-area").classList.toggle("complete", solved());
     if (solved()) {
-      $("status").textContent = `Solved in ${used()} of ${allowed}.`;
+      $("status").textContent = `You win — solved in ${used()} of ${allowed}.`;
       builder.setEnabled(false);
     } else if (left <= 0) {
       $("status").textContent = "Out of attempts.";
       builder.setEnabled(false);
       await reveal();
     } else {
-      $("status").textContent = `${left} of ${allowed} attempts left.`;
+      $("status").textContent = `${left} of ${allowed} attempt${left === 1 ? "" : "s"} left.`;
       builder.setEnabled(true);
     }
   }
@@ -150,7 +196,7 @@ async function main() {
     }
     $("reveal").append(
       el("h3", null, "A winning pile"),
-      el("p", null, pile.join(", ")),
+      pileRow(pile),
       lineDetails("Show the line", answer.line ?? ""),
     );
   }
@@ -161,7 +207,7 @@ async function main() {
       return;
     }
     builder.setEnabled(false);
-    $("status").textContent = "Checking…";
+    $("status").textContent = "Resolving the pile…";
     const result = await ask({ kind: "verify", puzzle: puzzleText, pile });
     record.attempts.push({ pile, result });
     saveRecord(id, record);
@@ -176,7 +222,29 @@ async function main() {
   await renderStatus();
 }
 
-main().catch((error) => {
-  $("title").textContent = "Doomdle";
-  $("status").textContent = `The page failed to load: ${error}`;
-});
+/**
+ * ?view=phone (for development): show the page inside a phone-sized frame, so
+ * the phone layout's media queries apply. The frame loads the same address
+ * without `view`. Returns whether it took over the page.
+ */
+function phoneView() {
+  const params = new URLSearchParams(location.search);
+  if (params.get("view") !== "phone" || window.self !== window.top) {
+    return false;
+  }
+  params.delete("view");
+  const frame = el("iframe", "phone-frame");
+  frame.title = "Doomdle at phone size";
+  frame.src = `${location.pathname}?${params}`;
+  const view = el("div", "phone-view");
+  view.append(el("p", "phone-label", "Phone preview · 390 × 844"), frame);
+  document.body.replaceChildren(view);
+  return true;
+}
+
+if (!phoneView()) {
+  main().catch((error) => {
+    $("title").textContent = "Doomdle";
+    $("status").textContent = `The page failed to load: ${error}`;
+  });
+}

@@ -25,3 +25,22 @@ export function saveRecord(puzzleId, record) {
     // Not saved; the attempt still counts for this visit.
   }
 }
+
+const SETTING_PREFIX = "doomdle:setting:";
+
+/** A saved display preference (a string), or `fallback` if none is saved. */
+export function loadSetting(name, fallback) {
+  try {
+    return localStorage.getItem(SETTING_PREFIX + name) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function saveSetting(name, value) {
+  try {
+    localStorage.setItem(SETTING_PREFIX + name, value);
+  } catch {
+    // Not saved; the choice still applies for this visit.
+  }
+}
