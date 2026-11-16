@@ -158,68 +158,124 @@ enum Memo {
     Won(Strategy),
 }
 
+/// How a budgeted search ended.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SearchResult {
+    Won(Strategy),
+    /// Every line was explored and none wins.
+    Lost,
+    /// The node budget ran out before the search finished.
+    GaveUp,
+}
+
 /// Finds a winning strategy from `start`, if one exists. Your decisions are
 /// OR nodes (one winning action suffices); the opponent's are AND nodes (every
-/// action must still lose for them).
+/// action must still lose for them). Unbounded: use [`solve_within`] where
+/// a runaway search would be a problem.
 pub fn solve(start: &State) -> Option<Strategy> {
-    let mut memo = HashMap::new();
-    search(start, &mut memo)
+    match solve_within(start, usize::MAX) {
+        SearchResult::Won(strategy) => Some(strategy),
+        SearchResult::Lost | SearchResult::GaveUp => None,
+    }
 }
 
-fn search(state: &State, memo: &mut HashMap<State, Memo>) -> Option<Strategy> {
-    match state.outcome {
-        Some(Outcome::Win) => return Some(Strategy::Win),
-        Some(Outcome::Loss(_)) => return None,
-        None => {}
-    }
-    match memo.get(state) {
-        Some(Memo::InProgress | Memo::Lost) => return None,
-        Some(Memo::Won(strategy)) => return Some(strategy.clone()),
-        None => {}
-    }
-    memo.insert(state.clone(), Memo::InProgress);
-
-    let result = match state.actor() {
-        Some(Player::You) => search_mine(state, memo),
-        Some(Player::Opponent) => search_theirs(state, memo),
-        None => None,
-    };
-
-    let entry = match &result {
-        Some(strategy) => Memo::Won(strategy.clone()),
-        None => Memo::Lost,
-    };
-    memo.insert(state.clone(), entry);
-    result
+/// Like [`solve`], visiting at most `max_nodes` distinct states.
+pub fn solve_within(start: &State, max_nodes: usize) -> SearchResult {
+    Search::new(max_nodes).run(start).0
 }
 
-fn search_mine(state: &State, memo: &mut HashMap<State, Memo>) -> Option<Strategy> {
-    for action in legal_actions(state) {
-        let Ok(next) = apply(state, &action) else {
-            continue;
-        };
-        if let Some(strategy) = search(&next, memo) {
-            return Some(Strategy::Mine {
-                action,
-                next: Box::new(strategy),
-            });
+/// One search with its memo and remaining budget.
+struct Search {
+    memo: HashMap<State, Memo>,
+    remaining: usize,
+    gave_up: bool,
+}
+
+impl Search {
+    fn new(max_nodes: usize) -> Search {
+        Search {
+            memo: HashMap::new(),
+            remaining: max_nodes,
+            gave_up: false,
         }
     }
-    None
-}
 
-fn search_theirs(state: &State, memo: &mut HashMap<State, Memo>) -> Option<Strategy> {
-    let actions = legal_actions(state);
-    if actions.is_empty() {
-        return None;
+    /// The result and the number of states visited.
+    fn run(mut self, start: &State) -> (SearchResult, usize) {
+        let budget = self.remaining;
+        let result = match self.search(start) {
+            Some(strategy) => SearchResult::Won(strategy),
+            None if self.gave_up => SearchResult::GaveUp,
+            None => SearchResult::Lost,
+        };
+        (result, budget - self.remaining)
     }
-    let mut branches = Vec::with_capacity(actions.len());
-    for action in actions {
-        let next = apply(state, &action).ok()?;
-        let strategy = search(&next, memo)?;
-        branches.push((action, strategy));
+
+    fn search(&mut self, state: &State) -> Option<Strategy> {
+        match state.outcome {
+            Some(Outcome::Win) => return Some(Strategy::Win),
+            Some(Outcome::Loss(_)) => return None,
+            None => {}
+        }
+        match self.memo.get(state) {
+            Some(Memo::InProgress | Memo::Lost) => return None,
+            Some(Memo::Won(strategy)) => return Some(strategy.clone()),
+            None => {}
+        }
+        // A new state costs one node. Past the budget everything "loses",
+        // and the flag tells the caller not to trust that.
+        if self.remaining == 0 {
+            self.gave_up = true;
+            return None;
+        }
+        self.remaining -= 1;
+        self.memo.insert(state.clone(), Memo::InProgress);
+
+        let result = match state.actor() {
+            Some(Player::You) => self.search_mine(state),
+            Some(Player::Opponent) => self.search_theirs(state),
+            None => None,
+        };
+
+        let entry = match &result {
+            Some(strategy) => Memo::Won(strategy.clone()),
+            None => Memo::Lost,
+        };
+        self.memo.insert(state.clone(), entry);
+        result
     }
-    Some(Strategy::Theirs { branches })
+
+    fn search_mine(&mut self, state: &State) -> Option<Strategy> {
+        for action in legal_actions(state) {
+            if self.gave_up {
+                return None;
+            }
+            let Ok(next) = apply(state, &action) else {
+                continue;
+            };
+            if let Some(strategy) = self.search(&next) {
+                return Some(Strategy::Mine {
+                    action,
+                    next: Box::new(strategy),
+                });
+            }
+        }
+        None
+    }
+
+    fn search_theirs(&mut self, state: &State) -> Option<Strategy> {
+        let actions = legal_actions(state);
+        if actions.is_empty() {
+            return None;
+        }
+        let mut branches = Vec::with_capacity(actions.len());
+        for action in actions {
+            let next = apply(state, &action).ok()?;
+            let strategy = self.search(&next)?;
+            branches.push((action, strategy));
+        }
+        Some(Strategy::Theirs { branches })
+    }
 }
 
 /// The result of checking a submitted pile.
@@ -232,33 +288,75 @@ pub enum Verdict {
     },
     /// No line wins against every opponent response.
     Fails,
+    /// The search ran out of budget (only from [`verify_within`]).
+    GaveUp,
+}
+
+/// The result of searching every pile of a puzzle.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum PileSearch {
+    /// This pile (top first) wins with this strategy.
+    Won { pile: Vec<Card>, strategy: Strategy },
+    /// No pile wins.
+    Lost,
+    /// The budget ran out (only from [`solve_puzzle_within`]).
+    GaveUp,
 }
 
 /// Searches every legal pile for one that wins: the pile (top first) and its
-/// strategy, or `None` if no pile does.
+/// strategy, or `None` if no pile does. Unbounded.
 pub fn solve_puzzle(puzzle: Puzzle) -> Result<Option<(Vec<Card>, Strategy)>, EngineError> {
+    Ok(match solve_puzzle_within(puzzle, usize::MAX)? {
+        PileSearch::Won { pile, strategy } => Some((pile, strategy)),
+        PileSearch::Lost | PileSearch::GaveUp => None,
+    })
+}
+
+/// Like [`solve_puzzle`], with `max_nodes` shared across all the piles tried.
+pub fn solve_puzzle_within(puzzle: Puzzle, max_nodes: usize) -> Result<PileSearch, EngineError> {
     let start = State::new(puzzle);
+    let mut remaining = max_nodes;
     for action in legal_actions(&start) {
         let Action::ChoosePile(pile) = &action else {
             continue;
         };
-        if let Some(strategy) = solve(&apply(&start, &action)?) {
-            return Ok(Some((pile.clone(), strategy)));
+        let (result, used) = Search::new(remaining).run(&apply(&start, &action)?);
+        remaining -= used;
+        match result {
+            SearchResult::Won(strategy) => {
+                return Ok(PileSearch::Won {
+                    pile: pile.clone(),
+                    strategy,
+                });
+            }
+            SearchResult::GaveUp => return Ok(PileSearch::GaveUp),
+            SearchResult::Lost => {}
         }
     }
-    Ok(None)
+    Ok(PileSearch::Lost)
 }
 
 /// Checks a pile for a puzzle: builds the post-Doomsday state and searches it.
 /// Returns an error only if the pile itself is not a legal Doomsday choice.
+/// Unbounded, so it never answers `Verdict::GaveUp`.
 pub fn verify(puzzle: Puzzle, pile: &[Card]) -> Result<Verdict, EngineError> {
+    verify_within(puzzle, pile, usize::MAX)
+}
+
+/// Like [`verify`], visiting at most `max_nodes` states.
+pub fn verify_within(
+    puzzle: Puzzle,
+    pile: &[Card],
+    max_nodes: usize,
+) -> Result<Verdict, EngineError> {
     let start = State::with_pile(puzzle, pile)?;
-    Ok(match solve(&start) {
-        Some(strategy) => Verdict::Wins {
+    Ok(match solve_within(&start, max_nodes) {
+        SearchResult::Won(strategy) => Verdict::Wins {
             start: Box::new(start),
             strategy,
         },
-        None => Verdict::Fails,
+        SearchResult::Lost => Verdict::Fails,
+        SearchResult::GaveUp => Verdict::GaveUp,
     })
 }
 
@@ -296,6 +394,63 @@ mod tests {
         )));
         assert!(steps.iter().any(|s| s.actor == Player::Opponent));
         assert!(strategy.to_string().ends_with("You win.\n"));
+    }
+
+    #[test]
+    fn a_tiny_budget_gives_up_and_a_large_one_agrees_with_solve() {
+        let start = main_phase(PlayerState {
+            hand: vec![Card::ThassasOracle],
+            battlefield: vec![
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::UndergroundSea),
+            ],
+            library: vec![Card::Swamp],
+            ..PlayerState::default()
+        });
+        assert_eq!(solve_within(&start, 1), SearchResult::GaveUp);
+        let full = solve(&start).expect("a winning line");
+        assert_eq!(solve_within(&start, 10_000), SearchResult::Won(full));
+        // A position that loses is Lost, not GaveUp, when the budget suffices.
+        let short = main_phase(PlayerState {
+            hand: vec![Card::ThassasOracle],
+            battlefield: vec![Permanent::untapped(Card::Island)],
+            library: vec![Card::Swamp],
+            ..PlayerState::default()
+        });
+        assert_eq!(solve_within(&short, 10_000), SearchResult::Lost);
+        assert_eq!(solve_within(&short, 1), SearchResult::GaveUp);
+    }
+
+    #[test]
+    fn budgeted_pile_search_shares_one_budget() {
+        let puzzle = Puzzle {
+            you: PlayerState {
+                hand: vec![Card::ThassasOracle],
+                battlefield: vec![
+                    Permanent::untapped(Card::Island),
+                    Permanent::untapped(Card::Island),
+                ],
+                library: vec![Card::Swamp],
+                ..PlayerState::default()
+            },
+            opponent: PlayerState::default(),
+        };
+        assert_eq!(
+            solve_puzzle_within(puzzle.clone(), 1).unwrap(),
+            PileSearch::GaveUp
+        );
+        assert!(matches!(
+            solve_puzzle_within(puzzle.clone(), 10_000).unwrap(),
+            PileSearch::Won { pile, .. } if pile == vec![Card::Swamp]
+        ));
+        assert_eq!(
+            verify_within(puzzle.clone(), &[Card::Swamp], 1).unwrap(),
+            Verdict::GaveUp
+        );
+        assert!(matches!(
+            verify(puzzle, &[Card::Swamp]).unwrap(),
+            Verdict::Wins { .. }
+        ));
     }
 
     #[test]
@@ -339,8 +494,10 @@ mod tests {
             ],
             ..PlayerState::default()
         });
-        let mut memo = HashMap::new();
-        assert_eq!(search(&start, &mut memo), None);
+        let mut search = Search::new(usize::MAX);
+        assert_eq!(search.search(&start), None);
+        assert!(!search.gave_up);
+        let memo = search.memo;
         // Tapping Island then Swamp or Swamp then Island is one state.
         let both = apply(
             &apply(

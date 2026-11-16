@@ -3,7 +3,7 @@
 
 use std::fs;
 
-use doomdle::{PuzzleFile, Verdict, verify};
+use doomdle::{DEFAULT_BUDGET, PuzzleFile, Verdict, verify, verify_within};
 
 #[test]
 fn every_puzzle_file_parses_and_its_solution_wins() {
@@ -26,6 +26,14 @@ fn every_puzzle_file_parses_and_its_solution_wins() {
         assert!(
             matches!(verdict, Verdict::Wins { .. }),
             "{name}: the solution does not win"
+        );
+        // The web build searches under a budget: every shipped puzzle must
+        // finish within it.
+        let budgeted = verify_within(file.puzzle(), &solution, DEFAULT_BUDGET)
+            .unwrap_or_else(|e| panic!("{name}: {e}"));
+        assert!(
+            matches!(budgeted, Verdict::Wins { .. }),
+            "{name}: the solution does not win within the default budget"
         );
         checked += 1;
     }

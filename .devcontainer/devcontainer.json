@@ -17,8 +17,9 @@
   "remoteUser": "vscode",
 
   // Docker creates the volume owned by root; hand it to the vscode user so Claude Code can save its login.
-  // Then update Claude Code, since the feature's install is cached in the image layer.
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && sudo env \"PATH=$PATH\" npm install -g @anthropic-ai/claude-code@latest",
+  // Then update Claude Code, since the feature's install is cached in the image layer,
+  // and install the WebAssembly toolchain (wasm-pack and the wasm32 target).
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && sudo env \"PATH=$PATH\" npm install -g @anthropic-ai/claude-code@latest wasm-pack && rustup target add wasm32-unknown-unknown",
 
   "customizations": {
     "vscode": {

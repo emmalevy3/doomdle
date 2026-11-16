@@ -4,13 +4,17 @@
 //! library + graveyard, orders them, and must win this turn. See `CARDS.md`
 //! for how every card behaves in this engine and `CLAUDE.md` for scope.
 
+pub mod api;
 pub mod cards;
 pub mod engine;
 pub mod mana;
 pub mod puzzle_file;
 pub mod solver;
 pub mod state;
+#[cfg(feature = "wasm")]
+pub mod wasm;
 
+pub use api::{DEFAULT_BUDGET, solve_json, verify_json};
 pub use cards::{
     AbilityKind, ActivatedAbility, Card, CardKind, CreatureType, CyclingCost, LandFilter, LandType,
     LoyaltyAbility, ManaAbility, TriggerKind,
@@ -18,7 +22,10 @@ pub use cards::{
 pub use engine::{Action, Choice, EngineError, apply, legal_actions};
 pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 pub use puzzle_file::{FormatError, PermanentEntry, PermanentFile, PlayerFile, PuzzleFile};
-pub use solver::{Step, Strategy, Verdict, solve, solve_puzzle, verify};
+pub use solver::{
+    PileSearch, SearchResult, Step, Strategy, Verdict, solve, solve_puzzle, solve_puzzle_within,
+    solve_within, verify, verify_within,
+};
 pub use state::{
     ChoiceKind, LossReason, Outcome, PendingChoice, Permanent, Phase, Player, PlayerState, Puzzle,
     SpellMode, StackItem, State, Target, Zone,

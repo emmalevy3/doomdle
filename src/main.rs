@@ -60,6 +60,8 @@ fn report(verdict: Verdict) {
             println!("This pile wins:\n{strategy}");
         }
         Verdict::Fails => println!("This pile does not win against every response."),
+        // The CLI searches without a budget, so this never happens here.
+        Verdict::GaveUp => println!("The search gave up before finishing."),
     }
 }
 

@@ -29,7 +29,7 @@ fn assert_wins(puzzle: Puzzle, pile: &[Card]) -> Vec<doomdle::Step> {
             );
             steps
         }
-        Verdict::Fails => panic!("expected the pile {pile:?} to win"),
+        Verdict::Fails | Verdict::GaveUp => panic!("expected the pile {pile:?} to win"),
     }
 }
 
@@ -812,7 +812,9 @@ fn assert_wins_vs(puzzle: Puzzle, pile: &[Card]) -> Vec<doomdle::Step> {
                 .expect("strategy replays");
             steps
         }
-        Verdict::Fails => panic!("expected the pile {pile:?} to win against the opponent"),
+        Verdict::Fails | Verdict::GaveUp => {
+            panic!("expected the pile {pile:?} to win against the opponent")
+        }
     }
 }
 

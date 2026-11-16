@@ -2,7 +2,7 @@
 
 Written for whoever (or whichever model) continues this work. Read `CLAUDE.md`
 first (rules and module map), then this file, then `CARDS.md` before touching
-any card logic. Everything here is current as of commit `5f78abd`.
+any card logic. Everything here is current as of stage 7 (the WebAssembly bridge).
 
 ## Status in one paragraph
 
@@ -12,8 +12,11 @@ engine, AND/OR solver and a JSON puzzle format are done. `cargo test` runs 286
 tests: 216 unit, 69 solver pile pairs in `tests/solver_piles.rs`, 1 corpus
 test in `tests/puzzle_files.rs` over `puzzles/*.json`. `cargo fmt --check`,
 `cargo clippy --all-targets -- -D warnings` and the tests are all green.
-Dependencies: `serde` (derive) and `serde_json`, nothing else. Nothing runs in
-a browser yet. The next stage is the WebAssembly bridge (see "Roadmap").
+Dependencies: `serde` (derive), `serde_json`, and `wasm-bindgen` behind the
+`wasm` feature. Stage 7 put the verifier in the browser: `wasm-pack build
+--target web --features wasm` builds `pkg/`, and `node wasm/smoke.mjs` checks
+it. The next stage is the site (see "Roadmap"), which needs the user's open
+decisions first.
 
 ## How a game is represented
 
@@ -197,7 +200,7 @@ pair. Never add a card that isn't in CARDS.md; never edit CARDS.md unasked
 The user asked what remains to connect this to a website with daily puzzles
 preloaded. The proposal, kept in the plan file as well:
 
-7. **WebAssembly bridge** (this repo): install `wasm32-unknown-unknown` and
+7. **WebAssembly bridge** (done, see CLAUDE.md: `src/api.rs`, `src/wasm.rs`, the search budget, `wasm/smoke.mjs`). As proposed: install `wasm32-unknown-unknown` and
    `wasm-pack` (add to `.devcontainer`), add `wasm-bindgen` behind a `wasm`
    cargo feature and `crate-type = ["cdylib", "rlib"]`, a feature-gated
    `src/wasm.rs` exporting `verify_pile(puzzle_json, pile_json) -> json` and
