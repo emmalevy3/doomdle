@@ -30,6 +30,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::cards::{Card, CreatureType};
 use crate::mana::{Color, ManaPool};
+use crate::quality::Difficulty;
 use crate::state::{Permanent, PlayerState, Puzzle};
 
 /// A puzzle as written in a file.
@@ -51,6 +52,10 @@ pub struct PuzzleFile {
     /// site's default.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attempts: Option<u8>,
+    /// How hard the puzzle is ("easy", "medium" or "hard"), from its rating;
+    /// stored because the browser can't afford to rate a puzzle.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub difficulty: Option<Difficulty>,
 }
 
 /// One player's side. Every field has a default: 20 life, empty zones, no
@@ -179,6 +184,7 @@ impl PuzzleFile {
             opponent: PlayerFile::from_player_state(&puzzle.opponent),
             solution,
             attempts: None,
+            difficulty: None,
         }
     }
 }
@@ -378,7 +384,8 @@ mod tests {
     "battlefield": ["Island", "Island"]
   },
   "solution": ["Swamp", "Brainstorm"],
-  "attempts": 5
+  "attempts": 5,
+  "difficulty": "hard"
 }"#;
 
     #[test]
@@ -386,6 +393,7 @@ mod tests {
         let file = PuzzleFile::parse(EXAMPLE).unwrap();
         assert_eq!(file.id.as_deref(), Some("2026-01-05"));
         assert_eq!(file.attempts, Some(5));
+        assert_eq!(file.difficulty, Some(Difficulty::Hard));
         assert_eq!(file.solution, Some(vec![Card::Swamp, Card::Brainstorm]));
         let puzzle = file.puzzle();
         let you = &puzzle.you;
@@ -430,6 +438,13 @@ mod tests {
         );
         assert_eq!(file.solution, None);
         assert_eq!(file.attempts, None);
+        assert_eq!(file.difficulty, None);
+    }
+
+    #[test]
+    fn an_unknown_difficulty_is_an_error() {
+        let err = PuzzleFile::parse(r#"{"you": {}, "difficulty": "brutal"}"#).unwrap_err();
+        assert!(err.to_string().contains("brutal"), "{err}");
     }
 
     #[test]

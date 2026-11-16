@@ -223,7 +223,14 @@ preloaded. The proposal, kept in the plan file as well:
    ritual" pass (pentagram, "Begin the ritual") as too occult: keep it dark
    but make it feel like Magic. Layout follows the user's sketch (see
    CLAUDE.md, `web/`).
-10. **Puzzle quality and a generator** (done; thresholds still to choose). The user's point: the
+10. **Puzzle quality and a generator** (done). The "few answers vs under 1%"
+    question was settled by play-testing: the share of winning piles tracks
+    how hard a puzzle feels, so it now sorts puzzles into Easy/Medium/Hard
+    (cutoffs 0.5%, 2%, 8%; over 8% is discarded), stored as `difficulty` in
+    the file and shown on the page and in the share text. Stage 11 should mix
+    tiers across the week. The user also asked for: no floating mana in
+    generated puzzles (easy to miss), no unpayable life-cost cards, a bigger
+    life display and clearer land-drop wording; all done. The user's point: the
     challenge must be in choosing and ordering the pile, not in finding the
     line, since the solver plays the line. Proposed solver-measured quality
     checks: more candidates than slots (decoys), few winning piles among all

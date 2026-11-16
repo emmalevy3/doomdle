@@ -5,9 +5,9 @@
 
 use crate::cards::{Card, CreatureType};
 use crate::engine::EngineError;
-use crate::mana::{Color, ManaPool};
+use crate::mana::ManaPool;
 use crate::puzzle_file::{PermanentEntry, PermanentFile, PlayerFile, PuzzleFile};
-use crate::quality::{Criteria, RateOptions, Rating, rate};
+use crate::quality::{Criteria, Difficulty, RateOptions, Rating, rate};
 
 /// SplitMix64: a tiny, fast, seedable random number generator. Not for
 /// cryptography; plenty for dealing cards.
@@ -176,6 +176,35 @@ const HATE: [Card; 6] = [
     Card::ArchonOfEmeria,
 ];
 
+/// The life a card in your pool costs or loses with no way around it, from
+/// CARDS.md. (Gitaxian Probe is absent: it can always be paid with {U}.)
+fn life_cost(card: Card) -> i16 {
+    match card {
+        Card::StreetWraith | Card::NightsWhisper | Card::Thoughtseize => 2,
+        Card::PollutedDelta | Card::FloodedStrand | Card::ForceOfWill => 1,
+        _ => 0,
+    }
+}
+
+/// True if `card` could be paid for at `life` (after Doomsday): paying its
+/// life would leave you above 0.
+fn affordable(card: Card, life: i16) -> bool {
+    life_cost(card) < life
+}
+
+/// `pool` without the cards whose life cost can't be paid at `life`.
+fn payable(pool: &[Card], life: i16) -> Vec<Card> {
+    pool.iter()
+        .copied()
+        .filter(|c| affordable(*c, life))
+        .collect()
+}
+
+/// Life after Doomsday's loss of half, rounded up.
+fn after_doomsday(life: i16) -> i16 {
+    life - (life + 1) / 2
+}
+
 /// At most this many copies of a card among the candidates.
 const MAX_COPIES: usize = 2;
 
@@ -222,6 +251,13 @@ fn add_from(rng: &mut Rng, pool: &[Card], zone: &mut Vec<Card>, other: &[Card]) 
 /// multiply the piles to rate: 9 candidates are 15,120 piles, 11 are 55,440). Whether it is a
 /// good puzzle is for the rater to say.
 pub fn deal(rng: &mut Rng) -> PuzzleFile {
+    // Life comes first, so no card is dealt whose life cost can't be paid.
+    let life = 2 * rng.between(2, 10) as i16;
+    let left = after_doomsday(life);
+    let draw = payable(&DRAW, left);
+    let hand_pool = payable(&HAND, left);
+    let pile_lands = payable(&PILE_LANDS, left);
+
     let win = rng.pick(&WIN_CONDITIONS);
     let mut hand = Vec::new();
     let mut library = Vec::new();
@@ -234,7 +270,7 @@ pub fn deal(rng: &mut Rng) -> PuzzleFile {
         library.push(win);
     }
     for _ in 0..rng.between(0, 2) {
-        add_from(rng, &HAND, &mut hand, &[]);
+        add_from(rng, &hand_pool, &mut hand, &[]);
     }
 
     // Three to five mana sources, mostly lands; a few already tapped for
@@ -270,11 +306,11 @@ pub fn deal(rng: &mut Rng) -> PuzzleFile {
     while library.len() < library_size {
         let roll = rng.below(100);
         let pool: &[Card] = if roll < 50 {
-            &DRAW
+            &draw
         } else if roll < 85 {
             &MANA
         } else {
-            &PILE_LANDS
+            &pile_lands
         };
         let before = library.len();
         add_from(rng, pool, &mut library, &graveyard);
@@ -283,23 +319,18 @@ pub fn deal(rng: &mut Rng) -> PuzzleFile {
         }
     }
     for _ in 0..in_graveyard {
-        let pool: &[Card] = if rng.chance(70) { &DRAW } else { &MANA };
+        let pool: &[Card] = if rng.chance(70) { &draw } else { &MANA };
         add_from(rng, pool, &mut graveyard, &library);
     }
 
-    let mana_pool = if rng.chance(15) {
-        ManaPool::of(rng.pick(&[Color::U, Color::B]), 1)
-    } else {
-        ManaPool::EMPTY
-    };
-
     let you = PlayerFile {
-        life: 2 * rng.between(2, 10) as i16,
+        life,
         hand,
         battlefield,
         library,
         graveyard,
-        mana_pool,
+        // No floating mana: players found it too easy to overlook.
+        mana_pool: ManaPool::EMPTY,
         spells_cast: rng.between(0, 2) as u8,
         cards_drawn: rng.between(1, 2) as u8,
         land_drop: rng.chance(60),
@@ -334,6 +365,7 @@ pub fn deal(rng: &mut Rng) -> PuzzleFile {
         opponent,
         solution: None,
         attempts: None,
+        difficulty: None,
     }
 }
 
@@ -347,6 +379,8 @@ pub struct GenerateOptions {
     pub screen_budget: usize,
     /// The bar a kept puzzle must clear.
     pub criteria: Criteria,
+    /// Keep only puzzles of this difficulty.
+    pub difficulty: Option<Difficulty>,
 }
 
 impl Default for GenerateOptions {
@@ -355,6 +389,7 @@ impl Default for GenerateOptions {
             rate: RateOptions::default(),
             screen_budget: 5_000,
             criteria: Criteria::default(),
+            difficulty: None,
         }
     }
 }
@@ -390,12 +425,22 @@ pub fn attempt(seed: u64, attempt: u64, options: &GenerateOptions) -> Result<Att
     }
 
     let rating = rate(&puzzle, &options.rate)?;
-    let reasons = rating.check(&options.criteria);
+    let mut reasons = rating.check(&options.criteria);
+    if let Some(wanted) = options.difficulty
+        && rating.difficulty() != Some(wanted)
+    {
+        reasons.push(format!("not {wanted}"));
+    }
     if !reasons.is_empty() {
         return Ok(Attempt::Rejected(reasons));
     }
     let name = format!("gen-{seed}-{attempt}");
-    file.title = Some(format!("Generated puzzle {seed}-{attempt}"));
+    let difficulty = rating.difficulty();
+    file.title = Some(match difficulty {
+        Some(tier) => format!("Generated puzzle {seed}-{attempt} ({tier})"),
+        None => format!("Generated puzzle {seed}-{attempt}"),
+    });
+    file.difficulty = difficulty;
     file.id = Some(name);
     file.solution = rating
         .winning_sets
@@ -417,6 +462,18 @@ mod tests {
         let c = deal(&mut Rng::new(8));
         assert_eq!(a, b);
         assert_ne!(a, c);
+    }
+
+    #[test]
+    fn life_costs_are_only_dealt_when_payable() {
+        assert_eq!(after_doomsday(4), 2);
+        assert_eq!(after_doomsday(7), 3);
+        assert!(!affordable(Card::StreetWraith, 2));
+        assert!(affordable(Card::StreetWraith, 3));
+        assert!(affordable(Card::GitaxianProbe, 1));
+        assert!(!affordable(Card::PollutedDelta, 1));
+        assert!(!payable(&DRAW, 2).contains(&Card::NightsWhisper));
+        assert!(payable(&DRAW, 2).contains(&Card::GitaxianProbe));
     }
 
     #[test]
@@ -455,6 +512,20 @@ mod tests {
                 })
                 .count();
             assert!(their_sources <= 3, "seed {seed}");
+            assert!(file.you.mana_pool.is_empty(), "seed {seed}: floating mana");
+            let left = after_doomsday(file.you.life);
+            for card in file
+                .you
+                .hand
+                .iter()
+                .chain(&file.you.library)
+                .chain(&file.you.graveyard)
+            {
+                assert!(
+                    affordable(*card, left),
+                    "seed {seed}: {card} at {left} life"
+                );
+            }
             let mut all = file.you.library.clone();
             all.extend(&file.you.graveyard);
             for card in &all {
@@ -476,11 +547,14 @@ mod tests {
             },
             screen_budget: 2_000,
             criteria: Criteria::default(),
+            difficulty: None,
         };
         let seed = 2026;
         for n in 0..200 {
             if let Attempt::Kept(file, rating) = attempt(seed, n, &options).expect("runs") {
                 assert!(rating.check(&options.criteria).is_empty());
+                assert_eq!(file.difficulty, rating.difficulty());
+                assert!(file.difficulty.is_some());
                 assert_eq!(file.id.as_deref(), Some(format!("gen-{seed}-{n}").as_str()));
                 let pile = file.solution.clone().expect("a solution");
                 assert_eq!(pile.len(), 5);

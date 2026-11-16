@@ -334,6 +334,64 @@ h3 {
   font-size: 0.95rem;
 }
 
+.stat.alert {
+  border-color: var(--accent-glow);
+  background: rgb(44 93 154 / 0.25);
+  box-shadow: 0 0 10px rgb(91 143 214 / 0.35);
+}
+
+.stat.alert .stat-label {
+  color: var(--text);
+}
+
+.life {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.life-value {
+  font: 700 2rem / 1 var(--display);
+  color: var(--text);
+}
+
+.life-label {
+  font: 500 0.85rem / 1 var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.life-before {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.badge-difficulty {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  font: 500 0.75rem / 1.6 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.badge-difficulty.easy {
+  color: var(--win);
+}
+
+.badge-difficulty.medium {
+  color: var(--gold);
+}
+
+.badge-difficulty.hard {
+  color: var(--lose);
+}
+
 .stat-label {
   color: var(--muted);
 }

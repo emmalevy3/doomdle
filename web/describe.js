@@ -101,24 +101,31 @@ export function shareRows(attempts, pileSize) {
   });
 }
 
-/** "Doomdle 2026-11-16 2/3", or "X/3" when every attempt missed. */
-function shareHeader(id, attempts, allowed) {
+/**
+ * "Doomdle 2026-11-16 (Hard) 2/3", or "X/3" when every attempt missed. The
+ * tier is left out when the puzzle has none.
+ */
+function shareHeader(id, attempts, allowed, difficulty) {
   const tries = counted(attempts);
   const winAt = tries.findIndex((a) => a.result.wins);
-  return `Doomdle ${id} ${winAt === -1 ? "X" : winAt + 1}/${allowed}`;
+  const tier = difficulty ? ` (${difficulty.charAt(0).toUpperCase()}${difficulty.slice(1)})` : "";
+  return `Doomdle ${id}${tier} ${winAt === -1 ? "X" : winAt + 1}/${allowed}`;
 }
 
 /** The plain result to paste anywhere. */
-export function shareText({ id, attempts, allowed, pileSize, link }) {
-  return [shareHeader(id, attempts, allowed), ...shareRows(attempts, pileSize), link].join("\n");
+export function shareText({ id, attempts, allowed, difficulty, pileSize, link }) {
+  return [shareHeader(id, attempts, allowed, difficulty), ...shareRows(attempts, pileSize), link].join(
+    "\n",
+  );
 }
 
 /**
  * The result for Discord: after a win, the winning pile follows in a spoiler.
  * (The full line is too long to share; the pile is the answer.)
  */
-export function discordText({ id, attempts, allowed, pileSize, link }) {
-  const plain = shareText({ id, attempts, allowed, pileSize, link });
+export function discordText(details) {
+  const plain = shareText(details);
+  const { attempts } = details;
   const win = counted(attempts).find((a) => a.result.wins);
   if (!win) {
     return plain;

@@ -17,7 +17,7 @@
 //! Both write the puzzles they keep to `puzzles/generated/` (gitignored).
 //! Options: `--count N`, `--seed S`, `--budget B` (per pile), and for
 //! `generate` `--max-ideas K`, `--max-sets K`, `--max-share P` (percent),
-//! `--min-decoys D`, `--order-matters`.
+//! `--min-decoys D`, `--order-matters`, `--difficulty easy|medium|hard`.
 
 use std::error::Error;
 use std::path::Path;
@@ -25,8 +25,8 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use std::{env, fs, process};
 
 use doomdle::{
-    Attempt, Card, Criteria, GenerateOptions, Permanent, PlayerState, Puzzle, PuzzleFile,
-    RateOptions, Rating, State, Verdict, attempt, rate, solve_puzzle, verify,
+    Attempt, Card, Criteria, Difficulty, GenerateOptions, Permanent, PlayerState, Puzzle,
+    PuzzleFile, RateOptions, Rating, State, Verdict, attempt, rate, solve_puzzle, verify,
 };
 
 fn main() {
@@ -124,6 +124,7 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
         "--max-sets",
         "--max-share",
         "--min-decoys",
+        "--difficulty",
         "--order-matters",
     ];
     for (i, arg) in args.iter().enumerate() {
@@ -146,19 +147,22 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
         options.criteria = Criteria {
             max_ideas: flag(args, "--max-ideas")?,
             max_sets: flag(args, "--max-sets")?,
-            max_share: flag::<f64>(args, "--max-share")?.map(|p| p / 100.0),
+            max_share: flag::<f64>(args, "--max-share")?
+                .map(|p| p / 100.0)
+                .or(Criteria::default().max_share),
             min_decoys: flag(args, "--min-decoys")?,
             order_must_matter: args.iter().any(|a| a == "--order-matters"),
             ..Criteria::default()
         };
+        options.difficulty = flag(args, "--difficulty")?;
     }
 
     fs::create_dir_all(OUT_DIR)?;
     println!("Seed {seed}; keeping {count}; writing to {OUT_DIR}/\n");
     if survey {
         println!(
-            "{:<18} {:>5} {:>6} {:>5} {:>5} {:>8} {:>6} {:>5}",
-            "puzzle", "cands", "wins", "sets", "ideas", "share", "decoys", "order"
+            "{:<18} {:<6} {:>5} {:>6} {:>5} {:>5} {:>8} {:>6} {:>5}",
+            "puzzle", "tier", "cands", "wins", "sets", "ideas", "share", "decoys", "order"
         );
     }
     let started = Instant::now();
@@ -175,8 +179,11 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
                 fs::write(&path, file.to_json()?)?;
                 if survey {
                     println!(
-                        "{:<18} {:>5} {:>6} {:>5} {:>5} {:>7.2}% {:>6} {:>5}",
+                        "{:<18} {:<6} {:>5} {:>6} {:>5} {:>5} {:>7.2}% {:>6} {:>5}",
                         id,
+                        rating
+                            .difficulty()
+                            .map_or("-".to_string(), |d| d.to_string()),
                         rating.candidates,
                         rating.winning_piles(),
                         rating.winning_sets.len(),
@@ -232,6 +239,13 @@ fn summarize(kept: &[Rating]) {
     );
     let ordered = kept.iter().filter(|r| r.order_matters()).count();
     println!("  order matters in {ordered} of {}", kept.len());
+    let tier = |d: Difficulty| kept.iter().filter(|r| r.difficulty() == Some(d)).count();
+    println!(
+        "  tiers: {} easy, {} medium, {} hard",
+        tier(Difficulty::Easy),
+        tier(Difficulty::Medium),
+        tier(Difficulty::Hard)
+    );
 }
 
 fn report(verdict: Verdict) {

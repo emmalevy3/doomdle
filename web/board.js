@@ -116,11 +116,11 @@ function permanentCard(p) {
   return frame;
 }
 
-/** Small labelled values: [label, value] pairs. */
+/** Small labelled values: [label, value] pairs, or [label, value, extra class]. */
 function stats(items) {
   const list = el("ul", "stats");
-  for (const [label, value] of items) {
-    const item = el("li", "stat");
+  for (const [label, value, extra] of items) {
+    const item = el("li", extra ? `stat ${extra}` : "stat");
     item.append(el("span", "stat-label", label), el("span", "stat-value", value));
     list.append(item);
   }
@@ -154,16 +154,23 @@ export function renderBoard({ you: yourPanel, hand: handPanel, them: theirPanel 
   const life = you.life ?? 20;
 
   const yourStats = [
-    ["Life", `${life} → ${lifeAfterDoomsday(life)}`],
-    ["Land drop", you.land_drop === false ? "used" : "✓"],
+    you.land_drop === false ? ["Land drop used", "✗"] : ["Land drop available", "✓"],
   ];
-  if (you.mana_pool) yourStats.push(["Floating", you.mana_pool]);
+  if (you.mana_pool) yourStats.unshift(["Floating mana", you.mana_pool, "alert"]);
   if (you.spells_cast) yourStats.push(["Spells cast", String(you.spells_cast)]);
   if (you.cards_drawn) yourStats.push(["Cards drawn", String(you.cards_drawn)]);
   if (you.yawgmoths_will) yourStats.push(["Yawgmoth's Will", "active"]);
+  // Life after Doomsday is what you play with, so it is the big number.
+  const lifeBlock = el("p", "life");
+  lifeBlock.append(
+    el("span", "life-value", String(lifeAfterDoomsday(life))),
+    el("span", "life-label", "life"),
+    el("span", "life-before", `(${life} before Doomsday)`),
+  );
   panel(
     yourPanel,
     "Your board",
+    lifeBlock,
     stats(yourStats),
     zone("Battlefield", (you.battlefield ?? []).map(permanent), permanentCard),
   );

@@ -6,6 +6,8 @@ use std::collections::BTreeSet;
 use std::fmt;
 use std::thread;
 
+use serde::{Deserialize, Serialize};
+
 use crate::cards::Card;
 use crate::engine::{Action, EngineError, apply, legal_actions};
 use crate::solver::{Search, SearchResult};
@@ -13,6 +15,64 @@ use crate::state::{Puzzle, State};
 
 /// A worker's memo is cleared past this many states, to bound memory.
 const MEMO_CAP: usize = 250_000;
+
+/// How hard a puzzle is, from the share of all piles that win (the chance one
+/// random guess wins): Hard under [`HARD_BELOW`], Medium under
+/// [`MEDIUM_BELOW`], Easy up to [`EASY_UP_TO`]. Above that it is too easy to
+/// generate.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
+}
+
+/// Shares below this are Hard.
+pub const HARD_BELOW: f64 = 0.005;
+/// Shares below this (and at least [`HARD_BELOW`]) are Medium.
+pub const MEDIUM_BELOW: f64 = 0.02;
+/// Shares up to this (and at least [`MEDIUM_BELOW`]) are Easy.
+pub const EASY_UP_TO: f64 = 0.08;
+
+impl Difficulty {
+    /// The tier for a share of winning piles, or `None` if it is too easy.
+    pub fn from_share(share: f64) -> Option<Difficulty> {
+        if share < HARD_BELOW {
+            Some(Difficulty::Hard)
+        } else if share < MEDIUM_BELOW {
+            Some(Difficulty::Medium)
+        } else if share <= EASY_UP_TO {
+            Some(Difficulty::Easy)
+        } else {
+            None
+        }
+    }
+}
+
+impl fmt::Display for Difficulty {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Difficulty::Easy => "Easy",
+            Difficulty::Medium => "Medium",
+            Difficulty::Hard => "Hard",
+        })
+    }
+}
+
+/// A difficulty by name, any case ("hard").
+impl std::str::FromStr for Difficulty {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Difficulty, String> {
+        match s.to_ascii_lowercase().as_str() {
+            "easy" => Ok(Difficulty::Easy),
+            "medium" => Ok(Difficulty::Medium),
+            "hard" => Ok(Difficulty::Hard),
+            _ => Err(format!("unknown difficulty {s:?} (easy, medium or hard)")),
+        }
+    }
+}
 
 /// How to rate a puzzle.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -91,6 +151,14 @@ impl Rating {
         self.winning_piles() as f64 / self.piles_tried as f64
     }
 
+    /// The difficulty tier, or `None` if no pile wins or too many do.
+    pub fn difficulty(&self) -> Option<Difficulty> {
+        if self.winning_sets.is_empty() {
+            return None;
+        }
+        Difficulty::from_share(self.winning_share())
+    }
+
     /// True if every winning set has a losing ordering, so order always matters.
     pub fn order_matters(&self) -> bool {
         !self.winning_sets.is_empty() && self.winning_sets.iter().all(WinningSet::order_matters)
@@ -158,7 +226,9 @@ impl Rating {
 }
 
 /// The bar a generated puzzle must clear. The defaults are the rules agreed so
-/// far; the optional limits stay off until their values are chosen.
+/// far: a 5-card pile from at least 7 candidates, a winning pile, nothing
+/// undecided, and no more than [`EASY_UP_TO`] of piles winning (anything
+/// easier has no difficulty tier).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Criteria {
     pub pile_size: usize,
@@ -178,7 +248,7 @@ impl Default for Criteria {
             min_candidates: 7,
             max_ideas: None,
             max_sets: None,
-            max_share: None,
+            max_share: Some(EASY_UP_TO),
             min_decoys: None,
             order_must_matter: false,
         }
@@ -404,6 +474,11 @@ impl fmt::Display for Rating {
             self.winning_piles(),
             self.winning_share() * 100.0
         )?;
+        match self.difficulty() {
+            Some(tier) => writeln!(f, "Difficulty: {tier}")?,
+            None if self.winning_sets.is_empty() => {}
+            None => writeln!(f, "Difficulty: too easy to grade")?,
+        }
         writeln!(
             f,
             "{} winning card sets, {} distinct answers; order matters: {}",
@@ -654,6 +729,40 @@ mod tests {
                 "{needle}: {reasons:?}"
             );
         }
+    }
+
+    #[test]
+    fn difficulty_tiers_split_at_their_cutoffs() {
+        assert_eq!(Difficulty::from_share(0.0036), Some(Difficulty::Hard));
+        assert_eq!(Difficulty::from_share(HARD_BELOW), Some(Difficulty::Medium));
+        assert_eq!(Difficulty::from_share(0.0199), Some(Difficulty::Medium));
+        assert_eq!(Difficulty::from_share(MEDIUM_BELOW), Some(Difficulty::Easy));
+        assert_eq!(Difficulty::from_share(EASY_UP_TO), Some(Difficulty::Easy));
+        assert_eq!(Difficulty::from_share(0.0801), None);
+        assert_eq!("HARD".parse::<Difficulty>(), Ok(Difficulty::Hard));
+        assert!("brutal".parse::<Difficulty>().is_err());
+    }
+
+    #[test]
+    fn the_default_bar_rejects_puzzles_that_are_too_easy() {
+        use Card::*;
+        let easy = rating_with(vec![set(
+            &[ThassasOracle, Brainstorm, Ponder, Island, DarkRitual],
+            600,
+        )]);
+        assert_eq!(easy.difficulty(), None);
+        assert!(
+            easy.check(&Criteria::default())
+                .iter()
+                .any(|r| r.contains("% of piles win"))
+        );
+        let hard = rating_with(vec![set(
+            &[ThassasOracle, Brainstorm, Ponder, Island, DarkRitual],
+            6,
+        )]);
+        assert_eq!(hard.difficulty(), Some(Difficulty::Hard));
+        assert!(hard.check(&Criteria::default()).is_empty());
+        assert_eq!(rating_with(vec![]).difficulty(), None);
     }
 
     #[test]

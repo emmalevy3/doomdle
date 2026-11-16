@@ -124,6 +124,10 @@ async function main() {
 
   $("title").textContent = puzzle.title ?? "Doomdle";
   $("date").textContent = id;
+  if (puzzle.difficulty) {
+    const tier = puzzle.difficulty.charAt(0).toUpperCase() + puzzle.difficulty.slice(1);
+    $("date").append(el("span", `badge-difficulty ${puzzle.difficulty}`, tier));
+  }
   renderBoard({ you: $("you"), hand: $("hand"), them: $("them") }, puzzle);
 
   const builder = createPileBuilder({ pool: $("pool"), pile: $("pile") }, puzzle, submit);
@@ -177,6 +181,7 @@ async function main() {
       id,
       attempts: record.attempts,
       allowed,
+      difficulty: puzzle.difficulty,
       pileSize: Math.min(5, candidates(puzzle).length),
       link: `${location.origin}${location.pathname}`,
     };
