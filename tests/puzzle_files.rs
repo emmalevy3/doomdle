@@ -1,13 +1,17 @@
 //! Every file in `web/puzzles/` must parse, round-trip, and have a solution the
-//! solver confirms.
+//! solver confirms. The dated ones (`YYYY-MM-DD.json`, the daily schedule) must
+//! also pass `schedule::check_dated`: id = date, a difficulty, no repeats, no
+//! missing days.
 
 use std::fs;
 
-use doomdle::{DEFAULT_BUDGET, PuzzleFile, Verdict, verify, verify_within};
+use doomdle::schedule::check_dated;
+use doomdle::{DEFAULT_BUDGET, Date, PuzzleFile, Verdict, verify, verify_within};
 
 #[test]
 fn every_puzzle_file_parses_and_its_solution_wins() {
     let mut checked = 0;
+    let mut dated = Vec::new();
     for entry in fs::read_dir("web/puzzles").expect("puzzles directory") {
         let path = entry.expect("directory entry").path();
         if path.extension().is_none_or(|e| e != "json") {
@@ -36,6 +40,15 @@ fn every_puzzle_file_parses_and_its_solution_wins() {
             "{name}: the solution does not win within the default budget"
         );
         checked += 1;
+        if let Some(date) = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .and_then(|s| s.parse::<Date>().ok())
+        {
+            dated.push((date, file));
+        }
     }
     assert!(checked >= 4, "expected the sample puzzles, found {checked}");
+    let problems = check_dated(&dated);
+    assert!(problems.is_empty(), "the daily schedule: {problems:#?}");
 }

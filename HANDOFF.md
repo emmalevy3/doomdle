@@ -241,7 +241,13 @@ preloaded. The proposal, kept in the plan file as well:
     ones interesting by hand). The current samples are engine fixtures, not
     daily puzzles (`bauble-threshold` offers 4 cards for 4 slots, so there is
     nothing to choose).
-11. **Daily puzzles preloaded** (was 9): `puzzles/YYYY-MM-DD.json`, a bundling step
+11. **Daily puzzles** (done): `schedule` assigns generated puzzles to dates
+    by the weekly mix (2 Easy, 3 Medium, 2 Hard; the user said roughly is
+    fine), re-rating each, and writes `web/puzzles/YYYY-MM-DD.json`; the
+    corpus test checks dated files for id, difficulty, repeats and gaps. The
+    user's plan: launch with a few weeks, run the generator overnight a few
+    more times (`generate --count 0`, restartable without repeats), then
+    schedule the new batch. Original proposal for this stage, for reference: `puzzles/YYYY-MM-DD.json`, a bundling step
    that copies them into the site's static assets with `solution` stripped,
    the page picks today's date locally and fetches that file; authoring is
    write a file, `cargo run -- puzzles/<date>.json`, commit; the corpus test

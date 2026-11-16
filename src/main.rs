@@ -9,6 +9,7 @@
 //! cargo run --release -- rate web/puzzles/led-brainstorm.json
 //! cargo run --release -- survey --count 30
 //! cargo run --release -- generate --count 5 --max-ideas 2 --max-share 1
+//! cargo run --release -- schedule --weeks 3 --dry-run
 //! ```
 //!
 //! `rate` tries every pile and reports how good the puzzle is as a puzzle.
@@ -19,15 +20,16 @@
 //! `generate` `--max-ideas K`, `--max-sets K`, `--max-share P` (percent),
 //! `--min-decoys D`, `--order-matters`, `--difficulty easy|medium|hard`.
 
+use std::collections::HashSet;
 use std::error::Error;
 use std::path::Path;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use std::{env, fs, process};
 
 use doomdle::{
-    Attempt, Card, Criteria, Difficulty, GenerateOptions, Permanent, PlayerState, Puzzle,
-    PuzzleFile, RateOptions, Rating, State, Verdict, attempt, fingerprint, rate, solve_puzzle,
-    verify,
+    Attempt, Card, Criteria, Date, Difficulty, GenerateOptions, Permanent, PlayerState, PoolEntry,
+    Puzzle, PuzzleFile, RateOptions, Rating, State, Verdict, WEEK, attempt, fingerprint, rate,
+    solve_puzzle, verify,
 };
 
 fn main() {
@@ -48,6 +50,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
     if first == "survey" || first == "generate" {
         return generate(first == "survey", &args[1..]);
+    }
+    if first == "schedule" {
+        return schedule(&args[1..]);
     }
     let path = first;
     let text = fs::read_to_string(path).map_err(|e| format!("{path}: {e}"))?;
@@ -246,6 +251,196 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
     if survey {
         summarize(&kept);
     }
+    Ok(())
+}
+
+const SITE_DIR: &str = "web/puzzles";
+
+/// Reads every puzzle file in `dir` as (file stem, file), sorted by name.
+fn read_puzzles(dir: &str) -> Result<Vec<(String, PuzzleFile)>, Box<dyn Error>> {
+    let mut out = Vec::new();
+    for entry in fs::read_dir(dir)? {
+        let path = entry?.path();
+        if path.extension().is_none_or(|e| e != "json") {
+            continue;
+        }
+        let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+            continue;
+        };
+        let text = fs::read_to_string(&path)?;
+        let file = PuzzleFile::parse(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+        out.push((stem.to_string(), file));
+    }
+    out.sort_by(|a, b| a.0.cmp(&b.0));
+    Ok(out)
+}
+
+/// `schedule [--from DATE] [--weeks N | --days N] [--dry-run] [--report]`:
+/// assigns generated puzzles to the next dates following the weekly mix,
+/// re-rating each before it is placed, and writes `web/puzzles/<date>.json`.
+fn schedule(args: &[String]) -> Result<(), Box<dyn Error>> {
+    use doomdle::schedule::{coverage, pick};
+
+    let with_value = ["--from", "--weeks", "--days"];
+    let known = ["--from", "--weeks", "--days", "--dry-run", "--report"];
+    for (i, arg) in args.iter().enumerate() {
+        let is_value = i > 0 && with_value.contains(&args[i - 1].as_str());
+        if !is_value && !known.contains(&arg.as_str()) {
+            return Err(format!("unknown option {arg:?}").into());
+        }
+    }
+    let dry_run = args.iter().any(|a| a == "--dry-run");
+    let report_only = args.iter().any(|a| a == "--report");
+
+    // What is already on the site.
+    let mut scheduled: Vec<(Date, PuzzleFile)> = Vec::new();
+    for (stem, file) in read_puzzles(SITE_DIR)? {
+        if let Ok(date) = stem.parse::<Date>() {
+            scheduled.push((date, file));
+        }
+    }
+    let used: HashSet<String> = scheduled.iter().map(|(_, f)| fingerprint(f)).collect();
+    let first = scheduled.iter().map(|(d, _)| *d).min();
+    let last = scheduled.iter().map(|(d, _)| *d).max();
+
+    // The pool: generated puzzles not yet on the site, each once.
+    let mut files: Vec<PuzzleFile> = Vec::new();
+    let mut pool: Vec<PoolEntry> = Vec::new();
+    let mut seen = HashSet::new();
+    for (stem, file) in read_puzzles(OUT_DIR)? {
+        let print = fingerprint(&file);
+        if used.contains(&print) || !seen.insert(print) {
+            continue;
+        }
+        pool.push(PoolEntry::new(&stem, file.difficulty));
+        files.push(file);
+    }
+
+    match (first, last) {
+        (Some(first), Some(last)) => println!(
+            "On the site: {} dated puzzles, {first} to {last}.",
+            scheduled.len()
+        ),
+        _ => println!("On the site: no dated puzzles yet."),
+    }
+    let print_coverage = |pool: &[PoolEntry]| {
+        let unrated = pool.iter().filter(|e| !e.used && e.tier.is_none()).count();
+        println!("Left in {OUT_DIR}/ (weeks at 2 easy, 3 medium, 2 hard a week):");
+        for (tier, have, weeks) in coverage(pool, &WEEK) {
+            println!("  {tier:<6} {have:>4}  ({weeks} weeks)");
+        }
+        if unrated > 0 {
+            println!("  {unrated} not yet rated (rated when scheduling)");
+        }
+    };
+    if report_only {
+        print_coverage(&pool);
+        return Ok(());
+    }
+
+    let days: usize = match (
+        flag::<usize>(args, "--weeks")?,
+        flag::<usize>(args, "--days")?,
+    ) {
+        (Some(_), Some(_)) => return Err("give --weeks or --days, not both".into()),
+        (Some(weeks), None) => weeks * 7,
+        (None, Some(days)) => days,
+        (None, None) => 21,
+    };
+    let today = Date::from_days(i64::try_from(
+        SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() / 86_400,
+    )?);
+    let start = match flag::<Date>(args, "--from")? {
+        Some(date) => date,
+        None => last.map_or(today, Date::next),
+    };
+    let number_from = first.map_or(start, |f| f.min(start));
+    let options = RateOptions::default();
+    let criteria = Criteria::default();
+
+    // Rate the pool's unlabelled puzzles first, so every tier is known.
+    for (entry, file) in pool.iter_mut().zip(&files) {
+        if entry.tier.is_none() {
+            let rating = rate(&file.puzzle(), &options)?;
+            if rating.check(&criteria).is_empty() {
+                entry.tier = rating.difficulty();
+            } else {
+                entry.used = true; // not good enough to schedule
+            }
+        }
+    }
+
+    println!(
+        "\nScheduling {days} days from {start}{}:",
+        if dry_run {
+            " (dry run: nothing is written)"
+        } else {
+            ""
+        }
+    );
+    let mut date = start;
+    let mut placed = 0;
+    'days: for _ in 0..days {
+        let path = Path::new(SITE_DIR).join(format!("{date}.json"));
+        if path.exists() {
+            println!("  {date} {}  already has a puzzle", date.weekday_name());
+            date = date.next();
+            continue;
+        }
+        let wanted = WEEK[date.weekday()];
+        // Re-rate the pick at today's cutoffs: a puzzle that moved tier goes
+        // back in the pool under its new tier, one that fails is dropped.
+        let (entry, tier, rating) = loop {
+            let Some(i) = pick(&pool, wanted) else {
+                println!(
+                    "  {date} {}  the pool is empty: stopping",
+                    date.weekday_name()
+                );
+                break 'days;
+            };
+            let rating = rate(&files[i].puzzle(), &options)?;
+            let now = rating.difficulty();
+            if !rating.check(&criteria).is_empty() {
+                pool[i].used = true;
+                continue;
+            }
+            match now {
+                Some(tier) if Some(tier) == pool[i].tier => break (i, tier, rating),
+                Some(_) => pool[i].tier = now,
+                None => pool[i].used = true,
+            }
+        };
+        pool[entry].used = true;
+        let mut file = files[entry].clone();
+        file.id = Some(date.to_string());
+        file.title = Some(format!("Puzzle #{}", number_from.days_until(date) + 1));
+        file.difficulty = Some(tier);
+        if file.solution.is_none() {
+            file.solution = rating
+                .winning_sets
+                .first()
+                .and_then(|s| s.orderings.first())
+                .cloned();
+        }
+        let note = if tier == wanted {
+            String::new()
+        } else {
+            format!("  (substituted for {wanted})")
+        };
+        println!(
+            "  {date} {}  {tier:<6} {:>5.2}%  {}{note}",
+            date.weekday_name(),
+            rating.winning_share() * 100.0,
+            pool[entry].name,
+        );
+        if !dry_run {
+            fs::write(&path, file.to_json()?)?;
+        }
+        placed += 1;
+        date = date.next();
+    }
+    println!("\n{placed} scheduled.");
+    print_coverage(&pool);
     Ok(())
 }
 

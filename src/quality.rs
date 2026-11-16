@@ -53,7 +53,8 @@ impl Difficulty {
 
 impl fmt::Display for Difficulty {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
+        // `pad` honours width and alignment, so tables can line tiers up.
+        f.pad(match self {
             Difficulty::Easy => "Easy",
             Difficulty::Medium => "Medium",
             Difficulty::Hard => "Hard",

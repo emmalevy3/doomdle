@@ -12,6 +12,7 @@ pub mod generate;
 pub mod mana;
 pub mod puzzle_file;
 pub mod quality;
+pub mod schedule;
 pub mod solver;
 pub mod state;
 #[cfg(feature = "wasm")]
@@ -28,6 +29,7 @@ pub use generate::{Attempt, GenerateOptions, Rng, attempt, deal, fingerprint};
 pub use mana::{AltCost, Color, ManaCost, ManaPool, Payment};
 pub use puzzle_file::{FormatError, PermanentEntry, PermanentFile, PlayerFile, PuzzleFile};
 pub use quality::{Criteria, Difficulty, RateOptions, Rating, WinningSet, rate};
+pub use schedule::{Assignment, Date, PoolEntry, WEEK};
 pub use solver::{
     PileSearch, SearchResult, Step, Strategy, Verdict, solve, solve_puzzle, solve_puzzle_within,
     solve_within, verify, verify_within,
