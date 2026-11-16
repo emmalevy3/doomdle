@@ -2,8 +2,8 @@
 
 import { ATTEMPTS, REVEAL_ON_LOSS } from "./config.js";
 import { renderBoard, setImages, setZoomDialog } from "./board.js";
-import { verdictSentence, localDate } from "./describe.js";
-import { createPileBuilder, pileRow } from "./pile.js";
+import { discordText, localDate, shareText, verdictSentence } from "./describe.js";
+import { candidates, createPileBuilder, pileRow } from "./pile.js";
 import { loadRecord, loadSetting, saveRecord, saveSetting } from "./storage.js";
 
 const $ = (id) => document.getElementById(id);
@@ -166,9 +166,54 @@ async function main() {
     }
   }
 
+  /** Copy buttons for the finished game: plain text, and Discord with a spoiler. */
+  function renderShare(finished) {
+    const share = $("share");
+    share.replaceChildren();
+    if (!finished) {
+      return;
+    }
+    const details = {
+      id,
+      attempts: record.attempts,
+      allowed,
+      pileSize: Math.min(5, candidates(puzzle).length),
+      link: `${location.origin}${location.pathname}`,
+    };
+    const fallback = el("textarea", "share-text");
+    fallback.readOnly = true;
+    fallback.hidden = true;
+    const button = (label, text) => {
+      const b = el("button", null, label);
+      b.type = "button";
+      b.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          b.textContent = "Copied!";
+          setTimeout(() => (b.textContent = label), 2000);
+        } catch {
+          // No clipboard access (needs HTTPS or localhost): select it instead.
+          fallback.value = text;
+          fallback.hidden = false;
+          fallback.rows = text.split("\n").length;
+          fallback.focus();
+          fallback.select();
+        }
+      });
+      return b;
+    };
+    const row = el("div", "share-buttons");
+    row.append(
+      button("Copy result", shareText(details)),
+      button("Copy for Discord", discordText(details)),
+    );
+    share.append(row, fallback);
+  }
+
   async function renderStatus() {
     const left = allowed - used();
     renderMarks();
+    renderShare(solved() || left <= 0);
     $("pile-area").classList.toggle("complete", solved());
     if (solved()) {
       $("status").textContent = `You win — solved in ${used()} of ${allowed}.`;

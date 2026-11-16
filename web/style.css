@@ -718,6 +718,33 @@ dialog::backdrop {
   font-family: var(--display);
 }
 
+/* ------------------------------------------------------------ sharing */
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.share-text {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 3px;
+  background: var(--bg-deep);
+  color: var(--text);
+  font: 0.8rem / 1.4 var(--mono);
+  resize: vertical;
+}
+
+.share-text[hidden] {
+  display: none;
+}
+
 /* ------------------------------------------------------------ phone preview */
 
 /* ?view=phone: the page in a phone-sized frame (see app.js). */

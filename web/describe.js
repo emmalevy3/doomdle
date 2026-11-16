@@ -71,3 +71,68 @@ export function localDate(now = new Date()) {
   const pad = (n) => String(n).padStart(2, "0");
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
+
+// ---------------------------------------------------------------- sharing
+
+const SQUARE = { win: "🟩", answered: "🟨", reached: "🟥", unreached: "⬛" };
+
+/** Discord refuses messages longer than this. */
+export const DISCORD_LIMIT = 2000;
+
+/** The attempts that count: checked, not given up. */
+function counted(attempts) {
+  return attempts.filter((a) => a.result.ok && !a.result.gave_up);
+}
+
+/**
+ * One row of squares per counted attempt, one square per pile card:
+ * all green for a win, all yellow for a pile only the opponent's hand stops,
+ * otherwise red for each pile card the closest line got through, then black.
+ */
+export function shareRows(attempts, pileSize) {
+  return counted(attempts).map(({ result }) => {
+    if (result.wins) {
+      return SQUARE.win.repeat(pileSize);
+    }
+    const feedback = result.feedback ?? {};
+    if ((feedback.stopped_by ?? []).length > 0 || feedback.wins_without_their_hand) {
+      return SQUARE.answered.repeat(pileSize);
+    }
+    const left = feedback.closest?.cards_left;
+    const reached = left === undefined ? 0 : Math.min(pileSize, Math.max(0, pileSize - left));
+    return SQUARE.reached.repeat(reached) + SQUARE.unreached.repeat(pileSize - reached);
+  });
+}
+
+/** "Doomdle 2026-11-16 2/3", or "X/3" when every attempt missed. */
+function shareHeader(id, attempts, allowed) {
+  const tries = counted(attempts);
+  const winAt = tries.findIndex((a) => a.result.wins);
+  return `Doomdle ${id} ${winAt === -1 ? "X" : winAt + 1}/${allowed}`;
+}
+
+/** The plain result to paste anywhere. */
+export function shareText({ id, attempts, allowed, pileSize, link }) {
+  return [shareHeader(id, attempts, allowed), ...shareRows(attempts, pileSize), link].join("\n");
+}
+
+/**
+ * The result for Discord: after a win, the winning pile and its line follow
+ * in a spoiler. Kept under Discord's message limit by dropping the line,
+ * then the pile, if needed.
+ */
+export function discordText({ id, attempts, allowed, pileSize, link }) {
+  const plain = shareText({ id, attempts, allowed, pileSize, link });
+  const win = counted(attempts).find((a) => a.result.wins);
+  if (!win) {
+    return plain;
+  }
+  const pile = `Pile (top first): ${win.pile.join(", ")}`;
+  const spoiler = (body) => `${plain}\n||\`\`\`text\n${body}\n\`\`\`||`;
+  const full = spoiler(win.result.line ? `${pile}\n\n${win.result.line}` : pile);
+  if (full.length <= DISCORD_LIMIT) {
+    return full;
+  }
+  const short = spoiler(`${pile}\n\n(line too long for Discord)`);
+  return short.length <= DISCORD_LIMIT ? short : plain;
+}

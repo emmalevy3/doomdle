@@ -11,7 +11,16 @@
 import { readFileSync } from "node:fs";
 import init, * as api from "../web/pkg/doomdle.js";
 import { handleRequest } from "../web/verify.js";
-import { verdictSentence, lifeAfterDoomsday, localDate, listNames } from "../web/describe.js";
+import {
+  verdictSentence,
+  lifeAfterDoomsday,
+  localDate,
+  listNames,
+  shareRows,
+  shareText,
+  discordText,
+  DISCORD_LIMIT,
+} from "../web/describe.js";
 
 const { verify_pile, solve_puzzle } = api;
 
@@ -165,6 +174,58 @@ check(
     names: listNames(["A", "B", "C"]),
   },
   { life20: 10, life7: 3, date: "2026-01-05", names: "A, B and C" },
+);
+
+// Sharing: one square per pile card, per counted attempt.
+const miss = (left) => ({
+  pile: ["A"],
+  result: { ok: true, wins: false, gave_up: false, feedback: { closest: { cards_left: left } } },
+});
+const answered = {
+  pile: ["A"],
+  result: { ok: true, wins: false, gave_up: false, feedback: { stopped_by: ["Daze"] } },
+};
+const gaveUp = { pile: ["A"], result: { ok: true, wins: false, gave_up: true } };
+const won = (line) => ({
+  pile: ["Swamp", "Island"],
+  result: { ok: true, wins: true, gave_up: false, line },
+});
+const share = { id: "2026-11-16", allowed: 3, pileSize: 5, link: "https://example.org/" };
+check(
+  "share rows",
+  {
+    rows: shareRows([miss(2), answered, gaveUp, won("x")], 5),
+    short: shareRows([miss(1), won("x")], 3),
+    noFeedback: shareRows([{ pile: [], result: { ok: true, wins: false, gave_up: false } }], 2),
+  },
+  {
+    rows: ["🟥🟥🟥⬛⬛", "🟨🟨🟨🟨🟨", "🟩🟩🟩🟩🟩"],
+    short: ["🟥🟥⬛", "🟩🟩🟩"],
+    noFeedback: ["⬛⬛"],
+  },
+);
+const longLine = "step\n".repeat(800);
+check(
+  "share text",
+  {
+    won: shareText({ ...share, attempts: [miss(2), won("1. Swamp")] }),
+    lost: shareText({ ...share, attempts: [miss(5), miss(4), miss(3)] }),
+    discord: discordText({ ...share, attempts: [won("1. Play Swamp.")] }),
+    discordLost: discordText({ ...share, attempts: [miss(5)] }),
+    discordLong: discordText({ ...share, attempts: [won(longLine)] }).includes(
+      "(line too long for Discord)",
+    ),
+    discordFits: discordText({ ...share, attempts: [won(longLine)] }).length <= DISCORD_LIMIT,
+  },
+  {
+    won: "Doomdle 2026-11-16 2/3\n🟥🟥🟥⬛⬛\n🟩🟩🟩🟩🟩\nhttps://example.org/",
+    lost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\n🟥⬛⬛⬛⬛\n🟥🟥⬛⬛⬛\nhttps://example.org/",
+    discord:
+      "Doomdle 2026-11-16 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/\n||```text\nPile (top first): Swamp, Island\n\n1. Play Swamp.\n```||",
+    discordLost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\nhttps://example.org/",
+    discordLong: true,
+    discordFits: true,
+  },
 );
 
 if (failures > 0) {
