@@ -748,7 +748,8 @@ impl State {
         if self.you.drew_from_empty {
             self.lose(LossReason::DrewFromEmptyLibrary);
         }
-        // Creatures with lethal damage are destroyed. Highest index first, so
+        // Creatures with lethal damage are destroyed, and planeswalkers with
+        // no loyalty are put into the graveyard. Highest index first, so
         // removing one doesn't shift the others.
         for player in [Player::You, Player::Opponent] {
             let dead: Vec<usize> = self
@@ -756,7 +757,11 @@ impl State {
                 .battlefield
                 .iter()
                 .enumerate()
-                .filter(|(_, p)| p.card.kind() == CardKind::Creature && p.damage >= p.toughness())
+                .filter(|(_, p)| match p.card.kind() {
+                    CardKind::Creature => p.damage >= p.toughness(),
+                    CardKind::Planeswalker => p.loyalty == 0,
+                    _ => false,
+                })
                 .map(|(idx, _)| idx)
                 .rev()
                 .collect();

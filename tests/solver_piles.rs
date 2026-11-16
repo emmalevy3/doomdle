@@ -2296,3 +2296,48 @@ fn cavern_makes_oracle_uncounterable() {
         &one,
     );
 }
+
+/// Pair 54: Bowmasters can shoot your planeswalkers. Jace at 2 loyalty, +1 on
+/// yourself (mill two, draw one), then two more real draws and the empty one.
+/// Drawing one card at a time gives three pings before the empty draw, enough
+/// to kill Jace (3 after +1); Ancestral Recall draws the last cards and the
+/// empty one in a single resolution, before any ping resolves.
+#[test]
+fn bowmasters_shoot_jace_between_single_draws() {
+    let jace = || {
+        let mut board = islands(3);
+        board.push(Permanent {
+            loyalty: 2,
+            ..Permanent::untapped(Card::JaceWielderOfMysteries)
+        });
+        board
+    };
+    let hand = || vec![Card::GitaxianProbe, Card::GitaxianProbe];
+    let bowmasters = || board(&[Card::OrcishBowmasters]);
+    let ancestral = [
+        Card::Island,
+        Card::Island,
+        Card::AncestralRecall,
+        Card::Island,
+        Card::Island,
+    ];
+    let singles = [
+        Card::Island,
+        Card::Island,
+        Card::Preordain,
+        Card::Island,
+        Card::Island,
+    ];
+    assert_wins_vs(
+        puzzle_vs(hand(), jace(), ancestral.to_vec(), bowmasters()),
+        &ancestral,
+    );
+    // Without Bowmasters, one card at a time is fine.
+    assert_wins(puzzle(hand(), jace(), singles.to_vec()), &singles);
+    // With it, the opponent pings Jace three times and he dies before the
+    // empty draw.
+    assert_fails(
+        puzzle_vs(hand(), jace(), singles.to_vec(), bowmasters()),
+        &singles,
+    );
+}

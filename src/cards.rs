@@ -2418,7 +2418,14 @@ pub(crate) fn apply_choice(
                 Target::Permanent { owner, .. } => {
                     let idx = find_target(state, player, Card::OrcishBowmasters, *target)
                         .ok_or_else(illegal)?;
-                    state.player_mut(owner).battlefield[idx].damage += 1;
+                    let perm = &mut state.player_mut(owner).battlefield[idx];
+                    // Damage to a planeswalker removes loyalty; the
+                    // state-based check bins it at 0.
+                    if perm.card.kind() == CardKind::Planeswalker {
+                        perm.loyalty = perm.loyalty.saturating_sub(1);
+                    } else {
+                        perm.damage += 1;
+                    }
                 }
                 _ => return Err(illegal()),
             }
@@ -2483,7 +2490,7 @@ pub(crate) fn apply_choice(
 }
 
 /// Where Orcish Bowmasters' controller may send the ping: the other player,
-/// or one of their creatures.
+/// or one of their creatures or planeswalkers.
 fn ping_targets(state: &State, controller: Player) -> Vec<Target> {
     let victim = controller.other();
     let mut out = Vec::new();
@@ -2496,7 +2503,7 @@ fn ping_targets(state: &State, controller: Player) -> Vec<Target> {
         controller,
         victim,
         Card::OrcishBowmasters,
-        &|c| c.kind() == CardKind::Creature,
+        &|c| matches!(c.kind(), CardKind::Creature | CardKind::Planeswalker),
     ));
     out
 }
@@ -5966,6 +5973,106 @@ mod tests {
         assert_eq!(done.you.battlefield[0].damage, 0);
     }
 
+    /// A walker with `loyalty` on your battlefield.
+    fn walker(card: Card, loyalty: u8) -> Permanent {
+        Permanent {
+            loyalty,
+            ..Permanent::untapped(card)
+        }
+    }
+
+    /// You draw one card against Bowmasters with `battlefield`; the opponent
+    /// is now choosing where the ping goes.
+    fn ping_with(battlefield: Vec<Permanent>, veiled: bool) -> State {
+        let state = against(
+            PlayerState {
+                library: vec![Card::Island, Card::Swamp],
+                battlefield,
+                veiled,
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters],
+        );
+        pass_twice(&resolve(state, Card::GitaxianProbe))
+    }
+
+    fn ping(state: &State, target: Target) -> State {
+        apply(state, &Action::Choose(Choice::Ping(target))).unwrap()
+    }
+
+    #[test]
+    fn bowmasters_can_ping_jace_off_his_loyalty() {
+        let asked = ping_with(vec![walker(Card::JaceWielderOfMysteries, 4)], false);
+        assert_eq!(
+            legal_actions(&asked),
+            vec![
+                Action::Choose(Choice::Ping(Target::Player(Player::You))),
+                Action::Choose(Choice::Ping(your_permanent(Card::JaceWielderOfMysteries))),
+            ]
+        );
+        let hit = ping(&asked, your_permanent(Card::JaceWielderOfMysteries));
+        assert_eq!(hit.you.battlefield[0].loyalty, 3);
+        assert_eq!(hit.you.battlefield[0].damage, 0);
+        assert_eq!(hit.you.life, 20);
+    }
+
+    #[test]
+    fn a_walker_pinged_to_zero_goes_to_the_graveyard() {
+        let asked = ping_with(vec![walker(Card::JaceWielderOfMysteries, 1)], false);
+        let dead = ping(&asked, your_permanent(Card::JaceWielderOfMysteries));
+        assert!(dead.you.battlefield.is_empty());
+        assert!(dead.you.graveyard.contains(&Card::JaceWielderOfMysteries));
+        assert_eq!(dead.outcome, None);
+
+        // Teferi after his −3 has 1 loyalty: one ping and he's gone.
+        let asked = ping_with(vec![walker(Card::Teferi, 1)], false);
+        let dead = ping(&asked, your_permanent(Card::Teferi));
+        assert!(!dead.you.battlefield.iter().any(|p| p.card == Card::Teferi));
+        assert!(dead.you.graveyard.contains(&Card::Teferi));
+
+        // Tamiyo's back face leaves as her front face.
+        let asked = ping_with(vec![walker(Card::TamiyoSeasonedScholar, 1)], false);
+        let dead = ping(&asked, your_permanent(Card::TamiyoSeasonedScholar));
+        assert!(dead.you.battlefield.is_empty());
+        assert!(dead.you.graveyard.contains(&Card::TamiyoInquisitiveStudent));
+    }
+
+    #[test]
+    fn veil_protects_your_planeswalkers_from_the_ping() {
+        let state = against(
+            PlayerState {
+                library: vec![Card::Island],
+                battlefield: vec![walker(Card::JaceWielderOfMysteries, 4)],
+                veiled: true,
+                ..PlayerState::default()
+            },
+            &[Card::OrcishBowmasters],
+        );
+        let done = pass_twice(&resolve(state, Card::GitaxianProbe));
+        assert!(done.pending.is_none());
+        assert_eq!(done.you.battlefield[0].loyalty, 4);
+    }
+
+    #[test]
+    fn teferi_minus_three_from_three_bins_him_and_still_draws() {
+        let state = main_phase(PlayerState {
+            library: vec![Card::Island],
+            battlefield: vec![walker(Card::Teferi, 3)],
+            ..PlayerState::default()
+        });
+        let minus = Action::Loyalty {
+            source: Card::Teferi,
+            ability: LoyaltyAbility::TeferiMinusThree { target: None },
+        };
+        assert!(legal_actions(&state).contains(&minus));
+        let activated = apply(&state, &minus).unwrap();
+        // At 0 loyalty he is gone at once; his ability waits on the stack.
+        assert!(activated.you.battlefield.is_empty());
+        assert!(activated.you.graveyard.contains(&Card::Teferi));
+        let done = pass_twice(&activated);
+        assert_eq!(done.you.hand, vec![Card::Island]);
+    }
+
     // ------------------------------------------------------------ stage 6c
 
     fn cast_from_hand(card: Card, payment: Payment) -> Action {
@@ -6237,7 +6344,10 @@ mod tests {
 
         let back = pass_twice(&apply(&state, &minus_three(Card::Brainstorm)).unwrap());
         assert_eq!(back.you.hand, vec![Card::Brainstorm]);
-        assert_eq!(back.you.battlefield[0].loyalty, 0);
+        // −3 from 3 leaves her at 0 loyalty: she goes to the graveyard as her
+        // front face, and the ability still resolves.
+        assert!(back.you.battlefield.is_empty());
+        assert!(back.you.graveyard.contains(&Card::TamiyoInquisitiveStudent));
         assert!(back.pending.is_none());
 
         let green = pass_twice(&apply(&state, &minus_three(Card::EdgeOfAutumn)).unwrap());
