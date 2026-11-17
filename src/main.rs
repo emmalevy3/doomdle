@@ -10,6 +10,8 @@
 //! cargo run --release -- survey --count 30
 //! cargo run --release -- generate --count 5 --max-ideas 2 --max-share 1
 //! cargo run --release -- schedule --weeks 3 --dry-run
+//! cargo run --release -- schedule --from 2026-11-16 --weeks 4 \
+//!     --start-with medium,medium,medium --exclude gen-2026-11,gen-2026-96
 //! ```
 //!
 //! `rate` tries every pile and reports how good the puzzle is as a puzzle.
@@ -284,8 +286,16 @@ fn read_puzzles(dir: &str) -> Result<Vec<(String, PuzzleFile)>, Box<dyn Error>> 
 fn schedule(args: &[String]) -> Result<(), Box<dyn Error>> {
     use doomdle::schedule::{coverage, pick};
 
-    let with_value = ["--from", "--weeks", "--days"];
-    let known = ["--from", "--weeks", "--days", "--dry-run", "--report"];
+    let with_value = ["--from", "--weeks", "--days", "--exclude", "--start-with"];
+    let known = [
+        "--from",
+        "--weeks",
+        "--days",
+        "--exclude",
+        "--start-with",
+        "--dry-run",
+        "--report",
+    ];
     for (i, arg) in args.iter().enumerate() {
         let is_value = i > 0 && with_value.contains(&args[i - 1].as_str());
         if !is_value && !known.contains(&arg.as_str()) {
@@ -310,7 +320,14 @@ fn schedule(args: &[String]) -> Result<(), Box<dyn Error>> {
     let mut files: Vec<PuzzleFile> = Vec::new();
     let mut pool: Vec<PoolEntry> = Vec::new();
     let mut seen = HashSet::new();
+    // --exclude a,b: generated files (by name) never to schedule.
+    let excluded: Vec<String> = flag::<String>(args, "--exclude")?
+        .map(|list| list.split(',').map(|n| n.trim().to_string()).collect())
+        .unwrap_or_default();
     for (stem, file) in read_puzzles(OUT_DIR)? {
+        if excluded.contains(&stem) {
+            continue;
+        }
         let print = fingerprint(&file);
         if used.contains(&print) || !seen.insert(print) {
             continue;
@@ -383,6 +400,15 @@ fn schedule(args: &[String]) -> Result<(), Box<dyn Error>> {
     );
     let mut date = start;
     let mut placed = 0;
+    // --start-with medium,medium: the tiers of the first days scheduled,
+    // before the weekly pattern takes over.
+    let start_with: Vec<Difficulty> = match flag::<String>(args, "--start-with")? {
+        Some(list) => list
+            .split(',')
+            .map(|t| t.trim().parse::<Difficulty>())
+            .collect::<Result<_, _>>()?,
+        None => Vec::new(),
+    };
     'days: for _ in 0..days {
         let path = Path::new(SITE_DIR).join(format!("{date}.json"));
         if path.exists() {
@@ -390,7 +416,10 @@ fn schedule(args: &[String]) -> Result<(), Box<dyn Error>> {
             date = date.next();
             continue;
         }
-        let wanted = WEEK[date.weekday()];
+        let wanted = start_with
+            .get(placed)
+            .copied()
+            .unwrap_or(WEEK[date.weekday()]);
         // Re-rate the pick at today's cutoffs: a puzzle that moved tier goes
         // back in the pool under its new tier, one that fails is dropped.
         let (entry, tier, rating) = loop {
