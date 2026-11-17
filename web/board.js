@@ -61,7 +61,8 @@ export function cardElement(name, { badges = [], onClick } = {}) {
   return card;
 }
 
-function showLarge(name) {
+/** Opens the dialog that shows `name` large (or its name, without an image). */
+export function showLarge(name) {
   if (!zoom) {
     return;
   }

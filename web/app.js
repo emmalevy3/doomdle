@@ -1,7 +1,7 @@
 // Loads today's puzzle, runs the attempts, and shows the feedback.
 
 import { ATTEMPTS, REVEAL_ON_LOSS } from "./config.js";
-import { renderBoard, setImages, setZoomDialog } from "./board.js";
+import { hidePeek, renderBoard, setImages, setZoomDialog, showLarge, showPeek } from "./board.js";
 import { discordText, localDate, shareText, verdictSentence } from "./describe.js";
 import { candidates, createPileBuilder, pileRow } from "./pile.js";
 import { loadRecord, loadSetting, saveRecord, saveSetting } from "./storage.js";
@@ -98,6 +98,30 @@ function setUpLayoutToggle() {
   });
 }
 
+/**
+ * Makes `node` show the card `name`: large beside it while a mouse hovers or
+ * it has focus, and in the zoom dialog when clicked or tapped.
+ */
+function setUpCardReference(node, name) {
+  if (!node) {
+    return;
+  }
+  const hover = () => window.matchMedia("(hover: hover)").matches;
+  const peek = () => {
+    if (hover()) {
+      showPeek(name, node);
+    }
+  };
+  node.addEventListener("mouseenter", peek);
+  node.addEventListener("focus", peek);
+  node.addEventListener("mouseleave", hidePeek);
+  node.addEventListener("blur", hidePeek);
+  node.addEventListener("click", () => {
+    hidePeek();
+    showLarge(name);
+  });
+}
+
 async function main() {
   setUpLayoutToggle();
   setZoomDialog($("zoom"));
@@ -109,6 +133,7 @@ async function main() {
     loadJson("card-images.json"),
   ]);
   setImages(imageFile ? JSON.parse(imageFile.text) : {});
+  setUpCardReference($("doomsday-ref"), "Doomsday");
 
   if (!file) {
     $("title").textContent = "No puzzle today";

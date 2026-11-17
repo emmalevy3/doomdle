@@ -163,6 +163,40 @@ h3 {
   color: var(--muted);
 }
 
+/* "Doomsday" in the rules line: shows the card on hover, opens it on click.
+   Gold with a dotted underline and a small card outline, like the page's trim. */
+.card-ref {
+  font: inherit;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--gold);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  text-decoration: underline dotted var(--gold-dim);
+  text-underline-offset: 0.2em;
+}
+
+.card-ref::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.75em;
+  margin-left: 0.25em;
+  vertical-align: -0.05em;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+
+.card-ref:hover,
+.card-ref:focus-visible {
+  color: var(--text);
+  text-decoration-color: var(--gold);
+  outline: none;
+}
+
 /* ------------------------------------------------------------ layout */
 
 /* Wide screens: the candidates in a narrow column on the left; your board and
