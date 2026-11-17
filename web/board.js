@@ -230,12 +230,13 @@ function yourBattlefield(entries) {
   return section;
 }
 
-/** Small labelled values: [label, value] pairs, or [label, value, extra class]. */
+/** Small labelled values: [label, value] pairs, or [label, value, extra class]. A label with no value stands alone. */
 function stats(items) {
   const list = el("ul", "stats");
   for (const [label, value, extra] of items) {
     const item = el("li", extra ? `stat ${extra}` : "stat");
-    item.append(el("span", "stat-label", label), el("span", "stat-value", value));
+    item.append(el("span", "stat-label", label));
+    if (value !== undefined) item.append(el("span", "stat-value", value));
     list.append(item);
   }
   return list;
@@ -268,7 +269,7 @@ export function renderBoard({ you: yourPanel, hand: handPanel, them: theirPanel 
   const life = you.life ?? 20;
 
   const yourStats = [
-    you.land_drop === false ? ["Land drop used", "✗"] : ["Land drop available", "✓"],
+    [you.land_drop === false ? "Land drop was used" : "Land drop is available"],
   ];
   if (you.mana_pool) yourStats.unshift(["Floating mana", you.mana_pool, "alert"]);
   if (you.spells_cast) yourStats.push(["Spells cast", String(you.spells_cast)]);
