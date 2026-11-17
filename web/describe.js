@@ -130,5 +130,5 @@ export function discordText(details) {
   if (!win) {
     return plain;
   }
-  return `${plain}\nMy winning pile: ||${win.pile.join(" → ")}||`;
+  return `${plain}\nMy pile: ||${win.pile.join(" → ")}||`;
 }

@@ -215,7 +215,7 @@ check(
   {
     won: "Doomdle 2026-11-16 2/3\n🟥🟥🟥⬛⬛\n🟩🟩🟩🟩🟩\nhttps://example.org/",
     lost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\n🟥⬛⬛⬛⬛\n🟥🟥⬛⬛⬛\nhttps://example.org/",
-    discord: "Doomdle 2026-11-16 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/\nMy winning pile: ||Swamp → Island||",
+    discord: "Doomdle 2026-11-16 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/\nMy pile: ||Swamp → Island||",
     discordLost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\nhttps://example.org/",
     hard: "Doomdle 2026-11-16 (Hard) 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/",
   },
