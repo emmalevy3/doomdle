@@ -1,0 +1,46 @@
+{
+  "id": "2028-02-28",
+  "title": "Puzzle #470",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Thoughtseize",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Tundra",
+      "Tundra"
+    ],
+    "library": [
+      "Meticulous Archive",
+      "Ideas Unbound",
+      "Edge of Autumn",
+      "Edge of Autumn",
+      "Night's Whisper",
+      "Meticulous Archive",
+      "Island",
+      "Mox Sapphire",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Edge of Autumn",
+    "Edge of Autumn",
+    "Mox Sapphire",
+    "Night's Whisper",
+    "Ideas Unbound"
+  ],
+  "difficulty": "easy"
+}

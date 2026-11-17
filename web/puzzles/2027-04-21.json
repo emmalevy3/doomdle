@@ -1,0 +1,49 @@
+{
+  "id": "2027-04-21",
+  "title": "Puzzle #157",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Volcanic Island",
+      "Volcanic Island",
+      "Volcanic Island",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gitaxian Probe",
+      "Street Wraith",
+      "Sol Ring",
+      "Sol Ring",
+      "Meditate",
+      "Reckless Impulse"
+    ],
+    "graveyard": [
+      "Mox Sapphire",
+      "Aether Spellbomb"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Gitaxian Probe",
+    "Street Wraith",
+    "Mox Sapphire"
+  ],
+  "difficulty": "medium"
+}

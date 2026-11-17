@@ -1,0 +1,52 @@
+{
+  "id": "2027-11-24",
+  "title": "Puzzle #374",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Mox Jet",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Mox Jet",
+      "Sol Ring",
+      "Brainstorm",
+      "Underground Sea",
+      "Ideas Unbound",
+      "Consider",
+      "Frantic Search",
+      "Quantum Riddler",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Sol Ring",
+    "Brainstorm",
+    "Underground Sea",
+    "Quantum Riddler"
+  ],
+  "difficulty": "medium"
+}

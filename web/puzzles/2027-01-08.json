@@ -1,0 +1,48 @@
+{
+  "id": "2027-01-08",
+  "title": "Puzzle #54",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Tundra",
+      "Volcanic Island",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Mox Jet",
+      "Lotus Petal",
+      "Preordain",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Consider",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Thalia, Guardian of Thraben"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Preordain",
+    "Thassa's Oracle",
+    "Preordain",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

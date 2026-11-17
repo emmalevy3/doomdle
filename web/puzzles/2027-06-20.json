@@ -1,0 +1,45 @@
+{
+  "id": "2027-06-20",
+  "title": "Puzzle #217",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Flooded Strand",
+      "Lotus Petal",
+      "Meticulous Archive",
+      "Chromatic Star",
+      "Ponder",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Preordain"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Chromatic Star",
+    "Lion's Eye Diamond",
+    "Lotus Petal",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "hard"
+}

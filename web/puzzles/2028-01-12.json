@@ -1,0 +1,47 @@
+{
+  "id": "2028-01-12",
+  "title": "Puzzle #423",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Sol Ring",
+      "Mox Jet",
+      "Meticulous Archive",
+      "Lotus Petal",
+      "Ponder",
+      "Gush",
+      "Thundertrap Trainer",
+      "Aether Spellbomb"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Gush",
+    "Lotus Petal",
+    "Sol Ring",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "medium"
+}

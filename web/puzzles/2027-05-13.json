@@ -1,0 +1,45 @@
+{
+  "id": "2027-05-13",
+  "title": "Puzzle #179",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Tundra",
+      "Swamp",
+      "Tundra",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Jet",
+      "Sol Ring",
+      "Mox Jet",
+      "Thundertrap Trainer",
+      "Edge of Autumn",
+      "Cabal Ritual",
+      "Meditate",
+      "Black Lotus"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Meditate",
+    "Jace, Wielder of Mysteries",
+    "Sol Ring",
+    "Thundertrap Trainer",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

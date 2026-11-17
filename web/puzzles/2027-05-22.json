@@ -1,0 +1,43 @@
+{
+  "id": "2027-05-22",
+  "title": "Puzzle #188",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Volcanic Island",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Black Lotus",
+      "Ancestral Recall",
+      "Mishra's Bauble",
+      "Mishra's Bauble",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Night's Whisper",
+    "Black Lotus",
+    "Gleemox"
+  ],
+  "difficulty": "hard"
+}

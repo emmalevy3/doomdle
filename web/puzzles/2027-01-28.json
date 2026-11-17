@@ -1,0 +1,54 @@
+{
+  "id": "2027-01-28",
+  "title": "Puzzle #74",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Mox Sapphire",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Thundertrap Trainer",
+      "Mishra's Bauble",
+      "Street Wraith",
+      "Mox Sapphire",
+      "Ponder",
+      "Edge of Autumn",
+      "Dark Ritual",
+      "Quantum Riddler"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Quantum Riddler",
+    "Ponder",
+    "Street Wraith",
+    "Mox Sapphire"
+  ],
+  "difficulty": "easy"
+}

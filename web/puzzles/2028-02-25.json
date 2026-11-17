@@ -1,0 +1,53 @@
+{
+  "id": "2028-02-25",
+  "title": "Puzzle #467",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Badlands",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Mox Jet"
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Underground Sea",
+      "Ponder",
+      "Mox Jet",
+      "Mishra's Bauble",
+      "Mishra's Bauble",
+      "Island"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Chromatic Star"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Ponder",
+    "Mox Sapphire",
+    "Mox Jet"
+  ],
+  "difficulty": "medium"
+}

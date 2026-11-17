@@ -1,0 +1,49 @@
+{
+  "id": "2027-01-06",
+  "title": "Puzzle #52",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Brainstorm",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Mox Jet",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lion's Eye Diamond",
+      "Sol Ring",
+      "Cabal Ritual",
+      "Undercity Sewers",
+      "Aether Spellbomb"
+    ],
+    "graveyard": [
+      "Preordain",
+      "Chromatic Star"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Chromatic Star",
+    "Lion's Eye Diamond",
+    "Sol Ring",
+    "Preordain"
+  ],
+  "difficulty": "medium"
+}

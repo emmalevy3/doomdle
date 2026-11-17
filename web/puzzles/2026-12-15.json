@@ -1,0 +1,45 @@
+{
+  "id": "2026-12-15",
+  "title": "Puzzle #30",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Sol Ring",
+      "Ideas Unbound",
+      "Undercity Sewers",
+      "Gush",
+      "Ancestral Recall",
+      "Island",
+      "Chromatic Star"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Laboratory Maniac",
+    "Ancestral Recall",
+    "Ideas Unbound",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

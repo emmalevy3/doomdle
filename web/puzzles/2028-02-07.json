@@ -1,0 +1,45 @@
+{
+  "id": "2028-02-07",
+  "title": "Puzzle #449",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Sol Ring",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lotus Petal",
+      "Flooded Strand",
+      "Dark Ritual",
+      "Night's Whisper",
+      "Polluted Delta",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Night's Whisper",
+    "Street Wraith",
+    "Lotus Petal",
+    "Sol Ring"
+  ],
+  "difficulty": "easy"
+}

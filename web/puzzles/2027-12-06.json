@@ -1,0 +1,47 @@
+{
+  "id": "2027-12-06",
+  "title": "Puzzle #386",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Pyroblast",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Badlands",
+      "Mox Jet",
+      "Swamp"
+    ],
+    "library": [
+      "Aether Spellbomb",
+      "Sol Ring",
+      "Reckless Impulse",
+      "Brainstorm",
+      "Aether Spellbomb",
+      "Reckless Impulse"
+    ],
+    "graveyard": [
+      "Preordain",
+      "Black Lotus"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Black Lotus",
+    "Reckless Impulse",
+    "Reckless Impulse",
+    "Brainstorm",
+    "Sol Ring"
+  ],
+  "difficulty": "easy"
+}

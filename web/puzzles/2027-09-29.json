@@ -1,0 +1,51 @@
+{
+  "id": "2027-09-29",
+  "title": "Puzzle #318",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Jace, Wielder of Mysteries"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Volcanic Island",
+      "Island"
+    ],
+    "library": [
+      "Edge of Autumn",
+      "Ideas Unbound",
+      "Gleemox",
+      "Lotus Petal",
+      "Meticulous Archive",
+      "Lotus Petal",
+      "Street Wraith",
+      "Gitaxian Probe",
+      "Island"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gleemox",
+    "Gitaxian Probe",
+    "Street Wraith",
+    "Edge of Autumn"
+  ],
+  "difficulty": "medium"
+}

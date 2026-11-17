@@ -1,0 +1,43 @@
+{
+  "id": "2027-08-31",
+  "title": "Puzzle #289",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Swamp",
+      "Mox Sapphire",
+      "Mox Jet"
+    ],
+    "library": [
+      "Quantum Riddler",
+      "Lotus Petal",
+      "Ancestral Recall",
+      "Lion's Eye Diamond",
+      "Reckless Impulse",
+      "Swamp",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Lion's Eye Diamond"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Gleemox",
+    "Lotus Petal",
+    "Mox Jet",
+    "Reckless Impulse"
+  ],
+  "difficulty": "medium"
+}

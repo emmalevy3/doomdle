@@ -1,0 +1,47 @@
+{
+  "id": "2028-01-19",
+  "title": "Puzzle #430",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Meticulous Archive",
+      "Gitaxian Probe",
+      "Lion's Eye Diamond",
+      "Mox Jet",
+      "Lotus Petal",
+      "Night's Whisper",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Ideas Unbound"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Lotus Petal",
+    "Ideas Unbound",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

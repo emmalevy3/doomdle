@@ -1,0 +1,47 @@
+{
+  "id": "2027-10-21",
+  "title": "Puzzle #340",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Thoughtseize",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Aether Spellbomb",
+      "Black Lotus",
+      "Cabal Ritual",
+      "Undercity Sewers",
+      "Consider",
+      "Ancestral Recall",
+      "Cabal Ritual",
+      "Gush"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Gush",
+    "Consider",
+    "Ancestral Recall",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

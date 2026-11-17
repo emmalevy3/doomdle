@@ -1,0 +1,39 @@
+{
+  "id": "2027-05-31",
+  "title": "Puzzle #197",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Dark Ritual",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Badlands",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Night's Whisper",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Preordain",
+      "Thundertrap Trainer",
+      "Edge of Autumn",
+      "Gleemox"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Thundertrap Trainer",
+    "Preordain"
+  ],
+  "difficulty": "easy"
+}

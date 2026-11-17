@@ -1,0 +1,50 @@
+{
+  "id": "2027-04-04",
+  "title": "Puzzle #140",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Veil of Summer",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Mox Jet",
+      "Sol Ring"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lion's Eye Diamond",
+      "Chromatic Star",
+      "Ideas Unbound",
+      "Reckless Impulse",
+      "Dark Ritual",
+      "Lion's Eye Diamond",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Lotus Petal"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Quantum Riddler",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle",
+    "Ideas Unbound"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "2027-07-06",
+  "title": "Puzzle #233",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Underground Sea",
+      "Tundra",
+      "Tundra",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Ancestral Recall",
+      "Meditate",
+      "Lotus Petal",
+      "Reckless Impulse",
+      "Mox Sapphire",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Thundertrap Trainer"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Ancestral Recall",
+    "Lotus Petal",
+    "Mox Sapphire",
+    "Meditate"
+  ],
+  "difficulty": "medium"
+}

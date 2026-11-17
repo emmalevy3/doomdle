@@ -1,0 +1,52 @@
+{
+  "id": "2027-01-19",
+  "title": "Puzzle #65",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Ponder",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Mox Jet",
+      "Mox Jet",
+      "Badlands",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Sol Ring",
+      "Frantic Search",
+      "Quantum Riddler",
+      "Gleemox",
+      "Wizard's Rockets",
+      "Frantic Search",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Quantum Riddler",
+    "Brainstorm",
+    "Gush",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

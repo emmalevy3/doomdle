@@ -1,0 +1,43 @@
+{
+  "id": "2027-11-29",
+  "title": "Puzzle #379",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Unearth",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      "Badlands",
+      "Mox Sapphire",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Brainstorm",
+      "Lion's Eye Diamond",
+      "Sol Ring",
+      "Chromatic Star",
+      "Preordain",
+      "Polluted Delta",
+      "Consider",
+      "Black Lotus"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Brainstorm",
+    "Jace, Wielder of Mysteries",
+    "Sol Ring",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

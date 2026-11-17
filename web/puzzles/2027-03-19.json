@@ -1,0 +1,46 @@
+{
+  "id": "2027-03-19",
+  "title": "Puzzle #124",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Jace, Wielder of Mysteries"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Swamp",
+      "Mox Sapphire",
+      "Island",
+      "Swamp",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Dark Ritual",
+      "Night's Whisper",
+      "Chromatic Star",
+      "Meditate",
+      "Thundertrap Trainer",
+      "Quantum Riddler",
+      "Cabal Ritual",
+      "Ancestral Recall",
+      "Underground Sea"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Meditate",
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Quantum Riddler"
+  ],
+  "difficulty": "medium"
+}

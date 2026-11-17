@@ -1,0 +1,53 @@
+{
+  "id": "2027-09-27",
+  "title": "Puzzle #316",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Unearth",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Island",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Meticulous Archive",
+      "Chromatic Star",
+      "Mox Sapphire",
+      "Ponder",
+      "Sol Ring",
+      "Gush",
+      "Gleemox",
+      "Mishra's Bauble"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Gleemox",
+    "Chromatic Star"
+  ],
+  "difficulty": "easy"
+}

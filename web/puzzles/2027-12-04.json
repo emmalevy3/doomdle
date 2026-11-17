@@ -1,0 +1,53 @@
+{
+  "id": "2027-12-04",
+  "title": "Puzzle #384",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Gitaxian Probe",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Swamp",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Aether Spellbomb",
+      "Brainstorm",
+      "Frantic Search",
+      "Mishra's Bauble",
+      "Flow State",
+      "Lion's Eye Diamond",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze",
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Thassa's Oracle",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "hard"
+}

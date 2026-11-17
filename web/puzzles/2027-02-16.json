@@ -1,0 +1,51 @@
+{
+  "id": "2027-02-16",
+  "title": "Puzzle #93",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Sapphire",
+      "Cabal Ritual",
+      "Ponder",
+      "Consider",
+      "Underground Sea",
+      "Gush",
+      "Mox Jet"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Mox Sapphire",
+    "Ponder",
+    "Consider"
+  ],
+  "difficulty": "medium"
+}

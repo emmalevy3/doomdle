@@ -1,0 +1,53 @@
+{
+  "id": "2027-09-25",
+  "title": "Puzzle #314",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Badlands",
+      "Mox Jet",
+      "Swamp",
+      "Volcanic Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Mox Jet",
+      "Ideas Unbound",
+      "Aether Spellbomb",
+      "Meticulous Archive",
+      "Consider",
+      "Mox Jet",
+      "Ancestral Recall",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Doctor Doom, Unrivaled",
+    "Street Wraith",
+    "Mox Jet",
+    "Mox Jet"
+  ],
+  "difficulty": "hard"
+}

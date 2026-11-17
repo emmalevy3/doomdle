@@ -1,0 +1,46 @@
+{
+  "id": "2027-12-13",
+  "title": "Puzzle #393",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Brainstorm",
+      "Night's Whisper",
+      "Edge of Autumn",
+      "Meditate",
+      "Underground Sea"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Night's Whisper",
+    "Meditate",
+    "Street Wraith",
+    "Edge of Autumn"
+  ],
+  "difficulty": "easy"
+}

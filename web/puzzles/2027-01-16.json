@@ -1,0 +1,46 @@
+{
+  "id": "2027-01-16",
+  "title": "Puzzle #62",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Island",
+      "Tundra",
+      "Mox Sapphire",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lion's Eye Diamond",
+      "Mox Jet",
+      "Wizard's Rockets",
+      "Thundertrap Trainer",
+      "Sol Ring",
+      "Ancestral Recall",
+      "Swamp",
+      "Gitaxian Probe"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Sol Ring",
+    "Gitaxian Probe",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "hard"
+}

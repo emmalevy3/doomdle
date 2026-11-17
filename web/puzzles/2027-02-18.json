@@ -1,0 +1,44 @@
+{
+  "id": "2027-02-18",
+  "title": "Puzzle #95",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Brainstorm",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Swamp",
+      "Volcanic Island",
+      "Mox Jet"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Dark Ritual",
+      "Lotus Petal",
+      "Meticulous Archive",
+      "Ponder"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Street Wraith",
+    "Meticulous Archive",
+    "Ponder",
+    "Preordain"
+  ],
+  "difficulty": "easy"
+}

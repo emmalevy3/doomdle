@@ -1,0 +1,57 @@
+{
+  "id": "2027-07-02",
+  "title": "Puzzle #229",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Laboratory Maniac",
+      "Brainstorm",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Volcanic Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Dark Ritual",
+      "Meditate",
+      "Sol Ring",
+      "Manamorphose",
+      "Black Lotus",
+      "Consider"
+    ],
+    "graveyard": [
+      "Gush",
+      "Frantic Search"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Underground Sea",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Sol Ring",
+    "Black Lotus",
+    "Consider",
+    "Dark Ritual"
+  ],
+  "difficulty": "medium"
+}

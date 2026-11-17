@@ -1,0 +1,42 @@
+{
+  "id": "2027-02-11",
+  "title": "Puzzle #88",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Swamp",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Manamorphose",
+      "Gush",
+      "Tamiyo, Inquisitive Student",
+      "Gush",
+      "Mox Jet",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Timetwister",
+    "Laboratory Maniac",
+    "Meditate",
+    "Manamorphose",
+    "Gleemox"
+  ],
+  "difficulty": "easy"
+}

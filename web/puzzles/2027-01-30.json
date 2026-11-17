@@ -1,0 +1,52 @@
+{
+  "id": "2027-01-30",
+  "title": "Puzzle #76",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Mox Jet",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Street Wraith",
+      "Brainstorm",
+      "Timetwister",
+      "Frantic Search",
+      "Chromatic Star",
+      "Gleemox",
+      "Reckless Impulse",
+      "Underground Sea"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out",
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Island",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Timetwister",
+    "Chromatic Star"
+  ],
+  "difficulty": "hard"
+}

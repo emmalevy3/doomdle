@@ -1,0 +1,58 @@
+{
+  "id": "2027-09-26",
+  "title": "Puzzle #315",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Island",
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Swamp",
+      "Cabal Ritual",
+      "Quantum Riddler",
+      "Flow State",
+      "Meditate",
+      "Night's Whisper",
+      "Dark Ritual",
+      "Lotus Petal"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Night's Whisper",
+    "Dark Ritual",
+    "Cabal Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

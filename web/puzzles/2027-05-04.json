@@ -1,0 +1,53 @@
+{
+  "id": "2027-05-04",
+  "title": "Puzzle #170",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Unearth",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      {
+        "card": "Swamp",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Polluted Delta",
+      "Swamp",
+      "Lotus Petal",
+      "Flow State",
+      "Flow State",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Night's Whisper"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Plateau",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Gleemox",
+    "Lotus Petal",
+    "Swamp",
+    "Night's Whisper"
+  ],
+  "difficulty": "medium"
+}

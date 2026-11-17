@@ -1,0 +1,53 @@
+{
+  "id": "2027-10-29",
+  "title": "Puzzle #348",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Pyroblast",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Island",
+      "Gleemox",
+      "Gush",
+      "Ideas Unbound",
+      "Lotus Petal",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Gleemox"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Ideas Unbound",
+    "Lion's Eye Diamond",
+    "Gush",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

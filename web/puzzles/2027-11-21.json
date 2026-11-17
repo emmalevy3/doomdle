@@ -1,0 +1,41 @@
+{
+  "id": "2027-11-21",
+  "title": "Puzzle #371",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Mox Sapphire",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Quantum Riddler",
+      "Gleemox",
+      "Lion's Eye Diamond",
+      "Cabal Ritual",
+      "Quantum Riddler",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Mox Jet"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries",
+    "Gleemox"
+  ],
+  "difficulty": "hard"
+}

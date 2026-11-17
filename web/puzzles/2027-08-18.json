@@ -1,0 +1,48 @@
+{
+  "id": "2027-08-18",
+  "title": "Puzzle #276",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Thassa's Oracle",
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Mox Jet",
+      "Swamp",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Sol Ring",
+      "Preordain",
+      "Chromatic Star",
+      "Lotus Petal",
+      "Cabal Ritual",
+      "Black Lotus",
+      "Island"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Preordain",
+    "Sol Ring",
+    "Cabal Ritual",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

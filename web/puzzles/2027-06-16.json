@@ -1,0 +1,50 @@
+{
+  "id": "2027-06-16",
+  "title": "Puzzle #213",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Badlands",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Tundra",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gitaxian Probe",
+      "Meditate",
+      "Island",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Gitaxian Probe",
+    "Thassa's Oracle",
+    "Meditate",
+    "Meditate"
+  ],
+  "difficulty": "medium"
+}

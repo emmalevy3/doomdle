@@ -1,0 +1,47 @@
+{
+  "id": "2027-05-28",
+  "title": "Puzzle #194",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Jace, Wielder of Mysteries"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Badlands",
+      "Tundra",
+      "Underground Sea",
+      "Tundra"
+    ],
+    "library": [
+      "Mishra's Bauble",
+      "Black Lotus",
+      "Thundertrap Trainer",
+      "Brainstorm",
+      "Brainstorm",
+      "Gush",
+      "Frantic Search"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Frantic Search",
+    "Black Lotus",
+    "Brainstorm",
+    "Brainstorm"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,55 @@
+{
+  "id": "2028-02-15",
+  "title": "Puzzle #457",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Pyroblast",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Volcanic Island",
+      "Volcanic Island",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Mishra's Bauble",
+      "Dark Ritual",
+      "Black Lotus",
+      "Flow State",
+      "Undercity Sewers",
+      "Night's Whisper",
+      "Mox Jet",
+      "Lotus Petal"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Plateau",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Flow State",
+    "Dark Ritual",
+    "Mishra's Bauble",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

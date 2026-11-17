@@ -1,0 +1,43 @@
+{
+  "id": "2027-07-04",
+  "title": "Puzzle #231",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Duress",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Badlands",
+      "Tundra",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Flow State",
+      "Reckless Impulse",
+      "Gush",
+      "Cabal Ritual",
+      "Flow State",
+      "Dark Ritual",
+      "Gleemox",
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Reckless Impulse",
+    "Dark Ritual",
+    "Laboratory Maniac",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "hard"
+}

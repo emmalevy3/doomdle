@@ -1,0 +1,50 @@
+{
+  "id": "2027-05-05",
+  "title": "Puzzle #171",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island",
+      "Badlands",
+      "Volcanic Island",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Meticulous Archive",
+      "Mishra's Bauble",
+      "Reckless Impulse",
+      "Chromatic Star",
+      "Wizard's Rockets",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Street Wraith",
+      "Consider"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Chromatic Star",
+    "Consider",
+    "Reckless Impulse",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "medium"
+}

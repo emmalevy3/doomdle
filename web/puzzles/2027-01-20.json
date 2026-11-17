@@ -1,0 +1,38 @@
+{
+  "id": "2027-01-20",
+  "title": "Puzzle #66",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Underground Sea",
+      "Brainstorm",
+      "Lion's Eye Diamond",
+      "Night's Whisper",
+      "Gush",
+      "Black Lotus",
+      "Black Lotus"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Laboratory Maniac",
+    "Gush",
+    "Brainstorm",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-23",
+  "title": "Puzzle #38",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Unearth",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      "Island",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Sol Ring",
+      "Quantum Riddler",
+      "Street Wraith",
+      "Mox Sapphire",
+      "Meditate",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Street Wraith",
+    "Dark Ritual",
+    "Mox Sapphire",
+    "Meditate",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

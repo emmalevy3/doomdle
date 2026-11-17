@@ -1,0 +1,42 @@
+{
+  "id": "2027-03-28",
+  "title": "Puzzle #133",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Pyroblast",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Mox Jet",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Sol Ring",
+      "Sol Ring",
+      "Wizard's Rockets",
+      "Ideas Unbound",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Flow State"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Ideas Unbound",
+    "Black Lotus",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

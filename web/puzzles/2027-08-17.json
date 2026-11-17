@@ -1,0 +1,53 @@
+{
+  "id": "2027-08-17",
+  "title": "Puzzle #275",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Unearth",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Badlands",
+      "Sol Ring",
+      "Sol Ring",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Gush",
+      "Chromatic Star",
+      "Gitaxian Probe",
+      "Street Wraith",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Sol Ring",
+      "Gleemox"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Underground Sea",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Street Wraith",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

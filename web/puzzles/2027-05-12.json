@@ -1,0 +1,51 @@
+{
+  "id": "2027-05-12",
+  "title": "Puzzle #178",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Island",
+      "Swamp",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Sol Ring",
+      "Brainstorm",
+      "Flooded Strand",
+      "Meticulous Archive",
+      "Gleemox",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Thundertrap Trainer",
+      "Ancestral Recall"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze",
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Sol Ring",
+    "Gleemox",
+    "Ancestral Recall",
+    "Dark Ritual",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "medium"
+}

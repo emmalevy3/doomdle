@@ -1,0 +1,46 @@
+{
+  "id": "2027-02-07",
+  "title": "Puzzle #84",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Swamp",
+      "Sol Ring",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Chromatic Star",
+      "Gleemox",
+      "Night's Whisper",
+      "Consider",
+      "Tamiyo, Inquisitive Student",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Gleemox",
+    "Sol Ring",
+    "Tamiyo, Inquisitive Student",
+    "Night's Whisper"
+  ],
+  "difficulty": "hard"
+}

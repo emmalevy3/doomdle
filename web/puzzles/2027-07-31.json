@@ -1,0 +1,47 @@
+{
+  "id": "2027-07-31",
+  "title": "Puzzle #258",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Tundra",
+      "Badlands",
+      "Swamp",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Lotus Petal",
+      "Sol Ring",
+      "Black Lotus",
+      "Undercity Sewers",
+      "Dark Ritual",
+      "Polluted Delta",
+      "Reckless Impulse"
+    ],
+    "graveyard": [
+      "Gush",
+      "Preordain"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Gush",
+    "Undercity Sewers",
+    "Black Lotus",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

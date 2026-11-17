@@ -1,0 +1,57 @@
+{
+  "id": "2027-01-22",
+  "title": "Puzzle #68",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Brainstorm",
+      "Duress"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Volcanic Island",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Ideas Unbound",
+      "Aether Spellbomb",
+      "Aether Spellbomb",
+      "Consider",
+      "Underground Sea",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Gush",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Doctor Doom, Unrivaled",
+    "Ideas Unbound",
+    "Lion's Eye Diamond",
+    "Dark Ritual",
+    "Gush"
+  ],
+  "difficulty": "medium"
+}

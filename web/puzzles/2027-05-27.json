@@ -1,0 +1,50 @@
+{
+  "id": "2027-05-27",
+  "title": "Puzzle #193",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Dark Ritual",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Underground Sea",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mishra's Bauble",
+      "Underground Sea",
+      "Tamiyo, Inquisitive Student",
+      "Reckless Impulse",
+      "Consider",
+      "Aether Spellbomb",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Aether Spellbomb",
+    "Consider",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2028-01-26",
+  "title": "Puzzle #437",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Badlands",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Black Lotus",
+      "Night's Whisper",
+      "Cabal Ritual",
+      "Consider",
+      "Street Wraith",
+      "Frantic Search"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Consider",
+    "Street Wraith"
+  ],
+  "difficulty": "medium"
+}

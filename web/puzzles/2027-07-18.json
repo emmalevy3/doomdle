@@ -1,0 +1,51 @@
+{
+  "id": "2027-07-18",
+  "title": "Puzzle #245",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Mox Jet",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Meditate",
+      "Gush",
+      "Dark Ritual",
+      "Mox Jet",
+      "Ponder",
+      "Dark Ritual",
+      "Mishra's Bauble",
+      "Sol Ring"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Mox Sapphire",
+    "Mox Jet",
+    "Meditate",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

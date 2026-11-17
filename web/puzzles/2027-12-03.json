@@ -1,0 +1,43 @@
+{
+  "id": "2027-12-03",
+  "title": "Puzzle #383",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Island",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Timetwister",
+      "Mox Jet",
+      "Wizard's Rockets",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Gleemox"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Gitaxian Probe",
+    "Mox Jet"
+  ],
+  "difficulty": "medium"
+}

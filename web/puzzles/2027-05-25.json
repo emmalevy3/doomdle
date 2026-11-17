@@ -1,0 +1,57 @@
+{
+  "id": "2027-05-25",
+  "title": "Puzzle #191",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Sol Ring",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Night's Whisper",
+      "Night's Whisper",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Chromatic Star"
+    ],
+    "graveyard": [
+      "Cabal Ritual",
+      "Black Lotus"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Plateau",
+      "Underground Sea",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Night's Whisper",
+    "Chromatic Star"
+  ],
+  "difficulty": "medium"
+}

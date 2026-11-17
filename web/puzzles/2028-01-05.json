@@ -1,0 +1,51 @@
+{
+  "id": "2028-01-05",
+  "title": "Puzzle #416",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Mox Jet",
+      "Underground Sea",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Dark Ritual",
+      "Sol Ring",
+      "Ponder",
+      "Ponder",
+      "Chromatic Star",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast",
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Plateau",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Sol Ring",
+    "Chromatic Star"
+  ],
+  "difficulty": "medium"
+}

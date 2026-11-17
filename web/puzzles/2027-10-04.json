@@ -1,0 +1,46 @@
+{
+  "id": "2027-10-04",
+  "title": "Puzzle #323",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Laboratory Maniac",
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Badlands",
+      "Swamp"
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Quantum Riddler",
+      "Mox Jet",
+      "Mox Sapphire",
+      "Mox Jet",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Gitaxian Probe",
+      "Ancestral Recall"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Night's Whisper",
+    "Quantum Riddler",
+    "Mox Sapphire",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "2028-01-13",
+  "title": "Puzzle #424",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Lotus Petal",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Swamp",
+      "Swamp",
+      "Volcanic Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Flooded Strand",
+      "Lion's Eye Diamond",
+      "Polluted Delta",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Reckless Impulse",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Consider",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Consider",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "easy"
+}

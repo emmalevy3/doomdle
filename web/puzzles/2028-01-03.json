@@ -1,0 +1,48 @@
+{
+  "id": "2028-01-03",
+  "title": "Puzzle #414",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Thassa's Oracle",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Swamp",
+      "Volcanic Island",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Gush",
+      "Night's Whisper",
+      "Ideas Unbound",
+      "Gleemox",
+      "Ancestral Recall",
+      "Sol Ring",
+      "Consider"
+    ],
+    "graveyard": [
+      "Manamorphose",
+      "Lion's Eye Diamond"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Night's Whisper",
+    "Gleemox",
+    "Ideas Unbound",
+    "Manamorphose"
+  ],
+  "difficulty": "easy"
+}

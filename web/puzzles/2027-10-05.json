@@ -1,0 +1,38 @@
+{
+  "id": "2027-10-05",
+  "title": "Puzzle #324",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Thassa's Oracle",
+      "Unearth",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Sapphire",
+      "Mox Jet"
+    ],
+    "library": [
+      "Gleemox",
+      "Edge of Autumn",
+      "Thundertrap Trainer",
+      "Mishra's Bauble",
+      "Manamorphose",
+      "Ancestral Recall",
+      "Street Wraith"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Street Wraith",
+    "Edge of Autumn",
+    "Gleemox",
+    "Manamorphose",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

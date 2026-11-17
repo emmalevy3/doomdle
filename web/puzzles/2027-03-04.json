@@ -1,0 +1,51 @@
+{
+  "id": "2027-03-04",
+  "title": "Puzzle #109",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Volcanic Island",
+      "Tundra",
+      "Badlands",
+      "Mox Jet"
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Timetwister",
+      "Lion's Eye Diamond",
+      "Meditate",
+      "Mox Sapphire",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation",
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Timetwister",
+    "Sol Ring",
+    "Lion's Eye Diamond",
+    "Mox Sapphire"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2027-02-21",
+  "title": "Puzzle #98",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Mox Sapphire",
+      "Swamp",
+      "Tundra",
+      "Tundra"
+    ],
+    "library": [
+      "Dark Ritual",
+      "Ancestral Recall",
+      "Black Lotus",
+      "Meditate",
+      "Flooded Strand",
+      "Lotus Petal",
+      "Consider",
+      "Preordain"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Plateau",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Consider",
+    "Black Lotus",
+    "Lotus Petal",
+    "Meditate"
+  ],
+  "difficulty": "hard"
+}

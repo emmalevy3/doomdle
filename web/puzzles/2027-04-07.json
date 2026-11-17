@@ -1,0 +1,44 @@
+{
+  "id": "2027-04-07",
+  "title": "Puzzle #143",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Badlands",
+      "Mox Jet",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Brainstorm",
+      "Chromatic Star",
+      "Ideas Unbound",
+      "Black Lotus",
+      "Ideas Unbound"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Ideas Unbound",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2027-10-11",
+  "title": "Puzzle #330",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Brainstorm",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Tundra",
+      "Island",
+      "Mox Jet"
+    ],
+    "library": [
+      "Skateboard",
+      "Mox Sapphire",
+      "Lion's Eye Diamond",
+      "Ancestral Recall",
+      "Flooded Strand",
+      "Consider"
+    ],
+    "graveyard": [
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Skateboard",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Mox Sapphire",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

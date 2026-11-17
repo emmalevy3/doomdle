@@ -1,0 +1,49 @@
+{
+  "id": "2027-02-22",
+  "title": "Puzzle #99",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Mox Jet",
+      "Underground Sea",
+      "Tundra",
+      "Sol Ring"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Consider",
+      "Island",
+      "Chromatic Star",
+      "Underground Sea"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student",
+      "Black Lotus"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Chromatic Star",
+    "Laboratory Maniac",
+    "Tamiyo, Inquisitive Student",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2027-06-30",
+  "title": "Puzzle #227",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Swamp",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Wizard's Rockets",
+      "Thundertrap Trainer",
+      "Polluted Delta",
+      "Mox Jet",
+      "Sol Ring",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Flow State",
+      "Gitaxian Probe"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Jace, Wielder of Mysteries",
+    "Sol Ring",
+    "Wizard's Rockets",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2027-10-15",
+  "title": "Puzzle #334",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      "Badlands",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Flow State",
+      "Ideas Unbound",
+      "Flooded Strand",
+      "Mox Jet",
+      "Gitaxian Probe",
+      "Lotus Petal",
+      "Black Lotus",
+      "Wizard's Rockets"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Flow State",
+    "Doctor Doom, Unrivaled",
+    "Ideas Unbound",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

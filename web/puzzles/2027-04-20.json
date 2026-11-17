@@ -1,0 +1,49 @@
+{
+  "id": "2027-04-20",
+  "title": "Puzzle #156",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Badlands",
+      "Badlands",
+      "Swamp",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Ancestral Recall",
+      "Polluted Delta",
+      "Thundertrap Trainer",
+      "Black Lotus",
+      "Meticulous Archive",
+      "Dark Ritual",
+      "Flow State",
+      "Undercity Sewers"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Thundertrap Trainer",
+    "Black Lotus",
+    "Flow State"
+  ],
+  "difficulty": "medium"
+}

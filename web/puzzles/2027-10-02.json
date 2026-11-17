@@ -1,0 +1,49 @@
+{
+  "id": "2027-10-02",
+  "title": "Puzzle #321",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Ponder",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Badlands",
+      "Island",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gush",
+      "Frantic Search",
+      "Street Wraith",
+      "Gitaxian Probe",
+      "Gush",
+      "Mox Jet",
+      "Timetwister"
+    ],
+    "graveyard": [
+      "Black Lotus"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Frantic Search",
+    "Black Lotus",
+    "Laboratory Maniac",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "2027-11-25",
+  "title": "Puzzle #375",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Sol Ring",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Swamp",
+      "Ancestral Recall",
+      "Reckless Impulse",
+      "Gitaxian Probe",
+      "Island",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Reckless Impulse",
+    "Island"
+  ],
+  "difficulty": "easy"
+}

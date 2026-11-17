@@ -1,0 +1,47 @@
+{
+  "id": "2027-09-01",
+  "title": "Puzzle #290",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Badlands",
+      "Sol Ring"
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Thundertrap Trainer",
+      "Tamiyo, Inquisitive Student",
+      "Black Lotus",
+      "Gleemox",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Reckless Impulse",
+      "Wizard's Rockets"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Gleemox",
+    "Black Lotus",
+    "Gleemox",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

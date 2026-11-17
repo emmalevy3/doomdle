@@ -1,0 +1,51 @@
+{
+  "id": "2028-03-04",
+  "title": "Puzzle #475",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Polluted Delta",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Sol Ring",
+      "Street Wraith",
+      "Preordain"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Sol Ring",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "hard"
+}

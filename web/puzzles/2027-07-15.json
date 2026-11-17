@@ -1,0 +1,41 @@
+{
+  "id": "2027-07-15",
+  "title": "Puzzle #242",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Thassa's Oracle",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Gleemox",
+      "Meticulous Archive",
+      "Sol Ring",
+      "Dark Ritual",
+      "Island",
+      "Consider"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Sol Ring",
+    "Gleemox",
+    "Island",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2027-04-30",
+  "title": "Puzzle #166",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Duress"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Swamp",
+      "Underground Sea",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Aether Spellbomb",
+      "Tamiyo, Inquisitive Student",
+      "Dark Ritual",
+      "Street Wraith",
+      "Gitaxian Probe",
+      "Quantum Riddler",
+      "Aether Spellbomb"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Aether Spellbomb",
+    "Gitaxian Probe",
+    "Laboratory Maniac",
+    "Dark Ritual"
+  ],
+  "difficulty": "medium"
+}

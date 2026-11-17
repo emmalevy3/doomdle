@@ -1,0 +1,54 @@
+{
+  "id": "2027-04-14",
+  "title": "Puzzle #150",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Pyroblast",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Dark Ritual",
+      "Frantic Search",
+      "Gitaxian Probe",
+      "Mox Jet",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Laboratory Maniac",
+    "Frantic Search",
+    "Gitaxian Probe",
+    "Dark Ritual"
+  ],
+  "difficulty": "medium"
+}

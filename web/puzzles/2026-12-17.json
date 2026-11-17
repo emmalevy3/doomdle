@@ -1,0 +1,54 @@
+{
+  "id": "2026-12-17",
+  "title": "Puzzle #32",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Brainstorm",
+      "Duress"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Swamp",
+      "Tundra",
+      "Sol Ring"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Consider",
+      "Meditate",
+      "Cabal Ritual",
+      "Lotus Petal",
+      "Gush",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Consider"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out",
+      "Pact of Negation"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gush",
+    "Lotus Petal",
+    "Meditate",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

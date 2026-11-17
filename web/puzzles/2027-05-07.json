@@ -1,0 +1,52 @@
+{
+  "id": "2027-05-07",
+  "title": "Puzzle #173",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      "Badlands",
+      "Tundra",
+      "Sol Ring",
+      "Skateboard"
+    ],
+    "library": [
+      "Sol Ring",
+      "Thundertrap Trainer",
+      "Sol Ring",
+      "Swamp",
+      "Ponder",
+      "Cabal Ritual",
+      "Wizard's Rockets"
+    ],
+    "graveyard": [
+      "Reckless Impulse",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Sol Ring",
+    "Ponder",
+    "Sol Ring",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

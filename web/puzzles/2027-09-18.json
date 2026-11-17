@@ -1,0 +1,48 @@
+{
+  "id": "2027-09-18",
+  "title": "Puzzle #307",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Sol Ring",
+      "Volcanic Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Meticulous Archive",
+      "Aether Spellbomb",
+      "Ideas Unbound",
+      "Brainstorm",
+      "Chromatic Star",
+      "Reckless Impulse",
+      "Lion's Eye Diamond",
+      "Consider"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Laboratory Maniac",
+    "Brainstorm",
+    "Ideas Unbound",
+    "Reckless Impulse"
+  ],
+  "difficulty": "hard"
+}

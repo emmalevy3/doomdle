@@ -1,0 +1,54 @@
+{
+  "id": "2027-11-13",
+  "title": "Puzzle #363",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Brainstorm",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Mox Jet",
+      "Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Cabal Ritual",
+      "Lion's Eye Diamond",
+      "Night's Whisper",
+      "Ponder",
+      "Sol Ring",
+      "Gleemox",
+      "Gush"
+    ],
+    "graveyard": [
+      "Mox Sapphire"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Gush",
+    "Lion's Eye Diamond",
+    "Laboratory Maniac",
+    "Ponder"
+  ],
+  "difficulty": "hard"
+}

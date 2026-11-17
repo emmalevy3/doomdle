@@ -1,0 +1,48 @@
+{
+  "id": "2028-02-01",
+  "title": "Puzzle #443",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Cabal Ritual",
+      "Meticulous Archive",
+      "Lion's Eye Diamond",
+      "Reckless Impulse",
+      "Reckless Impulse",
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Jace, Wielder of Mysteries",
+    "Lion's Eye Diamond",
+    "Reckless Impulse",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "medium"
+}

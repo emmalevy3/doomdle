@@ -1,0 +1,46 @@
+{
+  "id": "2027-12-16",
+  "title": "Puzzle #396",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gleemox",
+      "Meditate",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Quantum Riddler",
+      "Manamorphose",
+      "Cabal Ritual",
+      "Black Lotus"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Jace, Wielder of Mysteries",
+    "Manamorphose",
+    "Gleemox",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

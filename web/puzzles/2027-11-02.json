@@ -1,0 +1,48 @@
+{
+  "id": "2027-11-02",
+  "title": "Puzzle #352",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Swamp",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Aether Spellbomb",
+      "Consider",
+      "Sol Ring",
+      "Undercity Sewers",
+      "Brainstorm",
+      "Chromatic Star"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "medium"
+}

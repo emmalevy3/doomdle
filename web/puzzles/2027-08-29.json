@@ -1,0 +1,49 @@
+{
+  "id": "2027-08-29",
+  "title": "Puzzle #287",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Mox Sapphire",
+      "Tundra",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lightning Greaves",
+      "Flow State",
+      "Cabal Ritual",
+      "Lion's Eye Diamond",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Wizard's Rockets"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation",
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Lightning Greaves",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Doctor Doom, Unrivaled"
+  ],
+  "difficulty": "hard"
+}

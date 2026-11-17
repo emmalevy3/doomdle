@@ -1,0 +1,46 @@
+{
+  "id": "2027-09-17",
+  "title": "Puzzle #306",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Swamp",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Ideas Unbound",
+      "Wizard's Rockets",
+      "Meticulous Archive",
+      "Gitaxian Probe",
+      "Thundertrap Trainer",
+      "Dark Ritual",
+      "Mox Jet"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Laboratory Maniac",
+    "Thundertrap Trainer",
+    "Gitaxian Probe",
+    "Dark Ritual"
+  ],
+  "difficulty": "medium"
+}

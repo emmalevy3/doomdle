@@ -1,0 +1,57 @@
+{
+  "id": "2026-12-16",
+  "title": "Puzzle #31",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Swamp",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lotus Petal",
+      "Lion's Eye Diamond",
+      "Tamiyo, Inquisitive Student",
+      "Preordain",
+      "Gush",
+      "Timetwister",
+      "Mox Jet",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Doctor Doom, Unrivaled",
+    "Preordain",
+    "Timetwister",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "medium"
+}

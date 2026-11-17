@@ -1,0 +1,49 @@
+{
+  "id": "2027-10-31",
+  "title": "Puzzle #350",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Unearth",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Sol Ring",
+      "Island",
+      "Mox Jet"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Flow State",
+      "Mox Jet",
+      "Flow State",
+      "Underground Sea",
+      "Gleemox",
+      "Cabal Ritual",
+      "Gitaxian Probe",
+      "Manamorphose"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pact of Negation"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Plateau",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Gitaxian Probe",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Flow State"
+  ],
+  "difficulty": "hard"
+}

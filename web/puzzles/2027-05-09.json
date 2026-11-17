@@ -1,0 +1,49 @@
+{
+  "id": "2027-05-09",
+  "title": "Puzzle #175",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe",
+      "Duress"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Badlands",
+      "Tundra",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Gleemox",
+      "Edge of Autumn",
+      "Meticulous Archive",
+      "Underground Sea",
+      "Timetwister"
+    ],
+    "graveyard": [
+      "Reckless Impulse"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Timetwister",
+    "Laboratory Maniac",
+    "Gleemox",
+    "Gleemox",
+    "Underground Sea"
+  ],
+  "difficulty": "hard"
+}

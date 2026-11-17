@@ -1,0 +1,49 @@
+{
+  "id": "2027-01-03",
+  "title": "Puzzle #49",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Pyroblast",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Island",
+      "Swamp",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Preordain",
+      "Mox Jet",
+      "Sol Ring",
+      "Night's Whisper",
+      "Gush",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Thundertrap Trainer",
+      "Manamorphose"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Manamorphose",
+    "Mox Jet",
+    "Night's Whisper"
+  ],
+  "difficulty": "hard"
+}

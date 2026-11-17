@@ -1,0 +1,45 @@
+{
+  "id": "2027-11-18",
+  "title": "Puzzle #368",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thoughtseize",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Tundra",
+      "Volcanic Island",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Preordain",
+      "Black Lotus",
+      "Tamiyo, Inquisitive Student",
+      "Mox Sapphire",
+      "Flow State"
+    ],
+    "graveyard": [
+      "Aether Spellbomb"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Flow State",
+    "Black Lotus",
+    "Mox Sapphire",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "easy"
+}

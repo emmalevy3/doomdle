@@ -1,0 +1,47 @@
+{
+  "id": "2027-11-05",
+  "title": "Puzzle #355",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Pyroblast",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Badlands",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Meditate",
+      "Consider",
+      "Gush",
+      "Black Lotus",
+      "Gleemox",
+      "Mox Sapphire",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Meditate",
+    "Gleemox",
+    "Edge of Autumn",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

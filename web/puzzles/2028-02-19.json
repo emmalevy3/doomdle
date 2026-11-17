@@ -1,0 +1,47 @@
+{
+  "id": "2028-02-19",
+  "title": "Puzzle #461",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Aether Spellbomb",
+      "Dark Ritual",
+      "Black Lotus",
+      "Night's Whisper",
+      "Consider",
+      "Black Lotus",
+      "Meditate",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Thassa's Oracle",
+    "Aether Spellbomb",
+    "Black Lotus",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

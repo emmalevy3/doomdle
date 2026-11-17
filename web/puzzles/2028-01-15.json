@@ -1,0 +1,40 @@
+{
+  "id": "2028-01-15",
+  "title": "Puzzle #426",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Badlands",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Ideas Unbound",
+      "Undercity Sewers",
+      "Swamp",
+      "Reckless Impulse",
+      "Undercity Sewers",
+      "Meditate",
+      "Lion's Eye Diamond",
+      "Thundertrap Trainer"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Lion's Eye Diamond",
+    "Meditate",
+    "Ideas Unbound"
+  ],
+  "difficulty": "hard"
+}

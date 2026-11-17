@@ -1,0 +1,42 @@
+{
+  "id": "2028-01-02",
+  "title": "Puzzle #413",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Flow State",
+      "Preordain",
+      "Manamorphose",
+      "Tamiyo, Inquisitive Student",
+      "Dark Ritual",
+      "Meditate",
+      "Street Wraith"
+    ],
+    "graveyard": [
+      "Meditate"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Flow State",
+    "Dark Ritual",
+    "Laboratory Maniac",
+    "Street Wraith"
+  ],
+  "difficulty": "hard"
+}

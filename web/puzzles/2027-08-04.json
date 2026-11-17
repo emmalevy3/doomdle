@@ -1,0 +1,55 @@
+{
+  "id": "2027-08-04",
+  "title": "Puzzle #262",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe",
+      "Ponder"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Sol Ring",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Frantic Search",
+      "Quantum Riddler",
+      "Aether Spellbomb",
+      "Brainstorm",
+      "Chromatic Star"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Gush"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Frantic Search",
+    "Gush",
+    "Aether Spellbomb",
+    "Jace, Wielder of Mysteries",
+    "Chromatic Star"
+  ],
+  "difficulty": "medium"
+}

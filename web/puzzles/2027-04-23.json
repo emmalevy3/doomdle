@@ -1,0 +1,42 @@
+{
+  "id": "2027-04-23",
+  "title": "Puzzle #159",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      "Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Timetwister",
+      "Ancestral Recall",
+      "Mox Jet",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Frantic Search",
+      "Tamiyo, Inquisitive Student"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Timetwister",
+    "Sol Ring",
+    "Gleemox",
+    "Mox Jet"
+  ],
+  "difficulty": "medium"
+}

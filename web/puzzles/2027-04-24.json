@@ -1,0 +1,50 @@
+{
+  "id": "2027-04-24",
+  "title": "Puzzle #160",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Night's Whisper",
+      "Dark Ritual",
+      "Manamorphose",
+      "Black Lotus",
+      "Flooded Strand"
+    ],
+    "graveyard": [
+      "Mox Sapphire",
+      "Mox Jet"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pact of Negation",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Night's Whisper",
+    "Black Lotus",
+    "Mox Sapphire",
+    "Dark Ritual"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "2027-01-15",
+  "title": "Puzzle #61",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Laboratory Maniac",
+      "Dark Ritual",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Island"
+    ],
+    "library": [
+      "Sol Ring",
+      "Mishra's Bauble",
+      "Consider",
+      "Lotus Petal",
+      "Black Lotus",
+      "Tamiyo, Inquisitive Student",
+      "Cabal Ritual",
+      "Quantum Riddler"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Volcanic Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Consider",
+    "Black Lotus",
+    "Sol Ring",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2027-02-26",
+  "title": "Puzzle #103",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Swamp",
+      "Swamp",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Ponder",
+      "Dark Ritual",
+      "Tamiyo, Inquisitive Student",
+      "Gush",
+      "Sol Ring",
+      "Gush",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Doctor Doom, Unrivaled",
+    "Ponder",
+    "Sol Ring",
+    "Dark Ritual"
+  ],
+  "difficulty": "medium"
+}

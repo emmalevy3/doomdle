@@ -1,0 +1,45 @@
+{
+  "id": "2027-02-14",
+  "title": "Puzzle #91",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Underground Sea",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Black Lotus",
+      "Ancestral Recall",
+      "Sol Ring",
+      "Mishra's Bauble",
+      "Tamiyo, Inquisitive Student",
+      "Mox Jet",
+      "Brainstorm"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Brainstorm",
+    "Black Lotus",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

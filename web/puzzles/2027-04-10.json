@@ -1,0 +1,49 @@
+{
+  "id": "2027-04-10",
+  "title": "Puzzle #146",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Black Lotus",
+      "Gush",
+      "Mox Jet",
+      "Flooded Strand",
+      "Preordain",
+      "Lotus Petal",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Chromatic Star",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Chromatic Star",
+    "Preordain",
+    "Edge of Autumn",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

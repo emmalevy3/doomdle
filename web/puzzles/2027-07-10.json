@@ -1,0 +1,48 @@
+{
+  "id": "2027-07-10",
+  "title": "Puzzle #237",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Tundra",
+      "Island"
+    ],
+    "library": [
+      "Skateboard",
+      "Undercity Sewers",
+      "Meditate",
+      "Ancestral Recall",
+      "Cabal Ritual",
+      "Manamorphose",
+      "Tamiyo, Inquisitive Student",
+      "Mox Sapphire",
+      "Dark Ritual"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Skateboard",
+    "Dark Ritual",
+    "Cabal Ritual",
+    "Meditate"
+  ],
+  "difficulty": "hard"
+}

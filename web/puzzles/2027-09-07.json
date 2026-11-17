@@ -1,0 +1,41 @@
+{
+  "id": "2027-09-07",
+  "title": "Puzzle #296",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Swamp",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Black Lotus",
+      "Ponder",
+      "Quantum Riddler",
+      "Consider",
+      "Polluted Delta",
+      "Wizard's Rockets"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Gitaxian Probe",
+    "Wizard's Rockets",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

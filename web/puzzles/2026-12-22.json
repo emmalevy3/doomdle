@@ -1,0 +1,49 @@
+{
+  "id": "2026-12-22",
+  "title": "Puzzle #37",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Thassa's Oracle",
+      "Pyroblast",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Mox Sapphire",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Street Wraith",
+      "Sol Ring",
+      "Cabal Ritual",
+      "Lotus Petal",
+      "Flooded Strand",
+      "Chromatic Star",
+      "Ancestral Recall",
+      "Mox Jet",
+      "Meditate"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Street Wraith",
+    "Lotus Petal",
+    "Meditate",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

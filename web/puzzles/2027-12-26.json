@@ -1,0 +1,47 @@
+{
+  "id": "2027-12-26",
+  "title": "Puzzle #406",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Swamp",
+      "Skateboard"
+    ],
+    "library": [
+      "Gush",
+      "Mox Sapphire",
+      "Dark Ritual",
+      "Gleemox",
+      "Timetwister",
+      "Underground Sea",
+      "Lion's Eye Diamond",
+      "Manamorphose"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Manamorphose",
+    "Gleemox",
+    "Dark Ritual",
+    "Timetwister"
+  ],
+  "difficulty": "hard"
+}

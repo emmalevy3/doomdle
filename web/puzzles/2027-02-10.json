@@ -1,0 +1,48 @@
+{
+  "id": "2027-02-10",
+  "title": "Puzzle #87",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Mox Jet",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Ponder",
+      "Ideas Unbound",
+      "Gleemox",
+      "Manamorphose",
+      "Cabal Ritual",
+      "Night's Whisper",
+      "Timetwister"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Ideas Unbound",
+    "Manamorphose"
+  ],
+  "difficulty": "medium"
+}

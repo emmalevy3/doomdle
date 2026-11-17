@@ -1,0 +1,47 @@
+{
+  "id": "2027-12-05",
+  "title": "Puzzle #385",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Underground Sea",
+      "Island",
+      "Island",
+      "Volcanic Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Mox Sapphire",
+      "Black Lotus",
+      "Dark Ritual",
+      "Meditate",
+      "Ponder",
+      "Sol Ring",
+      "Ideas Unbound"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Doctor Doom, Unrivaled",
+    "Dark Ritual",
+    "Black Lotus",
+    "Meditate"
+  ],
+  "difficulty": "hard"
+}

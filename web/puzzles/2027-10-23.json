@@ -1,0 +1,56 @@
+{
+  "id": "2027-10-23",
+  "title": "Puzzle #342",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Tundra",
+      "Volcanic Island",
+      "Badlands",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Ideas Unbound",
+      "Mox Jet",
+      "Lotus Petal",
+      "Underground Sea",
+      "Timetwister",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Timetwister",
+    "Lotus Petal",
+    "Lotus Petal",
+    "Doctor Doom, Unrivaled"
+  ],
+  "difficulty": "hard"
+}

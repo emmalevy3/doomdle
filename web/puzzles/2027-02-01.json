@@ -1,0 +1,56 @@
+{
+  "id": "2027-02-01",
+  "title": "Puzzle #78",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Mox Jet",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mox Jet",
+      "Gleemox",
+      "Edge of Autumn",
+      "Street Wraith",
+      "Swamp",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Gush",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gush",
+    "Street Wraith",
+    "Edge of Autumn",
+    "Gleemox"
+  ],
+  "difficulty": "easy"
+}

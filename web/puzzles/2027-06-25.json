@@ -1,0 +1,47 @@
+{
+  "id": "2027-06-25",
+  "title": "Puzzle #222",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Sol Ring",
+      "Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Skateboard",
+      "Black Lotus",
+      "Night's Whisper",
+      "Frantic Search",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Ideas Unbound"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Doctor Doom, Unrivaled",
+    "Night's Whisper",
+    "Skateboard",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

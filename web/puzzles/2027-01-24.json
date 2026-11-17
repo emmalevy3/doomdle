@@ -1,0 +1,47 @@
+{
+  "id": "2027-01-24",
+  "title": "Puzzle #70",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Thassa's Oracle",
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      "Volcanic Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Wizard's Rockets",
+      "Cabal Ritual",
+      "Timetwister",
+      "Ancestral Recall",
+      "Mox Jet",
+      "Lion's Eye Diamond",
+      "Preordain",
+      "Reckless Impulse",
+      "Meditate"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Timetwister",
+    "Lion's Eye Diamond",
+    "Mox Jet",
+    "Meditate"
+  ],
+  "difficulty": "hard"
+}

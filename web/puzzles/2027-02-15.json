@@ -1,0 +1,53 @@
+{
+  "id": "2027-02-15",
+  "title": "Puzzle #92",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Silence"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Tundra",
+      "Underground Sea",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Night's Whisper",
+      "Brainstorm",
+      "Swamp",
+      "Mox Jet",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Ponder"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Jace, Wielder of Mysteries",
+    "Night's Whisper",
+    "Ponder",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2027-07-17",
+  "title": "Puzzle #244",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Mox Jet",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Chromatic Star",
+      "Gush",
+      "Meticulous Archive",
+      "Dark Ritual",
+      "Black Lotus",
+      "Flow State",
+      "Frantic Search"
+    ],
+    "graveyard": [
+      "Ideas Unbound"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Black Lotus",
+    "Laboratory Maniac",
+    "Gush",
+    "Dark Ritual"
+  ],
+  "difficulty": "hard"
+}

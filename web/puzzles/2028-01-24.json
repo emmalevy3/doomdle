@@ -1,0 +1,53 @@
+{
+  "id": "2028-01-24",
+  "title": "Puzzle #435",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Pyroblast",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Sol Ring",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mox Sapphire",
+      "Mox Sapphire",
+      "Chromatic Star",
+      "Cabal Ritual",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Gitaxian Probe",
+      "Aether Spellbomb"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Aether Spellbomb",
+    "Chromatic Star",
+    "Thassa's Oracle",
+    "Gitaxian Probe",
+    "Cabal Ritual"
+  ],
+  "difficulty": "easy"
+}

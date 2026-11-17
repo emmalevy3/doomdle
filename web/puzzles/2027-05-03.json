@@ -1,0 +1,50 @@
+{
+  "id": "2027-05-03",
+  "title": "Puzzle #169",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Island",
+      "Island",
+      "Mox Sapphire",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Island",
+      "Quantum Riddler",
+      "Reckless Impulse",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Night's Whisper"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Doctor Doom, Unrivaled",
+    "Reckless Impulse",
+    "Quantum Riddler",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

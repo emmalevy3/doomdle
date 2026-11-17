@@ -1,0 +1,49 @@
+{
+  "id": "2027-02-06",
+  "title": "Puzzle #83",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Badlands",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Ancestral Recall",
+      "Underground Sea",
+      "Mox Jet",
+      "Frantic Search",
+      "Edge of Autumn",
+      "Lion's Eye Diamond",
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Street Wraith",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2027-10-28",
+  "title": "Puzzle #347",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Badlands",
+      "Sol Ring",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Jet",
+      "Ponder",
+      "Ancestral Recall",
+      "Consider",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Preordain"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Ponder",
+    "Lotus Petal",
+    "Preordain"
+  ],
+  "difficulty": "easy"
+}

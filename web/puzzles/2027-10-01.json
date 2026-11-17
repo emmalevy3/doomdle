@@ -1,0 +1,52 @@
+{
+  "id": "2027-10-01",
+  "title": "Puzzle #320",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Veil of Summer",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Mishra's Bauble",
+      "Meditate",
+      "Flooded Strand",
+      "Island",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Dark Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Tundra",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Jace, Wielder of Mysteries",
+    "Mishra's Bauble",
+    "Black Lotus",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

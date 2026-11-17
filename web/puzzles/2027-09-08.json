@@ -1,0 +1,50 @@
+{
+  "id": "2027-09-08",
+  "title": "Puzzle #297",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Underground Sea",
+      "Mox Sapphire",
+      "Volcanic Island",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Dark Ritual",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Wizard's Rockets",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Lotus Petal",
+      "Aether Spellbomb"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Wizard's Rockets",
+    "Dark Ritual",
+    "Manamorphose",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "medium"
+}

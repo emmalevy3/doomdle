@@ -1,0 +1,46 @@
+{
+  "id": "2027-01-05",
+  "title": "Puzzle #51",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Volcanic Island",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mishra's Bauble",
+      "Dark Ritual",
+      "Frantic Search",
+      "Black Lotus",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Thundertrap Trainer"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Mishra's Bauble",
+    "Black Lotus",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,53 @@
+{
+  "id": "2027-11-27",
+  "title": "Puzzle #377",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Dark Ritual",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Underground Sea",
+      "Volcanic Island",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Sol Ring",
+      "Ponder",
+      "Lion's Eye Diamond",
+      "Ancestral Recall",
+      "Gush"
+    ],
+    "graveyard": [
+      "Dark Ritual",
+      "Meditate"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Ponder",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries",
+    "Meditate"
+  ],
+  "difficulty": "hard"
+}

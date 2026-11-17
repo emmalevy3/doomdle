@@ -1,0 +1,41 @@
+{
+  "id": "2027-09-20",
+  "title": "Puzzle #309",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Reckless Impulse",
+      "Mox Jet",
+      "Dark Ritual",
+      "Mox Sapphire",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Dark Ritual"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Doctor Doom, Unrivaled",
+    "Ideas Unbound",
+    "Dark Ritual",
+    "Dark Ritual",
+    "Mox Jet"
+  ],
+  "difficulty": "easy"
+}

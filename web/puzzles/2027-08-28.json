@@ -1,0 +1,46 @@
+{
+  "id": "2027-08-28",
+  "title": "Puzzle #286",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Badlands",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Island",
+      "Tundra"
+    ],
+    "library": [
+      "Edge of Autumn",
+      "Lotus Petal",
+      "Aether Spellbomb",
+      "Cabal Ritual",
+      "Ideas Unbound",
+      "Thundertrap Trainer",
+      "Black Lotus",
+      "Underground Sea",
+      "Lion's Eye Diamond"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Edge of Autumn",
+    "Cabal Ritual",
+    "Black Lotus",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "2027-08-03",
+  "title": "Puzzle #261",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Underground Sea",
+      "Mox Sapphire",
+      "Underground Sea"
+    ],
+    "library": [
+      "Brainstorm",
+      "Flow State",
+      "Flow State",
+      "Ponder",
+      "Chromatic Star",
+      "Gleemox",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Gleemox",
+    "Brainstorm",
+    "Ancestral Recall",
+    "Mox Jet",
+    "Chromatic Star"
+  ],
+  "difficulty": "medium"
+}

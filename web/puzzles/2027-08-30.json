@@ -1,0 +1,44 @@
+{
+  "id": "2027-08-30",
+  "title": "Puzzle #288",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Unearth",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Black Lotus",
+      "Ideas Unbound",
+      "Sol Ring",
+      "Frantic Search",
+      "Cabal Ritual"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Mox Sapphire"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Black Lotus",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "easy"
+}

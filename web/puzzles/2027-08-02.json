@@ -1,0 +1,52 @@
+{
+  "id": "2027-08-02",
+  "title": "Puzzle #260",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Timetwister",
+      "Flooded Strand",
+      "Quantum Riddler",
+      "Flooded Strand",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Island",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Jace, Wielder of Mysteries",
+    "Edge of Autumn",
+    "Timetwister",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "2027-04-02",
+  "title": "Puzzle #138",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth",
+      "Silence"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Sol Ring",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Aether Spellbomb",
+      "Manamorphose",
+      "Dark Ritual",
+      "Black Lotus",
+      "Consider",
+      "Consider"
+    ],
+    "graveyard": [
+      "Ponder",
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Brainstorm",
+    "Jace, Wielder of Mysteries",
+    "Aether Spellbomb",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

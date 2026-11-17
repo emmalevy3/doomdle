@@ -1,0 +1,46 @@
+{
+  "id": "2028-02-10",
+  "title": "Puzzle #452",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Gitaxian Probe",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gleemox",
+      "Polluted Delta",
+      "Cabal Ritual",
+      "Lion's Eye Diamond",
+      "Timetwister",
+      "Frantic Search"
+    ],
+    "graveyard": [
+      "Gitaxian Probe",
+      "Aether Spellbomb"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Frantic Search",
+    "Thassa's Oracle",
+    "Timetwister",
+    "Gleemox",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "easy"
+}

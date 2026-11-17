@@ -1,0 +1,45 @@
+{
+  "id": "2027-02-05",
+  "title": "Puzzle #82",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Unearth",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra",
+      "Mox Sapphire",
+      "Badlands",
+      {
+        "card": "Swamp",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lightning Greaves",
+      "Swamp",
+      "Lotus Petal",
+      "Black Lotus",
+      "Gleemox",
+      "Sol Ring",
+      "Timetwister",
+      "Lotus Petal"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Timetwister",
+    "Black Lotus",
+    "Doctor Doom, Unrivaled",
+    "Sol Ring",
+    "Lightning Greaves"
+  ],
+  "difficulty": "medium"
+}

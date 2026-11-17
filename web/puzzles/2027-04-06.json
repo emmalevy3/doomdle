@@ -1,0 +1,41 @@
+{
+  "id": "2027-04-06",
+  "title": "Puzzle #142",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Sol Ring",
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Flooded Strand",
+      "Cabal Ritual",
+      "Polluted Delta",
+      "Dark Ritual",
+      "Reckless Impulse",
+      "Manamorphose",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Mishra's Bauble"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Manamorphose",
+    "Reckless Impulse",
+    "Lion's Eye Diamond",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

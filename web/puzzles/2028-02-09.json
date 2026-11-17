@@ -1,0 +1,42 @@
+{
+  "id": "2028-02-09",
+  "title": "Puzzle #451",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Gitaxian Probe",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Island",
+      "Mox Jet",
+      "Mox Jet",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Wizard's Rockets",
+      "Gleemox",
+      "Night's Whisper",
+      "Flooded Strand",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Wizard's Rockets",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "medium"
+}

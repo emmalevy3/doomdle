@@ -1,0 +1,46 @@
+{
+  "id": "2027-11-12",
+  "title": "Puzzle #362",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Swamp",
+      "Lotus Petal",
+      "Consider",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Gush",
+      "Flow State"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Laboratory Maniac",
+    "Flow State",
+    "Consider",
+    "Lotus Petal"
+  ],
+  "difficulty": "medium"
+}

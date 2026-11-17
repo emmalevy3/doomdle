@@ -1,0 +1,46 @@
+{
+  "id": "2027-02-04",
+  "title": "Puzzle #81",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Island",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Swamp",
+      "Sol Ring",
+      "Swamp",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Mox Sapphire",
+      "Ponder",
+      "Mox Sapphire",
+      "Gitaxian Probe",
+      "Thundertrap Trainer",
+      "Manamorphose",
+      "Gitaxian Probe",
+      "Edge of Autumn"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ponder",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Gitaxian Probe",
+    "Manamorphose"
+  ],
+  "difficulty": "easy"
+}

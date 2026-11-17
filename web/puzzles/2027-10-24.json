@@ -1,0 +1,39 @@
+{
+  "id": "2027-10-24",
+  "title": "Puzzle #343",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Tundra",
+      "Mox Sapphire",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Frantic Search",
+      "Lion's Eye Diamond",
+      "Swamp",
+      "Edge of Autumn",
+      "Thundertrap Trainer",
+      "Ancestral Recall",
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Sol Ring",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "hard"
+}

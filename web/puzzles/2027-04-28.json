@@ -1,0 +1,44 @@
+{
+  "id": "2027-04-28",
+  "title": "Puzzle #164",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Badlands",
+      "Underground Sea",
+      "Badlands",
+      "Tundra",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Polluted Delta",
+      "Lotus Petal",
+      "Sol Ring",
+      "Thundertrap Trainer",
+      "Meditate",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Reckless Impulse"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Doctor Doom, Unrivaled",
+    "Meditate",
+    "Sol Ring",
+    "Dark Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "medium"
+}

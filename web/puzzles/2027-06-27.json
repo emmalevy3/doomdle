@@ -1,0 +1,53 @@
+{
+  "id": "2027-06-27",
+  "title": "Puzzle #224",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Thoughtseize",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Sol Ring",
+      "Volcanic Island",
+      "Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Manamorphose",
+      "Consider",
+      "Reckless Impulse",
+      "Mox Jet",
+      "Tamiyo, Inquisitive Student",
+      "Dark Ritual",
+      "Swamp",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Lotus Petal"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Plateau",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Reckless Impulse",
+    "Dark Ritual",
+    "Dark Ritual",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "hard"
+}

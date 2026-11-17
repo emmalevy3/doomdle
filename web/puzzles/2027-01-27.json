@@ -1,0 +1,39 @@
+{
+  "id": "2027-01-27",
+  "title": "Puzzle #73",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Jace, Wielder of Mysteries"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Underground Sea",
+      "Island"
+    ],
+    "library": [
+      "Gush",
+      "Sol Ring",
+      "Meticulous Archive",
+      "Dark Ritual",
+      "Lotus Petal",
+      "Ponder",
+      "Meticulous Archive"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Sol Ring",
+    "Dark Ritual",
+    "Gush",
+    "Ponder",
+    "Lotus Petal"
+  ],
+  "difficulty": "medium"
+}

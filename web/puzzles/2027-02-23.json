@@ -1,0 +1,49 @@
+{
+  "id": "2027-02-23",
+  "title": "Puzzle #100",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Ponder",
+      "Silence"
+    ],
+    "battlefield": [
+      "Island",
+      "Mox Sapphire",
+      "Underground Sea",
+      "Underground Sea",
+      "Swamp",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lion's Eye Diamond",
+      "Night's Whisper",
+      "Mox Sapphire",
+      "Meditate",
+      "Preordain",
+      "Flow State",
+      "Reckless Impulse",
+      "Lion's Eye Diamond"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Preordain",
+    "Lion's Eye Diamond",
+    "Doctor Doom, Unrivaled",
+    "Meditate"
+  ],
+  "difficulty": "medium"
+}

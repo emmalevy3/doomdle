@@ -1,0 +1,41 @@
+{
+  "id": "2027-06-24",
+  "title": "Puzzle #221",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Force of Will",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Mox Sapphire",
+      "Badlands",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Thundertrap Trainer",
+      "Brainstorm",
+      "Swamp",
+      "Lion's Eye Diamond",
+      "Gush",
+      "Mox Sapphire"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Mox Sapphire",
+    "Thundertrap Trainer",
+    "Brainstorm"
+  ],
+  "difficulty": "easy"
+}

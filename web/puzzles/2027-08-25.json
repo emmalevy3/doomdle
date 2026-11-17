@@ -1,0 +1,46 @@
+{
+  "id": "2027-08-25",
+  "title": "Puzzle #283",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Volcanic Island",
+      "Island",
+      "Tundra"
+    ],
+    "library": [
+      "Wizard's Rockets",
+      "Wizard's Rockets",
+      "Meditate",
+      "Gush",
+      "Lotus Petal",
+      "Thundertrap Trainer",
+      "Dark Ritual",
+      "Island",
+      "Frantic Search"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Meditate",
+    "Wizard's Rockets",
+    "Gush",
+    "Dark Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "medium"
+}

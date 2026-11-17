@@ -1,0 +1,57 @@
+{
+  "id": "2028-02-06",
+  "title": "Puzzle #448",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Sapphire",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Lion's Eye Diamond",
+      "Gush",
+      "Lotus Petal",
+      "Flow State",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Street Wraith",
+      "Cabal Ritual"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze",
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Flow State",
+    "Lion's Eye Diamond",
+    "Laboratory Maniac",
+    "Street Wraith"
+  ],
+  "difficulty": "hard"
+}

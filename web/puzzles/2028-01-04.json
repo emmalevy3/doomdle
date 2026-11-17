@@ -1,0 +1,46 @@
+{
+  "id": "2028-01-04",
+  "title": "Puzzle #415",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Laboratory Maniac",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Tundra",
+      "Island"
+    ],
+    "library": [
+      "Gleemox",
+      "Ancestral Recall",
+      "Polluted Delta",
+      "Flooded Strand",
+      "Quantum Riddler",
+      "Lotus Petal",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Frantic Search",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gleemox",
+    "Quantum Riddler",
+    "Ancestral Recall",
+    "Black Lotus",
+    "Frantic Search"
+  ],
+  "difficulty": "medium"
+}

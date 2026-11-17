@@ -1,0 +1,56 @@
+{
+  "id": "2027-01-31",
+  "title": "Puzzle #77",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Tundra",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Consider",
+      "Island",
+      "Street Wraith",
+      "Swamp",
+      "Thundertrap Trainer",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Street Wraith",
+      "Reckless Impulse"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Thalia, Guardian of Thraben"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Thassa's Oracle",
+    "Swamp",
+    "Reckless Impulse",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "hard"
+}

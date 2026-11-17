@@ -1,0 +1,48 @@
+{
+  "id": "2027-09-14",
+  "title": "Puzzle #303",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Pyroblast",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Volcanic Island",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Manamorphose",
+      "Lion's Eye Diamond",
+      "Street Wraith",
+      "Black Lotus",
+      "Underground Sea"
+    ],
+    "graveyard": [
+      "Reckless Impulse",
+      "Ideas Unbound"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Ideas Unbound",
+    "Manamorphose",
+    "Street Wraith",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

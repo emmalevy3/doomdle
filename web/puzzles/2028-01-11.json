@@ -1,0 +1,45 @@
+{
+  "id": "2028-01-11",
+  "title": "Puzzle #422",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Dark Ritual",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Island",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Reckless Impulse",
+      "Undercity Sewers",
+      "Gitaxian Probe",
+      "Lotus Petal",
+      "Underground Sea",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Cabal Ritual",
+      "Ancestral Recall"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Gitaxian Probe",
+    "Lotus Petal",
+    "Underground Sea"
+  ],
+  "difficulty": "medium"
+}

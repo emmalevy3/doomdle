@@ -1,0 +1,51 @@
+{
+  "id": "2027-07-19",
+  "title": "Puzzle #246",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Tundra",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Ancestral Recall",
+      "Timetwister",
+      "Dark Ritual",
+      "Black Lotus",
+      "Reckless Impulse",
+      "Gush"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze",
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Gush",
+    "Black Lotus",
+    "Timetwister"
+  ],
+  "difficulty": "easy"
+}

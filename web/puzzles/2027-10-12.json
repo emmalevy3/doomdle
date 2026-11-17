@@ -1,0 +1,49 @@
+{
+  "id": "2027-10-12",
+  "title": "Puzzle #331",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Swamp",
+      "Tundra",
+      "Volcanic Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Dark Ritual",
+      "Ideas Unbound",
+      "Tamiyo, Inquisitive Student",
+      "Gleemox",
+      "Meticulous Archive",
+      "Brainstorm",
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Doctor Doom, Unrivaled",
+    "Gleemox",
+    "Dark Ritual",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "medium"
+}

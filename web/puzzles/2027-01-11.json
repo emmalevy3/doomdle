@@ -1,0 +1,50 @@
+{
+  "id": "2027-01-11",
+  "title": "Puzzle #57",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Silence",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Sol Ring",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Timetwister",
+      "Lotus Petal",
+      "Meditate",
+      "Island",
+      "Wizard's Rockets",
+      "Preordain"
+    ],
+    "graveyard": [
+      "Chromatic Star",
+      "Wizard's Rockets"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Thassa's Oracle",
+    "Timetwister",
+    "Lotus Petal",
+    "Island"
+  ],
+  "difficulty": "easy"
+}

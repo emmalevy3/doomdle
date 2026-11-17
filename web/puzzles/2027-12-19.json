@@ -1,0 +1,57 @@
+{
+  "id": "2027-12-19",
+  "title": "Puzzle #399",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Pyroblast",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Swamp",
+      "Underground Sea",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Quantum Riddler",
+      "Polluted Delta",
+      "Black Lotus",
+      "Ancestral Recall",
+      "Cabal Ritual",
+      "Reckless Impulse",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Black Lotus"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out",
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Quantum Riddler",
+    "Black Lotus",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

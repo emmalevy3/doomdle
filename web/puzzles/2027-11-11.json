@@ -1,0 +1,55 @@
+{
+  "id": "2027-11-11",
+  "title": "Puzzle #361",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Volcanic Island",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Island",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Frantic Search",
+      "Flooded Strand",
+      "Mishra's Bauble",
+      "Black Lotus",
+      "Brainstorm",
+      "Consider",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Mishra's Bauble",
+    "Brainstorm"
+  ],
+  "difficulty": "easy"
+}

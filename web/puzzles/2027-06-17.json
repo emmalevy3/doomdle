@@ -1,0 +1,50 @@
+{
+  "id": "2027-06-17",
+  "title": "Puzzle #214",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Silence",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Badlands",
+      "Underground Sea",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gitaxian Probe",
+      "Black Lotus",
+      "Consider",
+      "Lion's Eye Diamond",
+      "Underground Sea",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Gush"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Gush",
+    "Consider",
+    "Gleemox",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "easy"
+}

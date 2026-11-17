@@ -1,0 +1,56 @@
+{
+  "id": "2027-05-11",
+  "title": "Puzzle #177",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Tamiyo, Inquisitive Student",
+      "Gitaxian Probe",
+      "Island",
+      "Manamorphose",
+      "Lotus Petal",
+      "Ideas Unbound",
+      "Meticulous Archive",
+      "Underground Sea"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Tundra",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Gitaxian Probe",
+    "Lotus Petal"
+  ],
+  "difficulty": "medium"
+}

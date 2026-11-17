@@ -1,0 +1,50 @@
+{
+  "id": "2027-11-19",
+  "title": "Puzzle #369",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Sapphire",
+      "Tundra",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Thundertrap Trainer",
+      "Mox Jet",
+      "Flow State",
+      "Night's Whisper",
+      "Gleemox",
+      "Sol Ring",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Night's Whisper",
+    "Gleemox",
+    "Sol Ring",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "medium"
+}

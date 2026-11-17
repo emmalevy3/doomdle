@@ -1,0 +1,47 @@
+{
+  "id": "2026-12-14",
+  "title": "Puzzle #29",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Force of Will",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Badlands",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Timetwister",
+      "Mox Jet",
+      "Street Wraith",
+      "Quantum Riddler",
+      "Lion's Eye Diamond",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Brainstorm",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Mox Jet"
+  ],
+  "difficulty": "easy"
+}

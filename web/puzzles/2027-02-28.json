@@ -1,0 +1,55 @@
+{
+  "id": "2027-02-28",
+  "title": "Puzzle #105",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Tundra",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Meticulous Archive",
+      "Lion's Eye Diamond",
+      "Island",
+      "Cabal Ritual",
+      "Ideas Unbound",
+      "Reckless Impulse",
+      "Black Lotus",
+      "Thundertrap Trainer"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Doctor Doom, Unrivaled",
+    "Thundertrap Trainer",
+    "Ideas Unbound",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "hard"
+}

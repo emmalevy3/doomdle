@@ -1,0 +1,53 @@
+{
+  "id": "2027-08-15",
+  "title": "Puzzle #273",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Sol Ring",
+      "Badlands",
+      "Mox Sapphire",
+      "Tundra",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Cabal Ritual",
+      "Meticulous Archive",
+      "Mishra's Bauble",
+      "Underground Sea",
+      "Flow State",
+      "Island"
+    ],
+    "graveyard": [
+      "Consider",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Mishra's Bauble",
+    "Flow State",
+    "Doctor Doom, Unrivaled",
+    "Cabal Ritual"
+  ],
+  "difficulty": "hard"
+}

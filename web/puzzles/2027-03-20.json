@@ -1,0 +1,54 @@
+{
+  "id": "2027-03-20",
+  "title": "Puzzle #125",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Tundra",
+      "Volcanic Island",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Quantum Riddler",
+      "Cabal Ritual",
+      "Preordain",
+      "Lotus Petal",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory",
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Cabal Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

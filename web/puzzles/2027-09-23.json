@@ -1,0 +1,51 @@
+{
+  "id": "2027-09-23",
+  "title": "Puzzle #312",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Street Wraith",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Swamp",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Gleemox",
+      "Ancestral Recall",
+      "Lotus Petal",
+      "Edge of Autumn",
+      "Black Lotus",
+      "Lotus Petal",
+      "Consider",
+      "Black Lotus"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Doctor Doom, Unrivaled",
+    "Gleemox",
+    "Edge of Autumn",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2027-12-30",
+  "title": "Puzzle #410",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Swamp",
+      "Badlands",
+      "Mox Jet",
+      "Underground Sea"
+    ],
+    "library": [
+      "Lotus Petal",
+      "Ancestral Recall",
+      "Swamp",
+      "Black Lotus",
+      "Mox Jet",
+      "Street Wraith",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Cabal Ritual",
+      "Mox Jet"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Thundertrap Trainer",
+    "Ancestral Recall",
+    "Street Wraith",
+    "Cabal Ritual",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

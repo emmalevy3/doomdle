@@ -1,0 +1,51 @@
+{
+  "id": "2027-05-18",
+  "title": "Puzzle #184",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Pyroblast",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Sol Ring",
+      "Badlands",
+      "Mox Jet"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Meditate",
+      "Quantum Riddler",
+      "Flow State",
+      "Underground Sea",
+      "Undercity Sewers",
+      "Edge of Autumn",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pact of Negation"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Underground Sea",
+    "Meditate"
+  ],
+  "difficulty": "medium"
+}

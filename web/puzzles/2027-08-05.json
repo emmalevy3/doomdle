@@ -1,0 +1,47 @@
+{
+  "id": "2027-08-05",
+  "title": "Puzzle #263",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Volcanic Island",
+      "Underground Sea",
+      "Badlands",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Brainstorm",
+      "Black Lotus",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Mishra's Bauble"
+    ],
+    "graveyard": [
+      "Lotus Petal"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Mishra's Bauble",
+    "Cabal Ritual",
+    "Brainstorm",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,51 @@
+{
+  "id": "2027-10-10",
+  "title": "Puzzle #329",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Flow State",
+      "Brainstorm",
+      "Dark Ritual",
+      "Island",
+      "Manamorphose",
+      "Wizard's Rockets",
+      "Black Lotus",
+      "Manamorphose",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Manamorphose",
+    "Flow State",
+    "Street Wraith",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2027-03-23",
+  "title": "Puzzle #128",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Badlands",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Black Lotus",
+      "Dark Ritual",
+      "Manamorphose",
+      "Frantic Search",
+      "Mishra's Bauble",
+      "Frantic Search",
+      "Quantum Riddler",
+      "Swamp"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Quantum Riddler",
+    "Black Lotus",
+    "Swamp",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

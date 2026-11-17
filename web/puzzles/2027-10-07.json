@@ -1,0 +1,49 @@
+{
+  "id": "2027-10-07",
+  "title": "Puzzle #326",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Island"
+    ],
+    "library": [
+      "Quantum Riddler",
+      "Ponder",
+      "Gitaxian Probe",
+      "Ponder",
+      "Preordain",
+      "Mox Jet",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Street Wraith",
+    "Mox Jet",
+    "Meditate",
+    "Quantum Riddler"
+  ],
+  "difficulty": "easy"
+}

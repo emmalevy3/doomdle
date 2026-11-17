@@ -1,0 +1,44 @@
+{
+  "id": "2028-01-17",
+  "title": "Puzzle #428",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Badlands",
+      "Sol Ring",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Meticulous Archive",
+      "Frantic Search",
+      "Gitaxian Probe",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond",
+      "Chromatic Star"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Gitaxian Probe",
+    "Jace, Wielder of Mysteries",
+    "Frantic Search",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "easy"
+}

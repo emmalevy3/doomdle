@@ -1,0 +1,57 @@
+{
+  "id": "2027-10-14",
+  "title": "Puzzle #333",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Tundra",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Volcanic Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      },
+      "Skateboard"
+    ],
+    "library": [
+      "Lotus Petal",
+      "Quantum Riddler",
+      "Manamorphose",
+      "Island",
+      "Wizard's Rockets"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student",
+      "Timetwister"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Quantum Riddler",
+    "Lotus Petal",
+    "Island",
+    "Timetwister"
+  ],
+  "difficulty": "easy"
+}

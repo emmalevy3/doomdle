@@ -1,0 +1,40 @@
+{
+  "id": "2027-09-11",
+  "title": "Puzzle #300",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Dark Ritual",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Mox Jet",
+      "Manamorphose",
+      "Timetwister",
+      "Sol Ring",
+      "Manamorphose",
+      "Brainstorm",
+      "Reckless Impulse"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Manamorphose",
+    "Jace, Wielder of Mysteries",
+    "Timetwister",
+    "Reckless Impulse"
+  ],
+  "difficulty": "hard"
+}

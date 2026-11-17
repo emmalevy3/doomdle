@@ -1,0 +1,48 @@
+{
+  "id": "2026-12-31",
+  "title": "Puzzle #46",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Volcanic Island",
+      "Swamp",
+      "Volcanic Island",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Sol Ring",
+      "Island",
+      "Thundertrap Trainer",
+      "Brainstorm",
+      "Black Lotus",
+      "Sol Ring",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Manamorphose"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Brainstorm",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Sol Ring"
+  ],
+  "difficulty": "easy"
+}

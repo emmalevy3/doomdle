@@ -1,0 +1,49 @@
+{
+  "id": "2027-09-09",
+  "title": "Puzzle #298",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Swamp",
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Sapphire",
+      "Night's Whisper",
+      "Black Lotus",
+      "Tamiyo, Inquisitive Student",
+      "Gush",
+      "Mox Jet"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Gush",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "easy"
+}

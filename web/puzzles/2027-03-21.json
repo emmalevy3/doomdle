@@ -1,0 +1,48 @@
+{
+  "id": "2027-03-21",
+  "title": "Puzzle #126",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Dark Ritual",
+      "Ponder"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Mox Sapphire",
+      "Underground Sea",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Meticulous Archive",
+      "Timetwister",
+      "Night's Whisper",
+      "Manamorphose",
+      "Wizard's Rockets",
+      "Night's Whisper",
+      "Mishra's Bauble",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Night's Whisper",
+    "Lion's Eye Diamond",
+    "Laboratory Maniac",
+    "Manamorphose"
+  ],
+  "difficulty": "hard"
+}

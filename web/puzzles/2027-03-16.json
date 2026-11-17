@@ -1,0 +1,52 @@
+{
+  "id": "2027-03-16",
+  "title": "Puzzle #121",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Thassa's Oracle",
+      "Veil of Summer",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Badlands",
+      "Mox Jet",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Cabal Ritual",
+      "Island",
+      "Edge of Autumn",
+      "Flooded Strand",
+      "Ancestral Recall",
+      "Ponder",
+      "Sol Ring"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Edge of Autumn",
+    "Flooded Strand",
+    "Sol Ring",
+    "Ponder",
+    "Island"
+  ],
+  "difficulty": "medium"
+}

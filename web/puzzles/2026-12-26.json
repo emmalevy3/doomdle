@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-26",
+  "title": "Puzzle #41",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Volcanic Island",
+      "Swamp",
+      "Underground Sea",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Cabal Ritual",
+      "Ideas Unbound",
+      "Gleemox",
+      "Swamp",
+      "Aether Spellbomb",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Brainstorm"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Aether Spellbomb",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

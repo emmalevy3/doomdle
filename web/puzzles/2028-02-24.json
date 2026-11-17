@@ -1,0 +1,48 @@
+{
+  "id": "2028-02-24",
+  "title": "Puzzle #466",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Tundra",
+      "Tundra",
+      "Island",
+      "Volcanic Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Flooded Strand",
+      "Underground Sea",
+      "Night's Whisper",
+      "Thundertrap Trainer",
+      "Reckless Impulse"
+    ],
+    "graveyard": [
+      "Lotus Petal"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Jace, Wielder of Mysteries",
+    "Lotus Petal",
+    "Night's Whisper",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "easy"
+}

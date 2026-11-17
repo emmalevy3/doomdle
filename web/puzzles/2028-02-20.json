@@ -1,0 +1,52 @@
+{
+  "id": "2028-02-20",
+  "title": "Puzzle #462",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Tundra",
+      "Sol Ring",
+      "Swamp"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Skateboard",
+      "Chromatic Star",
+      "Swamp",
+      "Black Lotus",
+      "Lotus Petal",
+      "Mox Jet",
+      "Meditate",
+      "Undercity Sewers"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Underground Sea",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Doctor Doom, Unrivaled",
+    "Skateboard",
+    "Black Lotus",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

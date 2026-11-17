@@ -1,0 +1,52 @@
+{
+  "id": "2027-02-12",
+  "title": "Puzzle #89",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Tundra",
+      "Tundra",
+      "Mox Jet",
+      "Sol Ring"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gleemox",
+      "Dark Ritual",
+      "Ancestral Recall",
+      "Quantum Riddler",
+      "Timetwister",
+      "Gleemox",
+      "Reckless Impulse",
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Timetwister",
+    "Reckless Impulse"
+  ],
+  "difficulty": "medium"
+}

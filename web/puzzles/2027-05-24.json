@@ -1,0 +1,59 @@
+{
+  "id": "2027-05-24",
+  "title": "Puzzle #190",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Unearth",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Tundra",
+      {
+        "card": "Swamp",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Aether Spellbomb",
+      "Cabal Ritual",
+      "Consider",
+      "Black Lotus",
+      "Consider"
+    ],
+    "graveyard": [
+      "Timetwister",
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Timetwister",
+    "Black Lotus",
+    "Aether Spellbomb",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

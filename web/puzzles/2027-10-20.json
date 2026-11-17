@@ -1,0 +1,49 @@
+{
+  "id": "2027-10-20",
+  "title": "Puzzle #339",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Skateboard",
+      "Mox Sapphire",
+      "Street Wraith",
+      "Ancestral Recall",
+      "Preordain",
+      "Black Lotus",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Night's Whisper",
+      "Preordain"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Skateboard",
+    "Street Wraith",
+    "Dark Ritual",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

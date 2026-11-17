@@ -1,0 +1,42 @@
+{
+  "id": "2026-12-27",
+  "title": "Puzzle #42",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Duress",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Preordain",
+      "Gleemox",
+      "Timetwister",
+      "Reckless Impulse",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Ancestral Recall"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Gleemox",
+    "Timetwister"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2027-03-25",
+  "title": "Puzzle #130",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Thoughtseize",
+      "Ponder"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Volcanic Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Gush",
+      "Night's Whisper",
+      "Brainstorm",
+      "Gleemox",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Tundra",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Gleemox",
+    "Mox Sapphire",
+    "Night's Whisper",
+    "Meditate"
+  ],
+  "difficulty": "easy"
+}

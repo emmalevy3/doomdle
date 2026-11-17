@@ -1,0 +1,43 @@
+{
+  "id": "2027-08-21",
+  "title": "Puzzle #279",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Skateboard",
+      "Undercity Sewers",
+      "Ideas Unbound",
+      "Thundertrap Trainer",
+      "Quantum Riddler",
+      "Dark Ritual",
+      "Aether Spellbomb"
+    ],
+    "graveyard": [
+      "Mishra's Bauble"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Doctor Doom, Unrivaled",
+    "Skateboard",
+    "Dark Ritual",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "hard"
+}

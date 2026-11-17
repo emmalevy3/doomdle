@@ -1,0 +1,53 @@
+{
+  "id": "2027-10-25",
+  "title": "Puzzle #344",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Laboratory Maniac",
+      "Pyroblast",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Sol Ring",
+      "Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Flooded Strand",
+      "Ideas Unbound",
+      "Undercity Sewers",
+      "Gleemox",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gush",
+    "Gleemox",
+    "Gleemox",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "easy"
+}

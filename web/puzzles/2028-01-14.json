@@ -1,0 +1,41 @@
+{
+  "id": "2028-01-14",
+  "title": "Puzzle #425",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Chromatic Star",
+      "Preordain",
+      "Reckless Impulse",
+      "Timetwister",
+      "Dark Ritual",
+      "Undercity Sewers",
+      "Edge of Autumn",
+      "Meditate"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Chromatic Star",
+    "Dark Ritual",
+    "Jace, Wielder of Mysteries",
+    "Meditate"
+  ],
+  "difficulty": "medium"
+}

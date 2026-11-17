@@ -1,0 +1,49 @@
+{
+  "id": "2027-12-12",
+  "title": "Puzzle #392",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Gitaxian Probe",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Mox Sapphire",
+      "Swamp"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lightning Greaves",
+      "Swamp",
+      "Timetwister",
+      "Undercity Sewers",
+      "Chromatic Star",
+      "Mox Sapphire",
+      "Dark Ritual",
+      "Black Lotus"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast",
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Timetwister",
+    "Black Lotus",
+    "Doctor Doom, Unrivaled",
+    "Lightning Greaves",
+    "Dark Ritual"
+  ],
+  "difficulty": "hard"
+}

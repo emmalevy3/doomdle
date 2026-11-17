@@ -1,0 +1,47 @@
+{
+  "id": "2027-04-03",
+  "title": "Puzzle #139",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Mox Jet"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Black Lotus",
+      "Edge of Autumn",
+      "Sol Ring",
+      "Swamp",
+      "Brainstorm",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Wizard's Rockets"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Thassa's Oracle",
+    "Edge of Autumn",
+    "Black Lotus",
+    "Ideas Unbound"
+  ],
+  "difficulty": "hard"
+}

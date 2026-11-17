@@ -1,0 +1,44 @@
+{
+  "id": "2027-04-17",
+  "title": "Puzzle #153",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Gush",
+      "Dark Ritual",
+      "Swamp",
+      "Quantum Riddler",
+      "Ponder",
+      "Mox Sapphire",
+      "Gleemox",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Gleemox",
+    "Edge of Autumn",
+    "Dark Ritual",
+    "Quantum Riddler"
+  ],
+  "difficulty": "hard"
+}

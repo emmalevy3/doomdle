@@ -1,0 +1,45 @@
+{
+  "id": "2027-12-15",
+  "title": "Puzzle #395",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Force of Will",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lotus Petal",
+      "Underground Sea",
+      "Flow State",
+      "Ancestral Recall",
+      "Mox Sapphire",
+      "Undercity Sewers"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Lotus Petal",
+    "Mox Sapphire",
+    "Flow State"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,45 @@
+{
+  "id": "2026-12-25",
+  "title": "Puzzle #40",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Swamp",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Cabal Ritual",
+      "Ideas Unbound",
+      "Preordain",
+      "Black Lotus",
+      "Flooded Strand",
+      "Street Wraith"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Ideas Unbound",
+    "Preordain",
+    "Street Wraith",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

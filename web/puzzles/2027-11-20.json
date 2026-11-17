@@ -1,0 +1,46 @@
+{
+  "id": "2027-11-20",
+  "title": "Puzzle #370",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Underground Sea",
+      "Sol Ring",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lion's Eye Diamond",
+      "Island",
+      "Gitaxian Probe",
+      "Sol Ring",
+      "Gush",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Reckless Impulse"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Island",
+    "Gush",
+    "Doctor Doom, Unrivaled",
+    "Black Lotus",
+    "Reckless Impulse"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "2028-02-17",
+  "title": "Puzzle #459",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Laboratory Maniac",
+      "Street Wraith",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Swamp"
+    ],
+    "library": [
+      "Aether Spellbomb",
+      "Dark Ritual",
+      "Edge of Autumn",
+      "Brainstorm",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Ideas Unbound"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will",
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Sol Ring",
+    "Brainstorm",
+    "Edge of Autumn",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

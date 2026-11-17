@@ -1,0 +1,42 @@
+{
+  "id": "2027-01-10",
+  "title": "Puzzle #56",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Island",
+      "Swamp",
+      "Sol Ring",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Flooded Strand",
+      "Ponder",
+      "Flow State",
+      "Lotus Petal",
+      "Consider",
+      "Black Lotus",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Consider",
+    "Ponder",
+    "Flow State",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

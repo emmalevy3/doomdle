@@ -1,0 +1,53 @@
+{
+  "id": "2027-01-17",
+  "title": "Puzzle #63",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Mox Sapphire",
+      "Island",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Dark Ritual",
+      "Edge of Autumn",
+      "Tamiyo, Inquisitive Student",
+      "Lion's Eye Diamond",
+      "Aether Spellbomb",
+      "Chromatic Star",
+      "Ancestral Recall"
+    ],
+    "graveyard": [
+      "Reckless Impulse"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Dark Ritual",
+    "Edge of Autumn"
+  ],
+  "difficulty": "hard"
+}

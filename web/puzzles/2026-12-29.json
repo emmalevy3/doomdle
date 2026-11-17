@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-29",
+  "title": "Puzzle #44",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Manamorphose",
+      "Street Wraith",
+      "Island",
+      "Mox Jet",
+      "Timetwister",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Street Wraith",
+    "Mox Jet",
+    "Island"
+  ],
+  "difficulty": "medium"
+}

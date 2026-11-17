@@ -1,0 +1,49 @@
+{
+  "id": "2028-01-09",
+  "title": "Puzzle #420",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Silence",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Badlands"
+    ],
+    "library": [
+      "Island",
+      "Street Wraith",
+      "Chromatic Star",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Dark Ritual",
+      "Street Wraith",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Night's Whisper"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Dark Ritual",
+    "Island",
+    "Night's Whisper",
+    "Street Wraith"
+  ],
+  "difficulty": "hard"
+}

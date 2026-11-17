@@ -1,0 +1,51 @@
+{
+  "id": "2027-12-09",
+  "title": "Puzzle #389",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Underground Sea",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Timetwister",
+      "Undercity Sewers",
+      "Street Wraith",
+      "Gleemox",
+      "Island",
+      "Street Wraith",
+      "Flow State"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Gleemox",
+    "Timetwister",
+    "Flow State",
+    "Street Wraith",
+    "Street Wraith"
+  ],
+  "difficulty": "easy"
+}

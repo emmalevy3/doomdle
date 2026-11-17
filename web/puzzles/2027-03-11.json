@@ -1,0 +1,49 @@
+{
+  "id": "2027-03-11",
+  "title": "Puzzle #116",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Tundra",
+      "Tundra",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Thundertrap Trainer",
+      "Brainstorm",
+      "Lotus Petal",
+      "Dark Ritual",
+      "Undercity Sewers",
+      "Ideas Unbound",
+      "Sol Ring",
+      "Tamiyo, Inquisitive Student"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Sol Ring",
+    "Dark Ritual",
+    "Lotus Petal",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2027-04-25",
+  "title": "Puzzle #161",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Jet",
+      "Gitaxian Probe",
+      "Preordain",
+      "Quantum Riddler",
+      "Black Lotus",
+      "Aether Spellbomb"
+    ],
+    "graveyard": [
+      "Timetwister",
+      "Timetwister"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Timetwister",
+    "Timetwister"
+  ],
+  "difficulty": "hard"
+}

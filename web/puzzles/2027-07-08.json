@@ -1,0 +1,49 @@
+{
+  "id": "2027-07-08",
+  "title": "Puzzle #235",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Laboratory Maniac",
+      "Brainstorm",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Swamp",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Island",
+      "Edge of Autumn",
+      "Lion's Eye Diamond",
+      "Mox Sapphire",
+      "Consider",
+      "Underground Sea",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Quantum Riddler"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Gitaxian Probe",
+    "Lion's Eye Diamond",
+    "Consider",
+    "Edge of Autumn"
+  ],
+  "difficulty": "easy"
+}

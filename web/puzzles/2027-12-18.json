@@ -1,0 +1,55 @@
+{
+  "id": "2027-12-18",
+  "title": "Puzzle #398",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Island",
+      "Volcanic Island",
+      "Badlands",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Dark Ritual",
+      "Dark Ritual",
+      "Edge of Autumn",
+      "Consider",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Timetwister",
+      "Mox Jet"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Timetwister",
+    "Doctor Doom, Unrivaled",
+    "Dark Ritual",
+    "Dark Ritual",
+    "Mox Jet"
+  ],
+  "difficulty": "hard"
+}

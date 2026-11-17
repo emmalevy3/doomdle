@@ -1,0 +1,43 @@
+{
+  "id": "2028-02-29",
+  "title": "Puzzle #471",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Tundra",
+      "Island",
+      "Island",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Sol Ring",
+      "Dark Ritual",
+      "Meditate",
+      "Edge of Autumn",
+      "Night's Whisper",
+      "Island",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Meditate",
+    "Doctor Doom, Unrivaled",
+    "Night's Whisper",
+    "Dark Ritual",
+    "Swamp"
+  ],
+  "difficulty": "medium"
+}

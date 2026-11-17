@@ -1,0 +1,53 @@
+{
+  "id": "2028-02-12",
+  "title": "Puzzle #454",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Force of Will",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Volcanic Island",
+      "Sol Ring",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Chromatic Star",
+      "Chromatic Star",
+      "Undercity Sewers",
+      "Black Lotus",
+      "Flow State"
+    ],
+    "graveyard": [
+      "Consider",
+      "Manamorphose"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Flow State",
+    "Doctor Doom, Unrivaled",
+    "Chromatic Star",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

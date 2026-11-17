@@ -1,0 +1,47 @@
+{
+  "id": "2027-03-22",
+  "title": "Puzzle #127",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Force of Will",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Sol Ring",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Reckless Impulse",
+      "Meditate",
+      "Lion's Eye Diamond",
+      "Underground Sea",
+      "Black Lotus",
+      "Preordain",
+      "Preordain"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Tundra",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Thassa's Oracle",
+    "Reckless Impulse",
+    "Preordain",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

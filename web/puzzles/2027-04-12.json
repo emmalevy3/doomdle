@@ -1,0 +1,48 @@
+{
+  "id": "2027-04-12",
+  "title": "Puzzle #148",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Ponder",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Mox Jet",
+      "Tundra",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Chromatic Star",
+      "Undercity Sewers",
+      "Mishra's Bauble",
+      "Lotus Petal",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Cabal Ritual",
+      "Mox Sapphire"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Chromatic Star",
+    "Brainstorm",
+    "Mishra's Bauble",
+    "Lotus Petal"
+  ],
+  "difficulty": "easy"
+}

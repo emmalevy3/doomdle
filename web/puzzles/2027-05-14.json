@@ -1,0 +1,49 @@
+{
+  "id": "2027-05-14",
+  "title": "Puzzle #180",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Force of Will",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Sol Ring",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Reckless Impulse",
+      "Reckless Impulse",
+      "Chromatic Star",
+      "Mox Jet",
+      "Meditate",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Lotus Petal"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Lotus Petal",
+    "Meditate"
+  ],
+  "difficulty": "medium"
+}

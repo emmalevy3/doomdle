@@ -1,0 +1,42 @@
+{
+  "id": "2027-08-07",
+  "title": "Puzzle #265",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Island",
+      "Mox Sapphire",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Mishra's Bauble",
+      "Thundertrap Trainer",
+      "Mox Jet",
+      "Preordain",
+      "Meticulous Archive",
+      "Quantum Riddler",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Laboratory Maniac",
+    "Chromatic Star",
+    "Preordain",
+    "Mox Jet"
+  ],
+  "difficulty": "hard"
+}

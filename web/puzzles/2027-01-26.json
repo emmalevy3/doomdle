@@ -1,0 +1,42 @@
+{
+  "id": "2027-01-26",
+  "title": "Puzzle #72",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Veil of Summer",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Reckless Impulse",
+      "Thundertrap Trainer",
+      "Lion's Eye Diamond",
+      "Preordain",
+      "Black Lotus",
+      "Dark Ritual",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Lion's Eye Diamond",
+    "Sol Ring",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2028-01-23",
+  "title": "Puzzle #434",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Laboratory Maniac",
+      "Veil of Summer",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Mox Sapphire",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Sol Ring",
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Mox Jet",
+      "Gleemox",
+      "Night's Whisper",
+      "Island",
+      "Frantic Search",
+      "Ideas Unbound",
+      "Night's Whisper",
+      "Swamp",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Frantic Search",
+    "Night's Whisper",
+    "Night's Whisper",
+    "Gleemox",
+    "Edge of Autumn"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2027-08-27",
+  "title": "Puzzle #285",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Brainstorm",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Sol Ring",
+      "Mox Sapphire",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Timetwister",
+      "Manamorphose",
+      "Mox Jet",
+      "Sol Ring",
+      "Cabal Ritual",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Dark Ritual",
+      "Flow State"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Dark Ritual",
+    "Night's Whisper",
+    "Timetwister"
+  ],
+  "difficulty": "medium"
+}

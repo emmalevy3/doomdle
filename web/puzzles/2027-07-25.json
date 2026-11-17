@@ -1,0 +1,53 @@
+{
+  "id": "2027-07-25",
+  "title": "Puzzle #252",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      "Badlands",
+      "Volcanic Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Dark Ritual",
+      "Dark Ritual",
+      "Street Wraith",
+      "Flow State",
+      "Flooded Strand",
+      "Lotus Petal",
+      "Flow State",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Meditate"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Dark Ritual",
+    "Dark Ritual",
+    "Lotus Petal",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

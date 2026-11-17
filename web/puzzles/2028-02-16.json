@@ -1,0 +1,41 @@
+{
+  "id": "2028-02-16",
+  "title": "Puzzle #458",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Badlands",
+      "Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Meticulous Archive",
+      "Manamorphose",
+      "Consider",
+      "Lion's Eye Diamond",
+      "Island",
+      "Black Lotus",
+      "Ancestral Recall",
+      "Flooded Strand"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Manamorphose",
+    "Ancestral Recall",
+    "Consider",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

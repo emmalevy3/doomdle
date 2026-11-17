@@ -1,0 +1,51 @@
+{
+  "id": "2027-05-26",
+  "title": "Puzzle #192",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Mox Sapphire",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Swamp",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Ideas Unbound",
+      "Gleemox",
+      "Lion's Eye Diamond",
+      "Preordain",
+      "Swamp",
+      "Sol Ring",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Sol Ring",
+      "Gush"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gush",
+    "Lion's Eye Diamond",
+    "Sol Ring",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

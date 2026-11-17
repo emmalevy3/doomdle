@@ -1,0 +1,41 @@
+{
+  "id": "2027-05-29",
+  "title": "Puzzle #195",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Island",
+      "Badlands",
+      "Underground Sea",
+      "Mox Jet",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Flow State",
+      "Cabal Ritual",
+      "Lion's Eye Diamond",
+      "Brainstorm",
+      "Ponder",
+      "Mishra's Bauble"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Doctor Doom, Unrivaled",
+    "Flow State",
+    "Lion's Eye Diamond",
+    "Cabal Ritual"
+  ],
+  "difficulty": "hard"
+}

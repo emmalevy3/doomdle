@@ -1,0 +1,51 @@
+{
+  "id": "2027-03-31",
+  "title": "Puzzle #136",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Silence",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Underground Sea",
+      "Volcanic Island",
+      "Volcanic Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lion's Eye Diamond",
+      "Polluted Delta",
+      "Night's Whisper",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Street Wraith",
+      "Tamiyo, Inquisitive Student"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce",
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "medium"
+}

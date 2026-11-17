@@ -1,0 +1,49 @@
+{
+  "id": "2027-02-24",
+  "title": "Puzzle #101",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Thoughtseize",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Sol Ring",
+      "Badlands",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Wizard's Rockets",
+      "Flooded Strand",
+      "Undercity Sewers",
+      "Black Lotus",
+      "Street Wraith",
+      "Gleemox",
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory",
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

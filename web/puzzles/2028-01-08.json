@@ -1,0 +1,50 @@
+{
+  "id": "2028-01-08",
+  "title": "Puzzle #419",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Volcanic Island",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gush",
+      "Gleemox",
+      "Cabal Ritual",
+      "Consider",
+      "Flow State",
+      "Island",
+      "Dark Ritual",
+      "Wizard's Rockets"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Wizard's Rockets",
+    "Consider"
+  ],
+  "difficulty": "hard"
+}

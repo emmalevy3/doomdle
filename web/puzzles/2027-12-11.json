@@ -1,0 +1,56 @@
+{
+  "id": "2027-12-11",
+  "title": "Puzzle #391",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Lion's Eye Diamond",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Tundra",
+      "Mox Jet",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Gush",
+      "Lotus Petal",
+      "Quantum Riddler",
+      "Timetwister",
+      "Gitaxian Probe",
+      "Cabal Ritual",
+      "Island",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Wizard's Rockets"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Timetwister",
+    "Quantum Riddler",
+    "Wizard's Rockets",
+    "Cabal Ritual"
+  ],
+  "difficulty": "hard"
+}

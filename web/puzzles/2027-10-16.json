@@ -1,0 +1,47 @@
+{
+  "id": "2027-10-16",
+  "title": "Puzzle #335",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Sol Ring",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Flow State",
+      "Black Lotus",
+      "Timetwister",
+      "Preordain",
+      "Quantum Riddler",
+      "Gleemox",
+      "Frantic Search",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Doctor Doom, Unrivaled",
+    "Street Wraith",
+    "Gleemox",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

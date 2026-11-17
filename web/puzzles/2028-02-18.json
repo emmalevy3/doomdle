@@ -1,0 +1,55 @@
+{
+  "id": "2028-02-18",
+  "title": "Puzzle #460",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Tundra",
+      "Underground Sea"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Ideas Unbound",
+      "Gush",
+      "Wizard's Rockets",
+      "Gush",
+      "Black Lotus",
+      "Lotus Petal",
+      "Wizard's Rockets"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Volcanic Island",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Laboratory Maniac",
+    "Gush",
+    "Black Lotus",
+    "Gush"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "2028-02-27",
+  "title": "Puzzle #469",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Unearth",
+      "Silence"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Underground Sea",
+      "Island",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Sol Ring",
+      "Gleemox",
+      "Dark Ritual",
+      "Tamiyo, Inquisitive Student",
+      "Timetwister",
+      "Brainstorm",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Doctor Doom, Unrivaled",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Dark Ritual"
+  ],
+  "difficulty": "hard"
+}

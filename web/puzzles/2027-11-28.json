@@ -1,0 +1,43 @@
+{
+  "id": "2027-11-28",
+  "title": "Puzzle #378",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Brainstorm",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Mox Sapphire",
+      "Island",
+      "Sol Ring",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Polluted Delta",
+      "Tamiyo, Inquisitive Student",
+      "Mox Jet",
+      "Flow State",
+      "Island",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Street Wraith",
+    "Polluted Delta",
+    "Sol Ring",
+    "Island"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2027-06-22",
+  "title": "Puzzle #219",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Street Wraith",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Mox Jet",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Wizard's Rockets",
+      "Chromatic Star",
+      "Frantic Search",
+      "Ancestral Recall",
+      "Mox Sapphire",
+      "Flow State",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Chromatic Star",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "medium"
+}

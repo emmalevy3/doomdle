@@ -1,0 +1,50 @@
+{
+  "id": "2027-03-24",
+  "title": "Puzzle #129",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Badlands",
+      "Island",
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gleemox",
+      "Black Lotus",
+      "Night's Whisper",
+      "Flow State",
+      "Chromatic Star"
+    ],
+    "graveyard": [
+      "Reckless Impulse"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Underground Sea",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Reckless Impulse",
+    "Gleemox",
+    "Thassa's Oracle",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

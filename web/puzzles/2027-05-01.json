@@ -1,0 +1,50 @@
+{
+  "id": "2027-05-01",
+  "title": "Puzzle #167",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Island",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lion's Eye Diamond",
+      "Gitaxian Probe",
+      "Mox Sapphire",
+      "Polluted Delta",
+      "Black Lotus",
+      "Lotus Petal",
+      "Frantic Search",
+      "Quantum Riddler"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Black Lotus",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

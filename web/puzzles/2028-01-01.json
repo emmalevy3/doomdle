@@ -1,0 +1,48 @@
+{
+  "id": "2028-01-01",
+  "title": "Puzzle #412",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Swamp",
+      "Volcanic Island",
+      "Badlands",
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Polluted Delta",
+      "Lotus Petal",
+      "Meticulous Archive",
+      "Ancestral Recall",
+      "Flooded Strand",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Edge of Autumn",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Edge of Autumn",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "hard"
+}

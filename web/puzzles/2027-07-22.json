@@ -1,0 +1,42 @@
+{
+  "id": "2027-07-22",
+  "title": "Puzzle #249",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Silence"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra",
+      "Mox Sapphire",
+      "Island"
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Mox Sapphire",
+      "Preordain",
+      "Wizard's Rockets",
+      "Gush"
+    ],
+    "graveyard": [
+      "Lotus Petal",
+      "Aether Spellbomb"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Aether Spellbomb",
+    "Wizard's Rockets",
+    "Gush",
+    "Preordain",
+    "Lotus Petal"
+  ],
+  "difficulty": "easy"
+}

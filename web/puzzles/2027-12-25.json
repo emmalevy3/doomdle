@@ -1,0 +1,48 @@
+{
+  "id": "2027-12-25",
+  "title": "Puzzle #405",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      "Mox Sapphire",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Skateboard"
+    ],
+    "library": [
+      "Dark Ritual",
+      "Gleemox",
+      "Preordain",
+      "Gush",
+      "Ancestral Recall",
+      "Consider",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Consider"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Gleemox",
+    "Dark Ritual",
+    "Dark Ritual",
+    "Ideas Unbound"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "2027-03-07",
+  "title": "Puzzle #112",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Dark Ritual",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Mox Sapphire",
+      "Island",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Night's Whisper",
+      "Polluted Delta",
+      "Flooded Strand",
+      "Flooded Strand",
+      "Chromatic Star",
+      "Black Lotus",
+      "Aether Spellbomb"
+    ],
+    "graveyard": [
+      "Ideas Unbound"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Plateau",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Laboratory Maniac",
+    "Night's Whisper",
+    "Black Lotus",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "hard"
+}

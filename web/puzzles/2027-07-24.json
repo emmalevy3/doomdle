@@ -1,0 +1,50 @@
+{
+  "id": "2027-07-24",
+  "title": "Puzzle #251",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Laboratory Maniac",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Island",
+      "Island",
+      "Badlands",
+      "Island"
+    ],
+    "library": [
+      "Street Wraith",
+      "Polluted Delta",
+      "Meditate",
+      "Night's Whisper",
+      "Meticulous Archive",
+      "Timetwister",
+      "Manamorphose",
+      "Night's Whisper",
+      "Reckless Impulse"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Manamorphose",
+    "Meticulous Archive",
+    "Night's Whisper",
+    "Street Wraith"
+  ],
+  "difficulty": "hard"
+}

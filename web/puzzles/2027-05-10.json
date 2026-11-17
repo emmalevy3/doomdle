@@ -1,0 +1,53 @@
+{
+  "id": "2027-05-10",
+  "title": "Puzzle #176",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Ponder",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Badlands",
+      "Volcanic Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Ancestral Recall",
+      "Island",
+      "Tamiyo, Inquisitive Student",
+      "Gleemox",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gleemox",
+    "Ancestral Recall",
+    "Gleemox",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2027-03-03",
+  "title": "Puzzle #108",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Unearth",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Badlands",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Dark Ritual",
+      "Consider",
+      "Mox Sapphire",
+      "Chromatic Star"
+    ],
+    "graveyard": [
+      "Street Wraith",
+      "Brainstorm"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Brainstorm",
+    "Consider"
+  ],
+  "difficulty": "medium"
+}

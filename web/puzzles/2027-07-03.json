@@ -1,0 +1,41 @@
+{
+  "id": "2027-07-03",
+  "title": "Puzzle #230",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Sapphire",
+      "Lion's Eye Diamond",
+      "Undercity Sewers",
+      "Wizard's Rockets",
+      "Polluted Delta",
+      "Consider",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Consider",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries",
+    "Mox Sapphire"
+  ],
+  "difficulty": "hard"
+}

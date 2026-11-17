@@ -1,0 +1,44 @@
+{
+  "id": "2027-03-18",
+  "title": "Puzzle #123",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Badlands",
+      "Badlands",
+      "Mox Jet",
+      "Island"
+    ],
+    "library": [
+      "Dark Ritual",
+      "Street Wraith",
+      "Black Lotus",
+      "Mox Jet",
+      "Flow State",
+      "Wizard's Rockets",
+      "Flow State"
+    ],
+    "graveyard": [
+      "Ponder"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Street Wraith",
+    "Flow State",
+    "Ponder",
+    "Flow State",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

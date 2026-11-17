@@ -1,0 +1,42 @@
+{
+  "id": "2027-10-08",
+  "title": "Puzzle #327",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Island",
+      "Tundra",
+      "Island",
+      "Mox Jet"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Dark Ritual",
+      "Consider",
+      "Island",
+      "Lion's Eye Diamond",
+      "Tamiyo, Inquisitive Student"
+    ],
+    "graveyard": [
+      "Mox Jet"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Consider",
+    "Gleemox",
+    "Laboratory Maniac",
+    "Tamiyo, Inquisitive Student",
+    "Dark Ritual"
+  ],
+  "difficulty": "medium"
+}

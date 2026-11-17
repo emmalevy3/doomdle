@@ -1,0 +1,43 @@
+{
+  "id": "2027-06-09",
+  "title": "Puzzle #206",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Volcanic Island",
+      "Island",
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Flooded Strand",
+      "Consider",
+      "Cabal Ritual",
+      "Tamiyo, Inquisitive Student",
+      "Flow State",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Wizard's Rockets"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Consider",
+    "Wizard's Rockets",
+    "Flow State",
+    "Laboratory Maniac",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

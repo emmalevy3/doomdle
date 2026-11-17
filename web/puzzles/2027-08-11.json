@@ -1,0 +1,42 @@
+{
+  "id": "2027-08-11",
+  "title": "Puzzle #269",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Ponder",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Polluted Delta",
+      "Mox Jet",
+      "Edge of Autumn",
+      "Undercity Sewers",
+      "Sol Ring",
+      "Gitaxian Probe",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gitaxian Probe",
+    "Edge of Autumn",
+    "Sol Ring",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

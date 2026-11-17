@@ -1,0 +1,43 @@
+{
+  "id": "2027-10-03",
+  "title": "Puzzle #322",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Lotus Petal",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Mox Sapphire",
+      "Badlands",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lotus Petal",
+      "Night's Whisper",
+      "Mishra's Bauble",
+      "Thundertrap Trainer",
+      "Dark Ritual",
+      "Wizard's Rockets",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Black Lotus"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Doctor Doom, Unrivaled",
+    "Thundertrap Trainer",
+    "Wizard's Rockets",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

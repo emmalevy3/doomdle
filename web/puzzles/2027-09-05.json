@@ -1,0 +1,48 @@
+{
+  "id": "2027-09-05",
+  "title": "Puzzle #294",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Ponder",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      "Underground Sea",
+      "Mox Jet"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Cabal Ritual",
+      "Manamorphose",
+      "Black Lotus",
+      "Swamp",
+      "Aether Spellbomb",
+      "Quantum Riddler",
+      "Lotus Petal"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Volcanic Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Manamorphose",
+    "Black Lotus",
+    "Laboratory Maniac",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

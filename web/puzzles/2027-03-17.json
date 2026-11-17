@@ -1,0 +1,39 @@
+{
+  "id": "2027-03-17",
+  "title": "Puzzle #122",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thassa's Oracle",
+      "Unearth",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Mox Jet",
+      "Swamp"
+    ],
+    "library": [
+      "Chromatic Star",
+      "Island",
+      "Meditate",
+      "Ponder",
+      "Mox Jet",
+      "Sol Ring",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Sol Ring",
+    "Chromatic Star",
+    "Island",
+    "Meditate",
+    "Ponder"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,56 @@
+{
+  "id": "2027-07-28",
+  "title": "Puzzle #255",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Badlands"
+    ],
+    "library": [
+      "Flooded Strand",
+      "Meticulous Archive",
+      "Timetwister",
+      "Lion's Eye Diamond",
+      "Gleemox",
+      "Gleemox",
+      "Mishra's Bauble"
+    ],
+    "graveyard": [
+      "Consider",
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Timetwister",
+    "Consider",
+    "Lion's Eye Diamond",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

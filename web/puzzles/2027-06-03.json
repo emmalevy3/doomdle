@@ -1,0 +1,54 @@
+{
+  "id": "2027-06-03",
+  "title": "Puzzle #200",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Lion's Eye Diamond",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Underground Sea",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Island",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Preordain",
+      "Mishra's Bauble",
+      "Dark Ritual",
+      "Lotus Petal",
+      "Meticulous Archive",
+      "Gleemox",
+      "Lotus Petal",
+      "Manamorphose"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Mishra's Bauble",
+    "Manamorphose",
+    "Preordain"
+  ],
+  "difficulty": "easy"
+}

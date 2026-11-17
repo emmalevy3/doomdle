@@ -1,0 +1,53 @@
+{
+  "id": "2027-03-01",
+  "title": "Puzzle #106",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thassa's Oracle",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Mox Jet",
+      "Swamp",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Street Wraith",
+      "Gleemox",
+      "Cabal Ritual",
+      "Dark Ritual",
+      "Polluted Delta",
+      "Ancestral Recall",
+      "Manamorphose",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Night's Whisper"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Manamorphose",
+    "Gleemox",
+    "Brainstorm",
+    "Ancestral Recall"
+  ],
+  "difficulty": "easy"
+}

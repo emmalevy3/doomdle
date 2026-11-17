@@ -1,0 +1,49 @@
+{
+  "id": "2027-04-11",
+  "title": "Puzzle #147",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      "Badlands",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gleemox",
+      "Polluted Delta",
+      "Lotus Petal",
+      "Night's Whisper",
+      "Black Lotus",
+      "Gush",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Gush",
+    "Timetwister"
+  ],
+  "difficulty": "hard"
+}

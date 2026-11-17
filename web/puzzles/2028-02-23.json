@@ -1,0 +1,45 @@
+{
+  "id": "2028-02-23",
+  "title": "Puzzle #465",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Badlands",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Sol Ring",
+      "Brainstorm",
+      "Edge of Autumn",
+      "Manamorphose",
+      "Polluted Delta",
+      "Undercity Sewers"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Jace, Wielder of Mysteries",
+    "Sol Ring",
+    "Brainstorm",
+    "Edge of Autumn"
+  ],
+  "difficulty": "medium"
+}

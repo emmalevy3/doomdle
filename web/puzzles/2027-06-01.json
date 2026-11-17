@@ -1,0 +1,42 @@
+{
+  "id": "2027-06-01",
+  "title": "Puzzle #198",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Tundra",
+      "Swamp",
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Ideas Unbound",
+      "Brainstorm",
+      "Sol Ring",
+      "Island",
+      "Undercity Sewers",
+      "Meticulous Archive",
+      "Undercity Sewers",
+      "Polluted Delta"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Ideas Unbound",
+    "Sol Ring",
+    "Brainstorm",
+    "Island"
+  ],
+  "difficulty": "medium"
+}

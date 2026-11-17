@@ -1,0 +1,47 @@
+{
+  "id": "2027-06-21",
+  "title": "Puzzle #218",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Island",
+      "Mox Sapphire",
+      "Skateboard"
+    ],
+    "library": [
+      "Black Lotus",
+      "Night's Whisper",
+      "Sol Ring",
+      "Quantum Riddler",
+      "Mox Sapphire",
+      "Undercity Sewers",
+      "Lion's Eye Diamond",
+      "Mox Jet",
+      "Sol Ring"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Black Lotus",
+    "Undercity Sewers",
+    "Sol Ring",
+    "Sol Ring"
+  ],
+  "difficulty": "easy"
+}

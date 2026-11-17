@@ -1,0 +1,41 @@
+{
+  "id": "2028-03-01",
+  "title": "Puzzle #472",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Laboratory Maniac",
+      "Force of Will",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Island",
+      "Tundra",
+      "Sol Ring"
+    ],
+    "library": [
+      "Consider",
+      "Ideas Unbound",
+      "Quantum Riddler",
+      "Meticulous Archive",
+      "Underground Sea",
+      "Preordain",
+      "Ancestral Recall",
+      "Night's Whisper"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Night's Whisper",
+    "Consider",
+    "Underground Sea",
+    "Ideas Unbound"
+  ],
+  "difficulty": "medium"
+}

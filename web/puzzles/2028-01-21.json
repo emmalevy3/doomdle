@@ -1,0 +1,45 @@
+{
+  "id": "2028-01-21",
+  "title": "Puzzle #432",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Badlands",
+      "Mox Sapphire",
+      "Tundra",
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Aether Spellbomb",
+      "Underground Sea",
+      "Black Lotus",
+      "Manamorphose",
+      "Manamorphose",
+      "Street Wraith"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Aether Spellbomb",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Manamorphose"
+  ],
+  "difficulty": "medium"
+}

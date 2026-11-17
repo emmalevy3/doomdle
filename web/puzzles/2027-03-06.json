@@ -1,0 +1,51 @@
+{
+  "id": "2027-03-06",
+  "title": "Puzzle #111",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Manamorphose",
+      "Timetwister",
+      "Lotus Petal",
+      "Lion's Eye Diamond",
+      "Sol Ring",
+      "Mox Sapphire",
+      "Ancestral Recall"
+    ],
+    "graveyard": [
+      "Preordain"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Timetwister",
+    "Lion's Eye Diamond",
+    "Lotus Petal",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "hard"
+}

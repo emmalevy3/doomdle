@@ -1,0 +1,46 @@
+{
+  "id": "2027-04-08",
+  "title": "Puzzle #144",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Unearth",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Manamorphose",
+      "Ideas Unbound",
+      "Street Wraith"
+    ],
+    "graveyard": [
+      "Night's Whisper",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Laboratory Maniac",
+    "Night's Whisper",
+    "Manamorphose",
+    "Street Wraith"
+  ],
+  "difficulty": "easy"
+}

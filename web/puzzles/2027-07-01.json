@@ -1,0 +1,50 @@
+{
+  "id": "2027-07-01",
+  "title": "Puzzle #228",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Gush",
+      "Ancestral Recall",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Quantum Riddler",
+      "Lotus Petal"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gush",
+    "Lotus Petal",
+    "Quantum Riddler",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "easy"
+}

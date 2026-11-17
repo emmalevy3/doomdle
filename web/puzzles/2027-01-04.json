@@ -1,0 +1,56 @@
+{
+  "id": "2027-01-04",
+  "title": "Puzzle #50",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Island",
+      "Underground Sea",
+      "Swamp",
+      "Underground Sea",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Mox Sapphire",
+      "Frantic Search",
+      "Meditate",
+      "Timetwister",
+      "Flooded Strand"
+    ],
+    "graveyard": [
+      "Black Lotus",
+      "Brainstorm"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Laboratory Maniac",
+    "Timetwister",
+    "Brainstorm",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

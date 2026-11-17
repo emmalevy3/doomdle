@@ -1,0 +1,49 @@
+{
+  "id": "2027-05-23",
+  "title": "Puzzle #189",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Force of Will",
+      "Ponder"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Island",
+      "Swamp",
+      "Mox Sapphire",
+      "Underground Sea",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Dark Ritual",
+      "Preordain",
+      "Street Wraith",
+      "Mox Sapphire",
+      "Meticulous Archive",
+      "Flow State",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Meditate"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Street Wraith",
+    "Dark Ritual",
+    "Doctor Doom, Unrivaled",
+    "Mox Sapphire"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,55 @@
+{
+  "id": "2027-06-04",
+  "title": "Puzzle #201",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Dark Ritual",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Sol Ring"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Sol Ring",
+      "Timetwister",
+      "Street Wraith",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Timetwister",
+    "Laboratory Maniac",
+    "Sol Ring",
+    "Lotus Petal"
+  ],
+  "difficulty": "medium"
+}

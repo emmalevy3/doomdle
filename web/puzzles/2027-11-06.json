@@ -1,0 +1,54 @@
+{
+  "id": "2027-11-06",
+  "title": "Puzzle #356",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Duress"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Underground Sea",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Meditate",
+      "Lotus Petal",
+      "Lion's Eye Diamond",
+      "Gleemox",
+      "Lion's Eye Diamond",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Street Wraith"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gleemox",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Doctor Doom, Unrivaled"
+  ],
+  "difficulty": "hard"
+}

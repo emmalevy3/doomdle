@@ -1,0 +1,52 @@
+{
+  "id": "2027-08-20",
+  "title": "Puzzle #278",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Force of Will",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Swamp",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Meticulous Archive",
+      "Chromatic Star",
+      "Gleemox",
+      "Brainstorm",
+      "Edge of Autumn",
+      "Dark Ritual",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Gleemox",
+    "Chromatic Star",
+    "Dark Ritual",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "medium"
+}

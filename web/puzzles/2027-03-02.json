@@ -1,0 +1,42 @@
+{
+  "id": "2027-03-02",
+  "title": "Puzzle #107",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Duress"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Polluted Delta",
+      "Chromatic Star",
+      "Dark Ritual",
+      "Chromatic Star",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Aether Spellbomb"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Aether Spellbomb",
+    "Chromatic Star",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "medium"
+}

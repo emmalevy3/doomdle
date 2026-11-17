@@ -1,0 +1,42 @@
+{
+  "id": "2027-05-02",
+  "title": "Puzzle #168",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Brainstorm",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Underground Sea",
+      "Island",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Aether Spellbomb",
+      "Undercity Sewers",
+      "Mox Jet",
+      "Meditate",
+      "Timetwister",
+      "Lotus Petal",
+      "Street Wraith",
+      "Manamorphose"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Manamorphose",
+    "Lotus Petal",
+    "Meditate",
+    "Street Wraith"
+  ],
+  "difficulty": "hard"
+}

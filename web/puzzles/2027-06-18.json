@@ -1,0 +1,48 @@
+{
+  "id": "2027-06-18",
+  "title": "Puzzle #215",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Laboratory Maniac",
+      "Force of Will",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Gleemox",
+      "Black Lotus",
+      "Frantic Search",
+      "Dark Ritual",
+      "Brainstorm",
+      "Night's Whisper",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Plateau",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Brainstorm",
+    "Black Lotus",
+    "Gleemox",
+    "Frantic Search"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "2027-05-21",
+  "title": "Puzzle #187",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Dark Ritual",
+      "Night's Whisper",
+      "Quantum Riddler",
+      "Black Lotus",
+      "Frantic Search",
+      "Swamp",
+      "Night's Whisper"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Thassa's Oracle",
+    "Black Lotus",
+    "Night's Whisper",
+    "Quantum Riddler"
+  ],
+  "difficulty": "medium"
+}

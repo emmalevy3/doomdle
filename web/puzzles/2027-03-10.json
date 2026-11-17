@@ -1,0 +1,45 @@
+{
+  "id": "2027-03-10",
+  "title": "Puzzle #115",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Silence",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Volcanic Island",
+      "Sol Ring",
+      "Swamp",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Lotus Petal",
+      "Quantum Riddler",
+      "Black Lotus",
+      "Cabal Ritual",
+      "Black Lotus",
+      "Gleemox",
+      "Ponder"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Doctor Doom, Unrivaled",
+    "Black Lotus",
+    "Gleemox",
+    "Ponder"
+  ],
+  "difficulty": "medium"
+}

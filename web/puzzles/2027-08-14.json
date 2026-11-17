@@ -1,0 +1,42 @@
+{
+  "id": "2027-08-14",
+  "title": "Puzzle #272",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Mox Jet",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Mox Sapphire",
+      "Lotus Petal",
+      "Black Lotus",
+      "Ideas Unbound",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Chromatic Star",
+      "Gleemox"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ideas Unbound",
+    "Doctor Doom, Unrivaled",
+    "Gleemox",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

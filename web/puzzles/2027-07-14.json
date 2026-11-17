@@ -1,0 +1,47 @@
+{
+  "id": "2027-07-14",
+  "title": "Puzzle #241",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Edge of Autumn",
+      "Dark Ritual",
+      "Aether Spellbomb",
+      "Consider",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Aether Spellbomb",
+    "Edge of Autumn",
+    "Thassa's Oracle",
+    "Thundertrap Trainer",
+    "Consider"
+  ],
+  "difficulty": "medium"
+}

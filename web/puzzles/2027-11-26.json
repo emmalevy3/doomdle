@@ -1,0 +1,42 @@
+{
+  "id": "2027-11-26",
+  "title": "Puzzle #376",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Thassa's Oracle",
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Underground Sea",
+      "Swamp"
+    ],
+    "library": [
+      "Timetwister",
+      "Cabal Ritual",
+      "Underground Sea",
+      "Sol Ring",
+      "Black Lotus",
+      "Brainstorm",
+      "Reckless Impulse",
+      "Swamp",
+      "Night's Whisper"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Night's Whisper",
+    "Sol Ring",
+    "Black Lotus",
+    "Timetwister"
+  ],
+  "difficulty": "medium"
+}

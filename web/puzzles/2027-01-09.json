@@ -1,0 +1,43 @@
+{
+  "id": "2027-01-09",
+  "title": "Puzzle #55",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Veil of Summer",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Tundra",
+      "Mox Sapphire",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Frantic Search",
+      "Cabal Ritual",
+      "Lion's Eye Diamond",
+      "Ideas Unbound",
+      "Undercity Sewers",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Ideas Unbound",
+    "Lion's Eye Diamond",
+    "Gush",
+    "Gleemox"
+  ],
+  "difficulty": "hard"
+}

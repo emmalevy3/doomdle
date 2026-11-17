@@ -1,0 +1,54 @@
+{
+  "id": "2028-01-30",
+  "title": "Puzzle #441",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Mox Jet",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Undercity Sewers",
+      "Gush",
+      "Gitaxian Probe",
+      "Undercity Sewers",
+      "Dark Ritual",
+      "Tamiyo, Inquisitive Student",
+      "Gitaxian Probe",
+      "Swamp"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Gitaxian Probe",
+    "Thassa's Oracle",
+    "Gush",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "hard"
+}

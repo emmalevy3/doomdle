@@ -1,0 +1,47 @@
+{
+  "id": "2027-09-19",
+  "title": "Puzzle #308",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Brainstorm",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      "Volcanic Island",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Edge of Autumn",
+      "Frantic Search",
+      "Island",
+      "Ancestral Recall",
+      "Lion's Eye Diamond",
+      "Consider",
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Thalia, Guardian of Thraben"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle",
+    "Island"
+  ],
+  "difficulty": "hard"
+}

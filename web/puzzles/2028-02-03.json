@@ -1,0 +1,41 @@
+{
+  "id": "2028-02-03",
+  "title": "Puzzle #445",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Unearth",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Mox Jet",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mox Sapphire",
+      "Brainstorm",
+      "Underground Sea",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Dark Ritual",
+      "Gleemox"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Brainstorm",
+    "Dark Ritual"
+  ],
+  "difficulty": "easy"
+}

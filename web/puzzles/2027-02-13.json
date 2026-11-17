@@ -1,0 +1,41 @@
+{
+  "id": "2027-02-13",
+  "title": "Puzzle #90",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Mox Sapphire",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gleemox",
+      "Mox Jet",
+      "Mishra's Bauble",
+      "Ideas Unbound",
+      "Sol Ring",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Mox Sapphire",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

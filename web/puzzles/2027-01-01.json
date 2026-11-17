@@ -1,0 +1,51 @@
+{
+  "id": "2027-01-01",
+  "title": "Puzzle #47",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Street Wraith",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Polluted Delta",
+      "Flow State",
+      "Gleemox",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Gush",
+    "Gleemox",
+    "Lotus Petal",
+    "Flow State"
+  ],
+  "difficulty": "medium"
+}

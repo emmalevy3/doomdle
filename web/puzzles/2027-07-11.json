@@ -1,0 +1,49 @@
+{
+  "id": "2027-07-11",
+  "title": "Puzzle #238",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Mox Jet",
+      "Underground Sea",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Manamorphose",
+      "Timetwister",
+      "Sol Ring",
+      "Black Lotus",
+      "Gush",
+      "Ponder"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Dark Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Laboratory Maniac",
+    "Sol Ring",
+    "Ponder",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

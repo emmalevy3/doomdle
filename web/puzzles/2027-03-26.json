@@ -1,0 +1,52 @@
+{
+  "id": "2027-03-26",
+  "title": "Puzzle #131",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      "Underground Sea",
+      "Sol Ring"
+    ],
+    "library": [
+      "Mox Jet",
+      "Quantum Riddler",
+      "Lion's Eye Diamond",
+      "Mox Jet",
+      "Gush",
+      "Ponder"
+    ],
+    "graveyard": [
+      "Mishra's Bauble"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Ponder",
+    "Lion's Eye Diamond",
+    "Mishra's Bauble",
+    "Quantum Riddler"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2027-10-17",
+  "title": "Puzzle #336",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Edge of Autumn",
+      "Undercity Sewers",
+      "Quantum Riddler",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Gush",
+      "Frantic Search"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Frantic Search",
+    "Gush",
+    "Sol Ring",
+    "Laboratory Maniac",
+    "Edge of Autumn"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,44 @@
+{
+  "id": "2027-06-06",
+  "title": "Puzzle #203",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      "Mox Sapphire",
+      "Volcanic Island",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Edge of Autumn",
+      "Chromatic Star",
+      "Mox Sapphire",
+      "Island",
+      "Black Lotus",
+      "Flooded Strand",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Edge of Autumn",
+    "Thassa's Oracle",
+    "Thundertrap Trainer",
+    "Dark Ritual"
+  ],
+  "difficulty": "hard"
+}

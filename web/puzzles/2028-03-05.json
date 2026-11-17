@@ -1,0 +1,46 @@
+{
+  "id": "2028-03-05",
+  "title": "Puzzle #476",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Underground Sea"
+    ],
+    "library": [
+      "Meditate",
+      "Black Lotus",
+      "Black Lotus",
+      "Quantum Riddler",
+      "Edge of Autumn",
+      "Sol Ring",
+      "Mox Jet",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Thundertrap Trainer"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Edge of Autumn",
+    "Black Lotus",
+    "Meditate",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

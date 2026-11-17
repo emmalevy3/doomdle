@@ -1,0 +1,48 @@
+{
+  "id": "2027-09-12",
+  "title": "Puzzle #301",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Underground Sea",
+      "Sol Ring",
+      "Badlands",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Night's Whisper",
+      "Mox Sapphire",
+      "Street Wraith",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Ponder",
+      "Lion's Eye Diamond"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares",
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Doctor Doom, Unrivaled",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

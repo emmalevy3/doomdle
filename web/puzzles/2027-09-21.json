@@ -1,0 +1,45 @@
+{
+  "id": "2027-09-21",
+  "title": "Puzzle #310",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Ponder",
+      "Duress"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Mox Sapphire",
+      "Mox Sapphire",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Meticulous Archive",
+      "Lion's Eye Diamond",
+      "Preordain",
+      "Ideas Unbound",
+      "Gitaxian Probe",
+      "Underground Sea",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Preordain",
+    "Lion's Eye Diamond",
+    "Mox Sapphire",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "medium"
+}

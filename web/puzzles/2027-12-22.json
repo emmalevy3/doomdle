@@ -1,0 +1,49 @@
+{
+  "id": "2027-12-22",
+  "title": "Puzzle #402",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Edge of Autumn",
+      "Reckless Impulse",
+      "Sol Ring",
+      "Undercity Sewers",
+      "Flow State",
+      "Dark Ritual",
+      "Lotus Petal"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Edge of Autumn",
+    "Lotus Petal",
+    "Reckless Impulse",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

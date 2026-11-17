@@ -1,0 +1,57 @@
+{
+  "id": "2027-12-20",
+  "title": "Puzzle #400",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Underground Sea",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Quantum Riddler",
+      "Ancestral Recall",
+      "Lotus Petal",
+      "Gitaxian Probe",
+      "Quantum Riddler",
+      "Mox Jet",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Quantum Riddler",
+    "Gitaxian Probe",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

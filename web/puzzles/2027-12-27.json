@@ -1,0 +1,56 @@
+{
+  "id": "2027-12-27",
+  "title": "Puzzle #407",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Gitaxian Probe",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Swamp",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Night's Whisper",
+      "Chromatic Star",
+      "Gush",
+      "Gush",
+      "Island",
+      "Ancestral Recall",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Chromatic Star",
+    "Night's Whisper",
+    "Gush"
+  ],
+  "difficulty": "easy"
+}

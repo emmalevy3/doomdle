@@ -1,0 +1,53 @@
+{
+  "id": "2027-11-30",
+  "title": "Puzzle #380",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Brainstorm",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Manamorphose",
+      "Thundertrap Trainer",
+      "Sol Ring",
+      "Street Wraith",
+      "Flow State",
+      "Ancestral Recall"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Sol Ring",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "medium"
+}

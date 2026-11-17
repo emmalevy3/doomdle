@@ -1,0 +1,46 @@
+{
+  "id": "2027-07-16",
+  "title": "Puzzle #243",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Volcanic Island",
+      "Underground Sea",
+      "Mox Jet"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Aether Spellbomb",
+      "Mox Sapphire",
+      "Preordain",
+      "Gitaxian Probe",
+      "Gush",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Ponder",
+      "Mox Jet"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Aether Spellbomb",
+    "Gitaxian Probe",
+    "Mox Sapphire"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2027-04-05",
+  "title": "Puzzle #141",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Thassa's Oracle",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Island",
+      "Swamp"
+    ],
+    "library": [
+      "Swamp",
+      "Ideas Unbound",
+      "Reckless Impulse",
+      "Mox Jet",
+      "Street Wraith",
+      "Lion's Eye Diamond",
+      "Brainstorm"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Surgical Extraction"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Ideas Unbound",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Reckless Impulse"
+  ],
+  "difficulty": "easy"
+}

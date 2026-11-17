@@ -1,0 +1,49 @@
+{
+  "id": "2027-06-28",
+  "title": "Puzzle #225",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Veil of Summer",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Timetwister",
+      "Reckless Impulse",
+      "Mox Sapphire",
+      "Aether Spellbomb",
+      "Meticulous Archive",
+      "Ancestral Recall",
+      "Black Lotus"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Reckless Impulse",
+    "Black Lotus",
+    "Timetwister",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "easy"
+}

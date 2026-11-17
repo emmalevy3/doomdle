@@ -1,0 +1,54 @@
+{
+  "id": "2027-02-03",
+  "title": "Puzzle #80",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Tundra",
+      "Tundra",
+      "Mox Jet",
+      "Island"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Skateboard",
+      "Black Lotus",
+      "Flow State",
+      "Ancestral Recall",
+      "Timetwister"
+    ],
+    "graveyard": [
+      "Mox Jet",
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Doctor Doom, Unrivaled",
+    "Timetwister",
+    "Black Lotus",
+    "Skateboard"
+  ],
+  "difficulty": "medium"
+}

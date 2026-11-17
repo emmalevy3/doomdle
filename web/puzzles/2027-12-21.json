@@ -1,0 +1,44 @@
+{
+  "id": "2027-12-21",
+  "title": "Puzzle #401",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      "Swamp",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Mox Sapphire",
+      "Night's Whisper",
+      "Quantum Riddler",
+      "Gitaxian Probe",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Laboratory Maniac",
+    "Quantum Riddler",
+    "Gitaxian Probe",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

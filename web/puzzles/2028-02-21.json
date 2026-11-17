@@ -1,0 +1,40 @@
+{
+  "id": "2028-02-21",
+  "title": "Puzzle #463",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Consider",
+      "Gush",
+      "Tamiyo, Inquisitive Student",
+      "Dark Ritual",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Underground Sea"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Gush",
+    "Lotus Petal",
+    "Tamiyo, Inquisitive Student",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

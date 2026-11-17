@@ -1,0 +1,40 @@
+{
+  "id": "2028-02-14",
+  "title": "Puzzle #456",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Jace, Wielder of Mysteries"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Mox Jet",
+      "Tundra",
+      "Underground Sea"
+    ],
+    "library": [
+      "Gleemox",
+      "Ancestral Recall",
+      "Dark Ritual",
+      "Underground Sea",
+      "Island",
+      "Gush",
+      "Ideas Unbound",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gleemox",
+    "Gush",
+    "Ancestral Recall",
+    "Mox Sapphire"
+  ],
+  "difficulty": "easy"
+}

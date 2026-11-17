@@ -1,0 +1,56 @@
+{
+  "id": "2027-05-30",
+  "title": "Puzzle #196",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Laboratory Maniac",
+      "Brainstorm",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Mox Jet"
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Lion's Eye Diamond",
+      "Brainstorm",
+      "Ancestral Recall",
+      "Mox Sapphire",
+      "Reckless Impulse",
+      "Gitaxian Probe",
+      "Night's Whisper"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra",
+      "Volcanic Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Gitaxian Probe",
+    "Lion's Eye Diamond",
+    "Brainstorm",
+    "Mox Sapphire"
+  ],
+  "difficulty": "hard"
+}

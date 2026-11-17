@@ -1,0 +1,40 @@
+{
+  "id": "2027-06-26",
+  "title": "Puzzle #223",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Mox Jet",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Mox Jet",
+      "Gush",
+      "Mox Sapphire",
+      "Gush",
+      "Timetwister",
+      "Mishra's Bauble",
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Laboratory Maniac",
+    "Timetwister",
+    "Gleemox",
+    "Mox Sapphire"
+  ],
+  "difficulty": "hard"
+}

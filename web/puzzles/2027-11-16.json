@@ -1,0 +1,47 @@
+{
+  "id": "2027-11-16",
+  "title": "Puzzle #366",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Thassa's Oracle",
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      "Island"
+    ],
+    "library": [
+      "Ideas Unbound",
+      "Polluted Delta",
+      "Night's Whisper",
+      "Lion's Eye Diamond",
+      "Gleemox",
+      "Timetwister",
+      "Island",
+      "Cabal Ritual"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Night's Whisper",
+    "Gleemox",
+    "Island",
+    "Timetwister"
+  ],
+  "difficulty": "medium"
+}

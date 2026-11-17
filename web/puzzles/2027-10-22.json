@@ -1,0 +1,44 @@
+{
+  "id": "2027-10-22",
+  "title": "Puzzle #341",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Street Wraith",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Swamp",
+      "Mox Jet"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gitaxian Probe",
+      "Lotus Petal",
+      "Timetwister",
+      "Black Lotus",
+      "Brainstorm",
+      "Underground Sea"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Black Lotus",
+    "Timetwister",
+    "Jace, Wielder of Mysteries",
+    "Brainstorm",
+    "Ancestral Recall"
+  ],
+  "difficulty": "medium"
+}

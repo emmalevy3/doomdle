@@ -1,0 +1,54 @@
+{
+  "id": "2027-03-13",
+  "title": "Puzzle #118",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Thassa's Oracle",
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Swamp",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Timetwister",
+      "Sol Ring",
+      "Lion's Eye Diamond",
+      "Swamp",
+      "Tamiyo, Inquisitive Student",
+      "Edge of Autumn",
+      "Gleemox",
+      "Island"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Edge of Autumn",
+    "Gleemox",
+    "Timetwister",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

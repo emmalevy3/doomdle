@@ -1,0 +1,44 @@
+{
+  "id": "2027-09-04",
+  "title": "Puzzle #293",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Underground Sea",
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Ponder",
+      "Meticulous Archive",
+      "Ancestral Recall",
+      "Manamorphose",
+      "Sol Ring",
+      "Mox Sapphire",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Reckless Impulse"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Ponder",
+    "Lion's Eye Diamond",
+    "Mox Sapphire",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "hard"
+}

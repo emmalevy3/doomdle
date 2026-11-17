@@ -1,0 +1,45 @@
+{
+  "id": "2028-01-06",
+  "title": "Puzzle #417",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Mox Jet",
+      "Island",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Meditate",
+      "Meticulous Archive",
+      "Sol Ring",
+      "Aether Spellbomb",
+      "Mox Sapphire",
+      "Preordain"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Meditate",
+    "Jace, Wielder of Mysteries",
+    "Sol Ring",
+    "Aether Spellbomb",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

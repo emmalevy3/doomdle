@@ -1,0 +1,55 @@
+{
+  "id": "2027-07-20",
+  "title": "Puzzle #247",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Tundra",
+      "Swamp",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Badlands",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Chromatic Star",
+      "Black Lotus",
+      "Cabal Ritual",
+      "Edge of Autumn",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Night's Whisper",
+    "Edge of Autumn",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

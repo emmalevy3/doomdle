@@ -1,0 +1,48 @@
+{
+  "id": "2028-01-10",
+  "title": "Puzzle #421",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Brainstorm",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Island",
+      "Consider",
+      "Gitaxian Probe",
+      "Chromatic Star",
+      "Gitaxian Probe",
+      "Island"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares",
+      "Surgical Extraction"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Island",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Consider",
+    "Gitaxian Probe",
+    "Gitaxian Probe",
+    "Island"
+  ],
+  "difficulty": "easy"
+}

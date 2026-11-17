@@ -1,0 +1,43 @@
+{
+  "id": "2027-06-08",
+  "title": "Puzzle #205",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      "Sol Ring",
+      "Tundra",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Undercity Sewers",
+      "Flooded Strand",
+      "Sol Ring",
+      "Black Lotus",
+      "Cabal Ritual",
+      "Consider"
+    ],
+    "graveyard": [
+      "Lotus Petal",
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Sol Ring",
+    "Consider",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,45 @@
+{
+  "id": "2027-09-24",
+  "title": "Puzzle #313",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Sol Ring",
+      "Mox Jet",
+      "Badlands",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Reckless Impulse",
+      "Polluted Delta",
+      "Gleemox",
+      "Sol Ring",
+      "Mishra's Bauble",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Black Lotus"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Sol Ring",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

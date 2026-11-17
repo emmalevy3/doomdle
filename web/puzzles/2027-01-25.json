@@ -1,0 +1,43 @@
+{
+  "id": "2027-01-25",
+  "title": "Puzzle #71",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Force of Will",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      "Mox Jet",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Undercity Sewers",
+      "Black Lotus",
+      "Preordain",
+      "Swamp",
+      "Flooded Strand",
+      "Mox Sapphire",
+      "Aether Spellbomb"
+    ],
+    "graveyard": [
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Aether Spellbomb",
+    "Brainstorm",
+    "Preordain",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

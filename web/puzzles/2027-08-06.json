@@ -1,0 +1,58 @@
+{
+  "id": "2027-08-06",
+  "title": "Puzzle #264",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Laboratory Maniac",
+      "Pyroblast",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Badlands",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Sol Ring",
+      "Chromatic Star",
+      "Ancestral Recall",
+      "Ancestral Recall",
+      "Ideas Unbound",
+      "Gitaxian Probe",
+      "Thundertrap Trainer",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Black Lotus"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Sol Ring",
+    "Chromatic Star",
+    "Black Lotus",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "medium"
+}

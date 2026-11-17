@@ -1,0 +1,52 @@
+{
+  "id": "2027-12-14",
+  "title": "Puzzle #394",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Gitaxian Probe",
+      "Force of Will"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Island",
+      "Badlands",
+      "Underground Sea",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Aether Spellbomb",
+      "Lotus Petal",
+      "Brainstorm",
+      "Underground Sea",
+      "Mox Jet",
+      "Aether Spellbomb",
+      "Street Wraith",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Aether Spellbomb",
+    "Lotus Petal",
+    "Mox Sapphire",
+    "Street Wraith"
+  ],
+  "difficulty": "medium"
+}

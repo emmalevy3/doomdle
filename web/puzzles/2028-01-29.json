@@ -1,0 +1,56 @@
+{
+  "id": "2028-01-29",
+  "title": "Puzzle #440",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Silence"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Volcanic Island",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Quantum Riddler",
+      "Black Lotus",
+      "Underground Sea",
+      "Mox Sapphire",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Mox Sapphire",
+    "Quantum Riddler"
+  ],
+  "difficulty": "hard"
+}

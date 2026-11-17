@@ -1,0 +1,64 @@
+{
+  "id": "2027-04-22",
+  "title": "Puzzle #158",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Ponder",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Polluted Delta",
+      "Mox Sapphire",
+      "Ideas Unbound",
+      "Cabal Ritual",
+      "Quantum Riddler",
+      "Black Lotus",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation",
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Tundra",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gush",
+    "Gleemox",
+    "Quantum Riddler",
+    "Ideas Unbound"
+  ],
+  "difficulty": "easy"
+}

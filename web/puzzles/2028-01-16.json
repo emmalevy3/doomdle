@@ -1,0 +1,55 @@
+{
+  "id": "2028-01-16",
+  "title": "Puzzle #427",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Dark Ritual",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Island",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Island"
+    ],
+    "library": [
+      "Consider",
+      "Ancestral Recall",
+      "Mox Sapphire",
+      "Lion's Eye Diamond",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Dark Ritual"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep",
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Mox Sapphire",
+    "Meditate",
+    "Black Lotus",
+    "Consider"
+  ],
+  "difficulty": "hard"
+}

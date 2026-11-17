@@ -1,0 +1,60 @@
+{
+  "id": "2027-07-27",
+  "title": "Puzzle #254",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Island",
+      "Island",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Mox Jet",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Timetwister",
+      "Street Wraith",
+      "Tamiyo, Inquisitive Student",
+      "Underground Sea",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Quantum Riddler",
+      "Dark Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Street Wraith",
+    "Dark Ritual",
+    "Timetwister",
+    "Mox Sapphire"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "2028-02-04",
+  "title": "Puzzle #446",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Tamiyo, Inquisitive Student",
+      "Manamorphose",
+      "Consider",
+      "Dark Ritual",
+      "Manamorphose",
+      "Mox Sapphire",
+      "Black Lotus"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Manamorphose",
+    "Jace, Wielder of Mysteries",
+    "Tamiyo, Inquisitive Student",
+    "Consider"
+  ],
+  "difficulty": "medium"
+}

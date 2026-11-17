@@ -1,0 +1,41 @@
+{
+  "id": "2027-05-19",
+  "title": "Puzzle #185",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Ponder",
+      "Duress"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Volcanic Island",
+      "Badlands",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Dark Ritual",
+      "Ideas Unbound",
+      "Ancestral Recall",
+      "Quantum Riddler",
+      "Lion's Eye Diamond",
+      "Cabal Ritual",
+      "Aether Spellbomb",
+      "Polluted Delta"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Aether Spellbomb",
+    "Quantum Riddler",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "medium"
+}

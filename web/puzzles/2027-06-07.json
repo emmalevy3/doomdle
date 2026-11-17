@@ -1,0 +1,44 @@
+{
+  "id": "2027-06-07",
+  "title": "Puzzle #204",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Ponder",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Island",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Tundra"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Gleemox",
+      "Meditate",
+      "Gush",
+      "Consider",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gush",
+    "Gleemox",
+    "Meditate",
+    "Chromatic Star"
+  ],
+  "difficulty": "easy"
+}

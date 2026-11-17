@@ -1,0 +1,52 @@
+{
+  "id": "2027-06-23",
+  "title": "Puzzle #220",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Duress",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Volcanic Island",
+      "Swamp",
+      "Swamp",
+      {
+        "card": "Swamp",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Underground Sea",
+      "Black Lotus",
+      "Mox Sapphire",
+      "Gitaxian Probe",
+      "Lion's Eye Diamond",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Chromatic Star"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Jace, Wielder of Mysteries",
+    "Chromatic Star",
+    "Lion's Eye Diamond",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "medium"
+}

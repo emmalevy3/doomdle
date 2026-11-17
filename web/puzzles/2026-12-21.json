@@ -1,0 +1,45 @@
+{
+  "id": "2026-12-21",
+  "title": "Puzzle #36",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe",
+      "Duress"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Quantum Riddler",
+      "Black Lotus",
+      "Ideas Unbound",
+      "Gleemox",
+      "Flow State",
+      "Ancestral Recall",
+      "Dark Ritual",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Brainstorm"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Quantum Riddler",
+    "Ancestral Recall",
+    "Black Lotus",
+    "Dark Ritual"
+  ],
+  "difficulty": "easy"
+}

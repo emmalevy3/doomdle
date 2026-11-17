@@ -1,0 +1,40 @@
+{
+  "id": "2027-09-15",
+  "title": "Puzzle #304",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thassa's Oracle",
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Volcanic Island",
+      "Swamp",
+      "Island"
+    ],
+    "library": [
+      "Brainstorm",
+      "Lotus Petal",
+      "Dark Ritual",
+      "Thundertrap Trainer",
+      "Quantum Riddler",
+      "Gleemox",
+      "Cabal Ritual",
+      "Reckless Impulse"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Gleemox",
+    "Lotus Petal",
+    "Quantum Riddler",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "medium"
+}

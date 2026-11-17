@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-18",
+  "title": "Puzzle #33",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Unearth",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Swamp",
+      "Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Swamp",
+      "Gleemox",
+      "Meticulous Archive",
+      "Ideas Unbound",
+      "Black Lotus",
+      "Black Lotus",
+      "Mishra's Bauble"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Street Wraith",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

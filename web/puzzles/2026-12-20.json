@@ -1,0 +1,41 @@
+{
+  "id": "2026-12-20",
+  "title": "Puzzle #35",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Sapphire",
+      "Mox Sapphire",
+      "Mox Jet"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Thundertrap Trainer",
+      "Undercity Sewers",
+      "Brainstorm",
+      "Undercity Sewers",
+      "Sol Ring",
+      "Reckless Impulse"
+    ],
+    "graveyard": [
+      "Frantic Search",
+      "Mox Sapphire"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Mox Sapphire",
+    "Sol Ring",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "hard"
+}

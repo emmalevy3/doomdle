@@ -1,0 +1,52 @@
+{
+  "id": "2027-07-26",
+  "title": "Puzzle #253",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Thassa's Oracle",
+      "Gitaxian Probe",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Mox Sapphire",
+      "Badlands",
+      "Mox Jet",
+      "Tundra"
+    ],
+    "library": [
+      "Dark Ritual",
+      "Quantum Riddler",
+      "Black Lotus",
+      "Island",
+      "Sol Ring",
+      "Aether Spellbomb",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Quantum Riddler"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Black Lotus",
+    "Sol Ring",
+    "Gleemox",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "2027-05-15",
+  "title": "Puzzle #181",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Duress",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Underground Sea",
+      "Tundra",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Cabal Ritual",
+      "Mox Jet",
+      "Underground Sea",
+      "Aether Spellbomb",
+      "Timetwister",
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Timetwister",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Lotus Petal",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "hard"
+}

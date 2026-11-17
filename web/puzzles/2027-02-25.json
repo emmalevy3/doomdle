@@ -1,0 +1,42 @@
+{
+  "id": "2027-02-25",
+  "title": "Puzzle #102",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Underground Sea",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Sol Ring",
+      "Brainstorm",
+      "Mox Jet",
+      "Mox Jet",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Sol Ring",
+    "Sol Ring",
+    "Mox Sapphire",
+    "Brainstorm"
+  ],
+  "difficulty": "easy"
+}

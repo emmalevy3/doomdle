@@ -1,0 +1,54 @@
+{
+  "id": "2027-08-10",
+  "title": "Puzzle #268",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Duress",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra",
+      "Tundra",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Black Lotus",
+      "Black Lotus",
+      "Quantum Riddler",
+      "Edge of Autumn",
+      "Chromatic Star",
+      "Preordain",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Underground Sea",
+      "Plateau",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Chromatic Star",
+    "Black Lotus",
+    "Preordain",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,44 @@
+{
+  "id": "2027-03-08",
+  "title": "Puzzle #113",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Volcanic Island",
+      "Underground Sea",
+      "Sol Ring",
+      "Badlands",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Quantum Riddler",
+      "Mishra's Bauble",
+      "Mox Jet",
+      "Gleemox",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Doctor Doom, Unrivaled",
+    "Gleemox",
+    "Gleemox",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2028-03-02",
+  "title": "Puzzle #473",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Swamp",
+      "Sol Ring"
+    ],
+    "library": [
+      "Consider",
+      "Gush",
+      "Meditate",
+      "Night's Whisper",
+      "Consider",
+      "Flow State"
+    ],
+    "graveyard": [
+      "Gleemox"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Gush",
+    "Gleemox",
+    "Consider",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

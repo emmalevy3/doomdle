@@ -1,0 +1,49 @@
+{
+  "id": "2028-02-13",
+  "title": "Puzzle #455",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Island",
+      "Sol Ring",
+      "Volcanic Island",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Aether Spellbomb",
+      "Mox Sapphire",
+      "Flow State",
+      "Mox Sapphire",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student",
+      "Brainstorm"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Island",
+      "Tundra",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Jace, Wielder of Mysteries",
+    "Flow State",
+    "Mox Sapphire",
+    "Mox Sapphire"
+  ],
+  "difficulty": "hard"
+}

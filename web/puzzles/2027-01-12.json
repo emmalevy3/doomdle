@@ -1,0 +1,54 @@
+{
+  "id": "2027-01-12",
+  "title": "Puzzle #58",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Tundra",
+      "Tundra",
+      "Swamp"
+    ],
+    "library": [
+      "Gleemox",
+      "Aether Spellbomb",
+      "Ideas Unbound",
+      "Reckless Impulse",
+      "Wizard's Rockets",
+      "Flooded Strand",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Black Lotus"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Meditate",
+    "Gleemox",
+    "Black Lotus",
+    "Reckless Impulse"
+  ],
+  "difficulty": "medium"
+}

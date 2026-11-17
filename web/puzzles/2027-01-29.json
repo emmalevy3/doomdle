@@ -1,0 +1,47 @@
+{
+  "id": "2027-01-29",
+  "title": "Puzzle #75",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Underground Sea",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Aether Spellbomb",
+      "Flooded Strand",
+      "Island",
+      "Street Wraith",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Mox Jet"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Aether Spellbomb",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Mox Jet",
+    "Island"
+  ],
+  "difficulty": "medium"
+}

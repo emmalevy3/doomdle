@@ -1,0 +1,50 @@
+{
+  "id": "2027-03-15",
+  "title": "Puzzle #120",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Badlands",
+      "Swamp",
+      "Island",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Mox Sapphire",
+      "Black Lotus",
+      "Edge of Autumn",
+      "Undercity Sewers",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Doctor Doom, Unrivaled",
+    "Edge of Autumn",
+    "Black Lotus",
+    "Mox Sapphire"
+  ],
+  "difficulty": "easy"
+}

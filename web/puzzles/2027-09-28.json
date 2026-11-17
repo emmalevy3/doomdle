@@ -1,0 +1,45 @@
+{
+  "id": "2027-09-28",
+  "title": "Puzzle #317",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Lotus Petal",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Sol Ring",
+      "Tundra",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lotus Petal",
+      "Flow State",
+      "Mox Jet",
+      "Ancestral Recall",
+      "Lion's Eye Diamond",
+      "Consider"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Lotus Petal",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "medium"
+}

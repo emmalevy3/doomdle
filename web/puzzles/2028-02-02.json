@@ -1,0 +1,55 @@
+{
+  "id": "2028-02-02",
+  "title": "Puzzle #444",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Unearth",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Sol Ring",
+      "Volcanic Island",
+      "Mox Jet",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Sol Ring",
+      "Lion's Eye Diamond",
+      "Dark Ritual",
+      "Wizard's Rockets",
+      "Brainstorm",
+      "Wizard's Rockets",
+      "Night's Whisper",
+      "Underground Sea"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Night's Whisper",
+    "Sol Ring",
+    "Lion's Eye Diamond",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

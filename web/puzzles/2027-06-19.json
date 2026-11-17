@@ -1,0 +1,49 @@
+{
+  "id": "2027-06-19",
+  "title": "Puzzle #216",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Underground Sea",
+      "Island",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Lotus Petal",
+      "Manamorphose",
+      "Sol Ring",
+      "Wizard's Rockets",
+      "Dark Ritual",
+      "Chromatic Star",
+      "Gush",
+      "Undercity Sewers",
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Chromatic Star",
+    "Gitaxian Probe",
+    "Dark Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

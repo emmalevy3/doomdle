@@ -1,0 +1,43 @@
+{
+  "id": "2027-11-01",
+  "title": "Puzzle #351",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Island",
+      "Badlands",
+      "Tundra",
+      "Badlands",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Dark Ritual",
+      "Consider",
+      "Island",
+      "Wizard's Rockets",
+      "Lotus Petal",
+      "Gush"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Doctor Doom, Unrivaled",
+    "Consider",
+    "Wizard's Rockets",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "easy"
+}

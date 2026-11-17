@@ -1,0 +1,42 @@
+{
+  "id": "2027-09-03",
+  "title": "Puzzle #292",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Swamp",
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Ponder",
+      "Ancestral Recall",
+      "Thundertrap Trainer",
+      "Consider",
+      "Preordain"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thundertrap Trainer",
+    "Ponder",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "medium"
+}

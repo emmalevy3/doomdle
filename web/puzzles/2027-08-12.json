@@ -1,0 +1,47 @@
+{
+  "id": "2027-08-12",
+  "title": "Puzzle #270",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Wizard's Rockets",
+      "Night's Whisper",
+      "Gitaxian Probe",
+      "Gitaxian Probe",
+      "Lotus Petal",
+      "Lotus Petal"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Thassa's Oracle",
+    "Gitaxian Probe",
+    "Gitaxian Probe",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "easy"
+}

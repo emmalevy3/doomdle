@@ -1,0 +1,57 @@
+{
+  "id": "2028-02-05",
+  "title": "Puzzle #447",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Island",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Badlands",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Timetwister",
+      "Dark Ritual",
+      "Gush",
+      "Ponder",
+      "Cabal Ritual"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Timetwister",
+    "Sol Ring",
+    "Laboratory Maniac",
+    "Dark Ritual"
+  ],
+  "difficulty": "hard"
+}

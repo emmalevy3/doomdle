@@ -1,0 +1,42 @@
+{
+  "id": "2027-10-13",
+  "title": "Puzzle #332",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Island",
+      "Mishra's Bauble",
+      "Ideas Unbound",
+      "Edge of Autumn",
+      "Sol Ring",
+      "Gush",
+      "Underground Sea"
+    ],
+    "graveyard": [
+      "Lotus Petal",
+      "Black Lotus"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gush",
+    "Sol Ring",
+    "Black Lotus",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

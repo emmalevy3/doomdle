@@ -1,0 +1,49 @@
+{
+  "id": "2027-03-05",
+  "title": "Puzzle #110",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Mox Jet",
+      "Tundra",
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Undercity Sewers",
+      "Reckless Impulse",
+      "Flooded Strand",
+      "Mox Sapphire",
+      "Aether Spellbomb",
+      "Sol Ring",
+      "Manamorphose"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Mox Sapphire",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

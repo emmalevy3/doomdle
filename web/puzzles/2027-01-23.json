@@ -1,0 +1,42 @@
+{
+  "id": "2027-01-23",
+  "title": "Puzzle #69",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Volcanic Island",
+      "Mox Jet"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Polluted Delta",
+      "Flooded Strand",
+      "Gush",
+      "Flooded Strand",
+      "Sol Ring",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Lotus Petal",
+      "Brainstorm"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Lotus Petal",
+    "Sol Ring",
+    "Brainstorm"
+  ],
+  "difficulty": "hard"
+}

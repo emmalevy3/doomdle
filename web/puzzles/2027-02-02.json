@@ -1,0 +1,45 @@
+{
+  "id": "2027-02-02",
+  "title": "Puzzle #79",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thassa's Oracle",
+      "Street Wraith",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Sol Ring",
+      "Tundra",
+      "Sol Ring",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Gitaxian Probe",
+      "Swamp",
+      "Gleemox",
+      "Manamorphose",
+      "Cabal Ritual"
+    ],
+    "graveyard": [
+      "Mox Sapphire",
+      "Edge of Autumn"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Edge of Autumn",
+    "Gleemox",
+    "Manamorphose",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

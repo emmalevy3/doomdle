@@ -1,0 +1,52 @@
+{
+  "id": "2027-10-06",
+  "title": "Puzzle #325",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Underground Sea",
+      "Tundra",
+      "Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Edge of Autumn",
+      "Reckless Impulse",
+      "Underground Sea",
+      "Tamiyo, Inquisitive Student",
+      "Black Lotus",
+      "Consider"
+    ],
+    "graveyard": [
+      "Timetwister",
+      "Manamorphose"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Timetwister",
+    "Edge of Autumn",
+    "Manamorphose",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

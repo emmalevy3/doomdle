@@ -1,0 +1,48 @@
+{
+  "id": "2026-12-19",
+  "title": "Puzzle #34",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Mox Sapphire",
+      "Underground Sea",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Cabal Ritual",
+      "Gleemox",
+      "Chromatic Star",
+      "Lion's Eye Diamond",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Cabal Ritual",
+      "Ideas Unbound"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Gleemox",
+    "Chromatic Star",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "2027-12-24",
+  "title": "Puzzle #404",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Sol Ring",
+      "Sol Ring",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Dark Ritual",
+      "Manamorphose",
+      "Black Lotus",
+      "Mishra's Bauble",
+      "Mox Sapphire",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Edge of Autumn",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

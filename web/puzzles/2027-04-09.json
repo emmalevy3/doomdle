@@ -1,0 +1,47 @@
+{
+  "id": "2027-04-09",
+  "title": "Puzzle #145",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Brainstorm",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Timetwister",
+      "Flooded Strand",
+      "Mishra's Bauble",
+      "Cabal Ritual"
+    ],
+    "graveyard": [
+      "Gush",
+      "Gleemox"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Timetwister",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

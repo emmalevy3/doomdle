@@ -1,0 +1,41 @@
+{
+  "id": "2027-06-14",
+  "title": "Puzzle #211",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Silence",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Swamp",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mishra's Bauble",
+      "Mox Jet",
+      "Black Lotus",
+      "Ancestral Recall",
+      "Cabal Ritual"
+    ],
+    "graveyard": [
+      "Consider",
+      "Mox Jet"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Mishra's Bauble",
+    "Black Lotus",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

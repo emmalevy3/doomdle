@@ -1,0 +1,50 @@
+{
+  "id": "2027-03-27",
+  "title": "Puzzle #132",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Thoughtseize",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Underground Sea",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Polluted Delta",
+      "Reckless Impulse",
+      "Sol Ring",
+      "Lion's Eye Diamond",
+      "Ancestral Recall",
+      "Mox Jet",
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Reckless Impulse",
+    "Gitaxian Probe",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "2028-01-27",
+  "title": "Puzzle #438",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Thoughtseize",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Badlands",
+      "Swamp",
+      "Underground Sea"
+    ],
+    "library": [
+      "Mox Jet",
+      "Sol Ring",
+      "Chromatic Star",
+      "Underground Sea",
+      "Black Lotus",
+      "Island",
+      "Street Wraith",
+      "Lotus Petal",
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Sol Ring",
+    "Chromatic Star",
+    "Black Lotus",
+    "Dark Ritual",
+    "Street Wraith"
+  ],
+  "difficulty": "easy"
+}

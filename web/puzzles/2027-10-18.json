@@ -1,0 +1,56 @@
+{
+  "id": "2027-10-18",
+  "title": "Puzzle #337",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Underground Sea",
+      "Swamp",
+      "Tundra",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Meticulous Archive",
+      "Lotus Petal",
+      "Frantic Search",
+      "Aether Spellbomb",
+      "Cabal Ritual",
+      "Flooded Strand",
+      "Polluted Delta",
+      "Undercity Sewers"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce",
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Frantic Search",
+    "Jace, Wielder of Mysteries",
+    "Aether Spellbomb",
+    "Cabal Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "easy"
+}

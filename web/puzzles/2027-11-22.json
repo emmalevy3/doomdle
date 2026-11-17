@@ -1,0 +1,41 @@
+{
+  "id": "2027-11-22",
+  "title": "Puzzle #372",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gleemox",
+      "Black Lotus",
+      "Meditate",
+      "Consider",
+      "Lion's Eye Diamond",
+      "Timetwister"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Flow State"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Meditate",
+    "Jace, Wielder of Mysteries",
+    "Timetwister",
+    "Gleemox",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

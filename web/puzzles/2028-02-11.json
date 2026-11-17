@@ -1,0 +1,44 @@
+{
+  "id": "2028-02-11",
+  "title": "Puzzle #453",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Sol Ring",
+      "Underground Sea",
+      "Mox Sapphire",
+      "Badlands"
+    ],
+    "library": [
+      "Dark Ritual",
+      "Flooded Strand",
+      "Black Lotus",
+      "Dark Ritual",
+      "Aether Spellbomb",
+      "Gitaxian Probe",
+      "Flooded Strand",
+      "Reckless Impulse",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Aether Spellbomb",
+    "Gitaxian Probe",
+    "Dark Ritual",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

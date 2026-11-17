@@ -1,0 +1,38 @@
+{
+  "id": "2027-09-13",
+  "title": "Puzzle #302",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Volcanic Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Manamorphose",
+      "Swamp",
+      "Mishra's Bauble",
+      "Chromatic Star",
+      "Dark Ritual",
+      "Chromatic Star",
+      "Gush"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Gush",
+    "Chromatic Star",
+    "Chromatic Star",
+    "Dark Ritual"
+  ],
+  "difficulty": "easy"
+}

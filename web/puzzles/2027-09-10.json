@@ -1,0 +1,52 @@
+{
+  "id": "2027-09-10",
+  "title": "Puzzle #299",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Underground Sea",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Swamp",
+      "Dark Ritual",
+      "Meditate",
+      "Ideas Unbound",
+      "Night's Whisper",
+      "Undercity Sewers",
+      "Chromatic Star",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Tundra",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Night's Whisper",
+    "Street Wraith",
+    "Dark Ritual",
+    "Swamp"
+  ],
+  "difficulty": "medium"
+}

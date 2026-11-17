@@ -1,0 +1,53 @@
+{
+  "id": "2027-03-09",
+  "title": "Puzzle #114",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Thassa's Oracle",
+      "Dark Ritual",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Swamp",
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Brainstorm",
+      "Tamiyo, Inquisitive Student",
+      "Lion's Eye Diamond",
+      "Meditate",
+      "Preordain",
+      "Mox Jet",
+      "Lotus Petal",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Plateau",
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Preordain",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Meditate",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "medium"
+}

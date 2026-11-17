@@ -1,0 +1,43 @@
+{
+  "id": "2027-12-01",
+  "title": "Puzzle #381",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Underground Sea",
+      "Underground Sea",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Wizard's Rockets",
+      "Underground Sea",
+      "Brainstorm",
+      "Preordain",
+      "Sol Ring",
+      "Gush",
+      "Mox Jet"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Thalia, Guardian of Thraben"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Laboratory Maniac",
+    "Brainstorm",
+    "Sol Ring",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

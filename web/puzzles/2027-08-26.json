@@ -1,0 +1,50 @@
+{
+  "id": "2027-08-26",
+  "title": "Puzzle #284",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Brainstorm",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Tundra",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gush",
+      "Black Lotus",
+      "Tamiyo, Inquisitive Student",
+      "Island",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Mox Sapphire"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Consign to Memory",
+      "Daze"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Gush",
+    "Black Lotus",
+    "Night's Whisper",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,58 @@
+{
+  "id": "2027-12-10",
+  "title": "Puzzle #390",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      "Sol Ring",
+      "Underground Sea",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Edge of Autumn",
+      "Mox Sapphire",
+      "Ponder",
+      "Lion's Eye Diamond",
+      "Manamorphose",
+      "Lion's Eye Diamond",
+      "Ancestral Recall",
+      "Mox Sapphire"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Plateau",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Edge of Autumn",
+    "Mox Sapphire",
+    "Mox Sapphire"
+  ],
+  "difficulty": "medium"
+}

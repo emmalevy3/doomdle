@@ -1,0 +1,50 @@
+{
+  "id": "2027-01-07",
+  "title": "Puzzle #53",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Mox Sapphire",
+      "Mishra's Bauble",
+      "Edge of Autumn",
+      "Night's Whisper",
+      "Gitaxian Probe",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Edge of Autumn",
+    "Mox Sapphire",
+    "Night's Whisper",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "easy"
+}

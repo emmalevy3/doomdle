@@ -1,0 +1,53 @@
+{
+  "id": "2027-11-09",
+  "title": "Puzzle #359",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Island",
+      "Volcanic Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Edge of Autumn",
+      "Gitaxian Probe",
+      "Cabal Ritual",
+      "Timetwister"
+    ],
+    "graveyard": [
+      "Preordain",
+      "Reckless Impulse"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Timetwister",
+    "Reckless Impulse",
+    "Gitaxian Probe",
+    "Edge of Autumn"
+  ],
+  "difficulty": "medium"
+}

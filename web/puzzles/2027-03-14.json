@@ -1,0 +1,46 @@
+{
+  "id": "2027-03-14",
+  "title": "Puzzle #119",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Tundra",
+      "Underground Sea",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Ideas Unbound",
+      "Lotus Petal",
+      "Gitaxian Probe",
+      "Gush",
+      "Night's Whisper",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Dark Ritual",
+    "Night's Whisper"
+  ],
+  "difficulty": "hard"
+}

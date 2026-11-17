@@ -1,0 +1,49 @@
+{
+  "id": "2026-12-24",
+  "title": "Puzzle #39",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Tundra",
+      "Underground Sea",
+      "Island",
+      "Skateboard"
+    ],
+    "library": [
+      "Flow State",
+      "Preordain",
+      "Lion's Eye Diamond",
+      "Wizard's Rockets",
+      "Timetwister",
+      "Sol Ring",
+      "Consider",
+      "Lotus Petal",
+      "Ancestral Recall"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Preordain",
+    "Sol Ring",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Lotus Petal"
+  ],
+  "difficulty": "easy"
+}

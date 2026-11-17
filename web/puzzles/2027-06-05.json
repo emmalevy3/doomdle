@@ -1,0 +1,57 @@
+{
+  "id": "2027-06-05",
+  "title": "Puzzle #202",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Unearth",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Undercity Sewers",
+      "Gush",
+      "Lotus Petal",
+      "Flow State",
+      "Mox Jet",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Thundertrap Trainer",
+      "Flow State"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation",
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Black Lotus",
+    "Thundertrap Trainer",
+    "Flow State"
+  ],
+  "difficulty": "hard"
+}

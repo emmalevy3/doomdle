@@ -1,0 +1,50 @@
+{
+  "id": "2027-11-23",
+  "title": "Puzzle #373",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Brainstorm",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Ideas Unbound",
+      "Black Lotus",
+      "Flooded Strand",
+      "Cabal Ritual",
+      "Manamorphose",
+      "Meticulous Archive",
+      "Quantum Riddler"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Ideas Unbound",
+    "Black Lotus",
+    "Black Lotus",
+    "Manamorphose"
+  ],
+  "difficulty": "medium"
+}

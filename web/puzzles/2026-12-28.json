@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-28",
+  "title": "Puzzle #43",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Gitaxian Probe",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Underground Sea",
+      "Badlands",
+      "Underground Sea",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Consider",
+      "Lion's Eye Diamond",
+      "Ponder",
+      "Preordain",
+      "Polluted Delta"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Thalia, Guardian of Thraben"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Ponder",
+    "Thassa's Oracle",
+    "Preordain",
+    "Cabal Ritual"
+  ],
+  "difficulty": "easy"
+}

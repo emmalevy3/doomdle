@@ -1,0 +1,40 @@
+{
+  "id": "2027-07-29",
+  "title": "Puzzle #256",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Street Wraith",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Underground Sea",
+      "Tundra",
+      "Mox Jet"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Night's Whisper",
+      "Black Lotus",
+      "Flooded Strand",
+      "Black Lotus",
+      "Mox Jet",
+      "Street Wraith",
+      "Consider"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Consider",
+    "Street Wraith",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

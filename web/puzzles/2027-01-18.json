@@ -1,0 +1,46 @@
+{
+  "id": "2027-01-18",
+  "title": "Puzzle #64",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Force of Will",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Underground Sea",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Sol Ring",
+      "Tamiyo, Inquisitive Student",
+      "Aether Spellbomb",
+      "Flooded Strand",
+      "Ancestral Recall",
+      "Mox Jet",
+      "Black Lotus",
+      "Mox Jet"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Aether Spellbomb",
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

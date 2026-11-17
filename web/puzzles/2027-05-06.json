@@ -1,0 +1,40 @@
+{
+  "id": "2027-05-06",
+  "title": "Puzzle #172",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Mox Sapphire",
+      "Tundra",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lion's Eye Diamond",
+      "Ideas Unbound",
+      "Swamp",
+      "Dark Ritual",
+      "Lotus Petal",
+      "Preordain",
+      "Undercity Sewers"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Jace, Wielder of Mysteries",
+    "Preordain",
+    "Lotus Petal",
+    "Dark Ritual"
+  ],
+  "difficulty": "easy"
+}

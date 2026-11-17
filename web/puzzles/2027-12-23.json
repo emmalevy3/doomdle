@@ -1,0 +1,50 @@
+{
+  "id": "2027-12-23",
+  "title": "Puzzle #403",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Laboratory Maniac",
+      "Force of Will",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Badlands",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Tundra"
+    ],
+    "library": [
+      "Street Wraith",
+      "Timetwister",
+      "Meditate",
+      "Thundertrap Trainer",
+      "Black Lotus",
+      "Black Lotus",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Night's Whisper"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Meditate",
+    "Night's Whisper",
+    "Timetwister",
+    "Black Lotus",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

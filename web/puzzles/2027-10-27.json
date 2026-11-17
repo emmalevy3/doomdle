@@ -1,0 +1,58 @@
+{
+  "id": "2027-10-27",
+  "title": "Puzzle #346",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Tundra",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Mox Sapphire",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Mishra's Bauble",
+      "Gleemox",
+      "Gush",
+      "Gleemox",
+      "Swamp",
+      "Island",
+      "Lotus Petal",
+      "Reckless Impulse"
+    ],
+    "graveyard": [
+      "Cabal Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Island",
+    "Reckless Impulse",
+    "Gleemox",
+    "Gush",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

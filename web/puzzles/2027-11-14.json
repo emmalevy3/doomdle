@@ -1,0 +1,52 @@
+{
+  "id": "2027-11-14",
+  "title": "Puzzle #364",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Tundra",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Meditate",
+      "Street Wraith",
+      "Ancestral Recall",
+      "Ponder",
+      "Thundertrap Trainer",
+      "Night's Whisper",
+      "Gleemox",
+      "Night's Whisper"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Night's Whisper",
+    "Gleemox",
+    "Night's Whisper"
+  ],
+  "difficulty": "hard"
+}

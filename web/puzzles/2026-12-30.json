@@ -1,0 +1,60 @@
+{
+  "id": "2026-12-30",
+  "title": "Puzzle #45",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Tundra",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      "Badlands",
+      "Badlands"
+    ],
+    "library": [
+      "Underground Sea",
+      "Chromatic Star",
+      "Gleemox",
+      "Reckless Impulse",
+      "Quantum Riddler",
+      "Tamiyo, Inquisitive Student",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Timetwister"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Underground Sea",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Gleemox",
+    "Mox Jet",
+    "Timetwister",
+    "Chromatic Star"
+  ],
+  "difficulty": "medium"
+}

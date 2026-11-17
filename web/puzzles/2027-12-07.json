@@ -1,0 +1,44 @@
+{
+  "id": "2027-12-07",
+  "title": "Puzzle #387",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Pyroblast",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Mox Sapphire",
+      "Tundra",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Brainstorm",
+      "Polluted Delta",
+      "Quantum Riddler",
+      "Gleemox",
+      "Lion's Eye Diamond",
+      "Street Wraith"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Flow State"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Quantum Riddler",
+    "Flow State",
+    "Lion's Eye Diamond",
+    "Street Wraith"
+  ],
+  "difficulty": "medium"
+}

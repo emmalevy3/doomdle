@@ -1,0 +1,45 @@
+{
+  "id": "2027-04-15",
+  "title": "Puzzle #151",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Thoughtseize",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Island",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Swamp",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Lotus Petal",
+      "Brainstorm",
+      "Flow State",
+      "Gush",
+      "Black Lotus",
+      "Undercity Sewers",
+      "Frantic Search"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Gush",
+    "Flow State",
+    "Brainstorm",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

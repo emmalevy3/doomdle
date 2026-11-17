@@ -1,0 +1,50 @@
+{
+  "id": "2027-09-06",
+  "title": "Puzzle #295",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Veil of Summer",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Tundra",
+      "Underground Sea",
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Flooded Strand",
+      "Ideas Unbound",
+      "Lion's Eye Diamond",
+      "Lion's Eye Diamond",
+      "Underground Sea",
+      "Dark Ritual",
+      "Sol Ring",
+      "Mox Sapphire",
+      "Ponder"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Lion's Eye Diamond",
+    "Lion's Eye Diamond",
+    "Sol Ring",
+    "Ponder"
+  ],
+  "difficulty": "easy"
+}

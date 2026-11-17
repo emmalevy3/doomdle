@@ -1,0 +1,43 @@
+{
+  "id": "2027-02-08",
+  "title": "Puzzle #85",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Thoughtseize",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Reckless Impulse",
+      "Gleemox",
+      "Chromatic Star",
+      "Mox Sapphire",
+      "Mox Jet",
+      "Ancestral Recall",
+      "Wizard's Rockets"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Gleemox",
+    "Mox Sapphire",
+    "Mox Jet"
+  ],
+  "difficulty": "easy"
+}

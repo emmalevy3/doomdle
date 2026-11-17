@@ -1,0 +1,52 @@
+{
+  "id": "2027-07-12",
+  "title": "Puzzle #239",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Laboratory Maniac",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Island",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Timetwister",
+      "Lion's Eye Diamond",
+      "Gitaxian Probe",
+      "Underground Sea",
+      "Gush",
+      "Mishra's Bauble",
+      "Street Wraith",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Gleemox"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Tundra",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Timetwister",
+    "Gush",
+    "Gleemox",
+    "Mishra's Bauble",
+    "Thundertrap Trainer"
+  ],
+  "difficulty": "easy"
+}

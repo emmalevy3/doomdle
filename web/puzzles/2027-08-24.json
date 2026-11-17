@@ -1,0 +1,45 @@
+{
+  "id": "2027-08-24",
+  "title": "Puzzle #282",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Badlands",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lion's Eye Diamond",
+      "Cabal Ritual",
+      "Lotus Petal",
+      "Meditate",
+      "Ancestral Recall",
+      "Tamiyo, Inquisitive Student",
+      "Brainstorm"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Meditate",
+    "Lotus Petal",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "medium"
+}

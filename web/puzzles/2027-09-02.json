@@ -1,0 +1,48 @@
+{
+  "id": "2027-09-02",
+  "title": "Puzzle #291",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Force of Will",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Tundra",
+      "Swamp",
+      "Underground Sea",
+      "Skateboard"
+    ],
+    "library": [
+      "Sol Ring",
+      "Tamiyo, Inquisitive Student",
+      "Night's Whisper",
+      "Brainstorm",
+      "Sol Ring",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Brainstorm",
+    "Dark Ritual",
+    "Lion's Eye Diamond",
+    "Sol Ring"
+  ],
+  "difficulty": "easy"
+}

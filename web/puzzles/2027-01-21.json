@@ -1,0 +1,49 @@
+{
+  "id": "2027-01-21",
+  "title": "Puzzle #67",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Thassa's Oracle",
+      "Pyroblast",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Island",
+      "Badlands"
+    ],
+    "library": [
+      "Quantum Riddler",
+      "Sol Ring",
+      "Dark Ritual",
+      "Polluted Delta",
+      "Meticulous Archive",
+      "Edge of Autumn",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Street Wraith",
+    "Edge of Autumn",
+    "Sol Ring",
+    "Quantum Riddler",
+    "Brainstorm"
+  ],
+  "difficulty": "easy"
+}

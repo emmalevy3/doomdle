@@ -1,0 +1,47 @@
+{
+  "id": "2027-06-02",
+  "title": "Puzzle #199",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Force of Will",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Jet",
+      "Reckless Impulse",
+      "Ideas Unbound",
+      "Lion's Eye Diamond",
+      "Manamorphose",
+      "Edge of Autumn"
+    ],
+    "graveyard": [
+      "Lotus Petal"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Reckless Impulse",
+    "Jace, Wielder of Mysteries",
+    "Lion's Eye Diamond",
+    "Ideas Unbound"
+  ],
+  "difficulty": "medium"
+}

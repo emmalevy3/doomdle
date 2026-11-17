@@ -1,0 +1,50 @@
+{
+  "id": "2027-04-19",
+  "title": "Puzzle #155",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Gitaxian Probe",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Badlands",
+      "Tundra"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Jet",
+      "Ideas Unbound",
+      "Mox Jet",
+      "Quantum Riddler",
+      "Consider"
+    ],
+    "graveyard": [
+      "Mox Sapphire"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Plateau",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Ideas Unbound",
+    "Quantum Riddler",
+    "Mox Sapphire",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

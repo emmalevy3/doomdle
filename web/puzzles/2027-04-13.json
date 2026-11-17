@@ -1,0 +1,47 @@
+{
+  "id": "2027-04-13",
+  "title": "Puzzle #149",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Thassa's Oracle",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Badlands",
+      "Tundra",
+      "Badlands"
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Ideas Unbound",
+      "Meticulous Archive",
+      "Mox Jet",
+      "Gleemox",
+      "Street Wraith",
+      "Meditate",
+      "Tamiyo, Inquisitive Student",
+      "Mox Jet"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Underground Sea"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Meditate",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

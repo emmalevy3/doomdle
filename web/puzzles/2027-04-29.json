@@ -1,0 +1,56 @@
+{
+  "id": "2027-04-29",
+  "title": "Puzzle #165",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Unearth",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      "Underground Sea",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Ponder",
+      "Black Lotus",
+      "Ponder",
+      "Gush",
+      "Mox Jet",
+      "Meditate",
+      "Quantum Riddler"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Ponder",
+    "Meditate",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

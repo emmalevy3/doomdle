@@ -1,0 +1,60 @@
+{
+  "id": "2027-07-23",
+  "title": "Puzzle #250",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Lion's Eye Diamond",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Swamp",
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island"
+    ],
+    "library": [
+      "Quantum Riddler",
+      "Undercity Sewers",
+      "Quantum Riddler",
+      "Dark Ritual",
+      "Flow State",
+      "Underground Sea",
+      "Edge of Autumn",
+      "Brainstorm"
+    ],
+    "graveyard": [
+      "Gush"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Underground Sea",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Quantum Riddler",
+    "Brainstorm",
+    "Quantum Riddler",
+    "Edge of Autumn"
+  ],
+  "difficulty": "medium"
+}

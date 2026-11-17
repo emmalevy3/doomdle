@@ -1,0 +1,47 @@
+{
+  "id": "2027-12-02",
+  "title": "Puzzle #382",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Gitaxian Probe",
+      "Silence"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Volcanic Island",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Tundra",
+      "Badlands"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Quantum Riddler",
+      "Gleemox",
+      "Polluted Delta",
+      "Cabal Ritual",
+      "Gitaxian Probe",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Manamorphose"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Gleemox",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "easy"
+}

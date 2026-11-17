@@ -1,0 +1,43 @@
+{
+  "id": "2027-05-20",
+  "title": "Puzzle #186",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Tundra",
+      "Island"
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Dark Ritual",
+      "Cabal Ritual",
+      "Lotus Petal",
+      "Mox Sapphire",
+      "Swamp",
+      "Wizard's Rockets"
+    ],
+    "graveyard": [
+      "Chromatic Star",
+      "Ancestral Recall"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Dark Ritual",
+    "Cabal Ritual",
+    "Lotus Petal"
+  ],
+  "difficulty": "easy"
+}

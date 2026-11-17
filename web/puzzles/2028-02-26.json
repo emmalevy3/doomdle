@@ -1,0 +1,60 @@
+{
+  "id": "2028-02-26",
+  "title": "Puzzle #468",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Ponder",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Flow State",
+      "Swamp",
+      "Gush",
+      "Black Lotus",
+      "Gush",
+      "Black Lotus"
+    ],
+    "graveyard": [
+      "Tamiyo, Inquisitive Student",
+      "Street Wraith"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Surgical Extraction"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Jace, Wielder of Mysteries",
+    "Street Wraith",
+    "Black Lotus",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

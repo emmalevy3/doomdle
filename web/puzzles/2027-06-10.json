@@ -1,0 +1,49 @@
+{
+  "id": "2027-06-10",
+  "title": "Puzzle #207",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Pyroblast",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Tundra",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Meticulous Archive",
+      "Sol Ring",
+      "Gleemox",
+      "Mox Sapphire",
+      "Swamp",
+      "Lion's Eye Diamond",
+      "Gush"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Lion's Eye Diamond",
+    "Meticulous Archive",
+    "Sol Ring",
+    "Gleemox"
+  ],
+  "difficulty": "easy"
+}

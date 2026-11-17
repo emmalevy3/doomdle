@@ -1,0 +1,44 @@
+{
+  "id": "2028-01-07",
+  "title": "Puzzle #418",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Swamp",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Manamorphose",
+      "Thundertrap Trainer",
+      "Swamp",
+      "Edge of Autumn",
+      "Ancestral Recall",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Consider"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Edge of Autumn",
+    "Thundertrap Trainer",
+    "Consider"
+  ],
+  "difficulty": "medium"
+}

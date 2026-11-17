@@ -1,0 +1,51 @@
+{
+  "id": "2027-07-13",
+  "title": "Puzzle #240",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Sapphire",
+      "Badlands",
+      "Tundra",
+      {
+        "card": "Swamp",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Gleemox",
+      "Gleemox",
+      "Chromatic Star",
+      "Ancestral Recall",
+      "Black Lotus",
+      "Ponder",
+      "Meticulous Archive"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Jace, Wielder of Mysteries",
+    "Gleemox",
+    "Black Lotus",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

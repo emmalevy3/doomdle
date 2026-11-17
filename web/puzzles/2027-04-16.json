@@ -1,0 +1,41 @@
+{
+  "id": "2027-04-16",
+  "title": "Puzzle #152",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Jace, Wielder of Mysteries"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Underground Sea",
+      "Underground Sea",
+      "Mox Sapphire",
+      "Island"
+    ],
+    "library": [
+      "Mox Jet",
+      "Aether Spellbomb",
+      "Quantum Riddler",
+      "Edge of Autumn",
+      "Gleemox",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Street Wraith",
+      "Ponder"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gleemox",
+    "Aether Spellbomb",
+    "Ponder",
+    "Street Wraith",
+    "Edge of Autumn"
+  ],
+  "difficulty": "medium"
+}

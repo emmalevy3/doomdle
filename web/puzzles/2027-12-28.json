@@ -1,0 +1,44 @@
+{
+  "id": "2027-12-28",
+  "title": "Puzzle #408",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Volcanic Island",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Lion's Eye Diamond",
+      "Quantum Riddler",
+      "Underground Sea",
+      "Reckless Impulse",
+      "Quantum Riddler",
+      "Mishra's Bauble"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Lion's Eye Diamond",
+    "Mishra's Bauble",
+    "Quantum Riddler"
+  ],
+  "difficulty": "medium"
+}

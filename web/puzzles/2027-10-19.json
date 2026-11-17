@@ -1,0 +1,57 @@
+{
+  "id": "2027-10-19",
+  "title": "Puzzle #338",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thassa's Oracle",
+      "Unearth",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Tundra",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Sol Ring",
+      "Aether Spellbomb",
+      "Timetwister",
+      "Consider",
+      "Lion's Eye Diamond",
+      "Timetwister",
+      "Aether Spellbomb",
+      "Lotus Petal",
+      "Polluted Delta"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Daze",
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Island",
+      "Plateau",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Timetwister",
+    "Lotus Petal",
+    "Timetwister",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

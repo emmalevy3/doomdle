@@ -1,0 +1,41 @@
+{
+  "id": "2027-04-01",
+  "title": "Puzzle #137",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Underground Sea",
+      "Mox Jet",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Aether Spellbomb",
+      "Gleemox",
+      "Black Lotus",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Mishra's Bauble",
+      "Frantic Search"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Aether Spellbomb",
+    "Gitaxian Probe",
+    "Gleemox",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "easy"
+}

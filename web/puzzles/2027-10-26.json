@@ -1,0 +1,44 @@
+{
+  "id": "2027-10-26",
+  "title": "Puzzle #345",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Badlands",
+      "Underground Sea",
+      "Volcanic Island",
+      "Underground Sea",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Gush",
+      "Quantum Riddler",
+      "Timetwister",
+      "Gitaxian Probe",
+      "Consider"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Thundertrap Trainer"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Timetwister",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2027-09-16",
+  "title": "Puzzle #305",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth",
+      "Ponder"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Tundra",
+      "Underground Sea",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Undercity Sewers",
+      "Meticulous Archive",
+      "Lotus Petal",
+      "Chromatic Star",
+      "Lion's Eye Diamond",
+      "Polluted Delta"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Chromatic Star",
+    "Lotus Petal"
+  ],
+  "difficulty": "easy"
+}

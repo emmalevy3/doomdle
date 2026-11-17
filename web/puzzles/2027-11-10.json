@@ -1,0 +1,55 @@
+{
+  "id": "2027-11-10",
+  "title": "Puzzle #360",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Silence",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Tundra",
+      "Tundra",
+      "Mox Jet",
+      "Underground Sea",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Street Wraith",
+      "Polluted Delta",
+      "Mishra's Bauble",
+      "Lotus Petal",
+      "Flooded Strand",
+      "Night's Whisper",
+      "Preordain",
+      "Wizard's Rockets"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Plateau",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Wizard's Rockets",
+    "Street Wraith",
+    "Lotus Petal",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

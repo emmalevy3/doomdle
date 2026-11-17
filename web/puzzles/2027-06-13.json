@@ -1,0 +1,42 @@
+{
+  "id": "2027-06-13",
+  "title": "Puzzle #210",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Mox Jet",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Tamiyo, Inquisitive Student",
+      "Lotus Petal",
+      "Ideas Unbound",
+      "Wizard's Rockets",
+      "Polluted Delta",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Gitaxian Probe",
+      "Street Wraith"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Ideas Unbound",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,44 @@
+{
+  "id": "2027-12-29",
+  "title": "Puzzle #409",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Veil of Summer",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Street Wraith",
+      "Dark Ritual",
+      "Sol Ring",
+      "Tamiyo, Inquisitive Student",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Ponder"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Sol Ring",
+    "Gleemox",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "medium"
+}

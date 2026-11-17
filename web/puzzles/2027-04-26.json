@@ -1,0 +1,47 @@
+{
+  "id": "2027-04-26",
+  "title": "Puzzle #162",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Thassa's Oracle",
+      "Gitaxian Probe",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Swamp",
+      "Tundra",
+      "Underground Sea"
+    ],
+    "library": [
+      "Ponder",
+      "Sol Ring",
+      "Mox Sapphire",
+      "Timetwister",
+      "Sol Ring",
+      "Aether Spellbomb"
+    ],
+    "graveyard": [
+      "Ideas Unbound"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Timetwister",
+    "Sol Ring",
+    "Sol Ring",
+    "Mox Sapphire"
+  ],
+  "difficulty": "easy"
+}

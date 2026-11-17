@@ -1,0 +1,56 @@
+{
+  "id": "2027-12-08",
+  "title": "Puzzle #388",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Island",
+      "Sol Ring",
+      "Swamp",
+      "Sol Ring"
+    ],
+    "library": [
+      "Chromatic Star",
+      "Gleemox",
+      "Quantum Riddler",
+      "Reckless Impulse",
+      "Wizard's Rockets",
+      "Wizard's Rockets",
+      "Cabal Ritual"
+    ],
+    "graveyard": [
+      "Flow State",
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pyroblast",
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Chromatic Star",
+    "Reckless Impulse",
+    "Timetwister",
+    "Gleemox",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

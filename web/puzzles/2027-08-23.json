@@ -1,0 +1,45 @@
+{
+  "id": "2027-08-23",
+  "title": "Puzzle #281",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Swamp",
+      "Mox Jet",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Island",
+      "Ponder",
+      "Black Lotus",
+      "Polluted Delta",
+      "Night's Whisper",
+      "Frantic Search"
+    ],
+    "graveyard": [
+      "Lotus Petal",
+      "Street Wraith"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Street Wraith",
+    "Black Lotus",
+    "Lotus Petal",
+    "Ponder"
+  ],
+  "difficulty": "easy"
+}

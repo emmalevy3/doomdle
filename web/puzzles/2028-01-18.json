@@ -1,0 +1,48 @@
+{
+  "id": "2028-01-18",
+  "title": "Puzzle #429",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Island",
+      "Volcanic Island",
+      "Underground Sea",
+      "Swamp",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Lion's Eye Diamond",
+      "Lotus Petal",
+      "Night's Whisper",
+      "Edge of Autumn",
+      "Sol Ring",
+      "Dark Ritual",
+      "Undercity Sewers"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Negation"
+    ],
+    "battlefield": [
+      "Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Edge of Autumn",
+    "Lotus Petal",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,45 @@
+{
+  "id": "2027-01-13",
+  "title": "Puzzle #59",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Ponder",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Sol Ring",
+      "Island",
+      "Badlands",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Preordain",
+      "Ideas Unbound",
+      "Aether Spellbomb",
+      "Wizard's Rockets",
+      "Sol Ring",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Aether Spellbomb",
+      "Frantic Search"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Ideas Unbound",
+    "Sol Ring",
+    "Aether Spellbomb",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "2027-05-16",
+  "title": "Puzzle #182",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Underground Sea",
+      "Volcanic Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Night's Whisper",
+      "Dark Ritual",
+      "Manamorphose",
+      "Preordain",
+      "Consider",
+      "Quantum Riddler",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Edge of Autumn",
+    "Thassa's Oracle",
+    "Night's Whisper",
+    "Quantum Riddler"
+  ],
+  "difficulty": "hard"
+}

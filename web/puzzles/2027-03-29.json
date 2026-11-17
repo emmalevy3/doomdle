@@ -1,0 +1,47 @@
+{
+  "id": "2027-03-29",
+  "title": "Puzzle #134",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Unearth",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Mox Jet",
+      "Sol Ring"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Lotus Petal",
+      "Mox Sapphire",
+      "Consider",
+      "Gush"
+    ],
+    "graveyard": [
+      "Edge of Autumn"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare",
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Edge of Autumn",
+    "Black Lotus",
+    "Gush",
+    "Consider"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "2027-07-09",
+  "title": "Puzzle #236",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Ponder",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Island",
+      "Swamp",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Mox Jet",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Frantic Search",
+      "Black Lotus",
+      "Polluted Delta",
+      "Thundertrap Trainer",
+      "Lion's Eye Diamond",
+      "Gitaxian Probe"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Ideas Unbound"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Doctor Doom, Unrivaled",
+    "Ideas Unbound",
+    "Lion's Eye Diamond",
+    "Meditate",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "2027-03-12",
+  "title": "Puzzle #117",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Badlands",
+        "tapped": true
+      },
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Badlands",
+      "Tundra",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Ideas Unbound",
+      "Ideas Unbound",
+      "Dark Ritual",
+      "Mishra's Bauble",
+      "Mox Jet",
+      "Gleemox",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Doctor Doom, Unrivaled",
+    "Gleemox",
+    "Dark Ritual",
+    "Ideas Unbound"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "2027-08-08",
+  "title": "Puzzle #266",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Underground Sea",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Swamp"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Sol Ring",
+      "Night's Whisper",
+      "Lion's Eye Diamond",
+      "Edge of Autumn",
+      "Chromatic Star"
+    ],
+    "graveyard": [
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle",
+    "Timetwister"
+  ],
+  "difficulty": "hard"
+}

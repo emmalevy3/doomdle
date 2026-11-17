@@ -1,0 +1,50 @@
+{
+  "id": "2028-01-22",
+  "title": "Puzzle #433",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Unearth",
+      "Silence"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Mox Sapphire",
+      "Island",
+      "Mox Jet",
+      "Mox Jet"
+    ],
+    "library": [
+      "Meditate",
+      "Chromatic Star",
+      "Cabal Ritual",
+      "Mox Sapphire",
+      "Meticulous Archive",
+      "Meticulous Archive",
+      "Gush",
+      "Dark Ritual",
+      "Tamiyo, Inquisitive Student"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell",
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Meditate",
+    "Dark Ritual",
+    "Chromatic Star",
+    "Tamiyo, Inquisitive Student"
+  ],
+  "difficulty": "hard"
+}

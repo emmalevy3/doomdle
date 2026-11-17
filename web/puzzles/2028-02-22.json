@@ -1,0 +1,51 @@
+{
+  "id": "2028-02-22",
+  "title": "Puzzle #464",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Sol Ring",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Edge of Autumn",
+      "Lion's Eye Diamond",
+      "Dark Ritual",
+      "Manamorphose",
+      "Street Wraith",
+      "Black Lotus",
+      "Preordain"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Mindbreak Trap",
+      "Mental Misstep"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Tundra",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Street Wraith",
+    "Edge of Autumn",
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Preordain"
+  ],
+  "difficulty": "medium"
+}

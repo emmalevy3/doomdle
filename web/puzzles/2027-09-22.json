@@ -1,0 +1,44 @@
+{
+  "id": "2027-09-22",
+  "title": "Puzzle #311",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Street Wraith",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Volcanic Island",
+      "Badlands"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Consider",
+      "Underground Sea",
+      "Ancestral Recall",
+      "Black Lotus",
+      "Lotus Petal",
+      "Manamorphose",
+      "Lion's Eye Diamond"
+    ],
+    "graveyard": [
+      "Consider"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Ancestral Recall",
+    "Laboratory Maniac",
+    "Consider",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

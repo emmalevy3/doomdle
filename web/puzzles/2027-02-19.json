@@ -1,0 +1,50 @@
+{
+  "id": "2027-02-19",
+  "title": "Puzzle #96",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Thassa's Oracle",
+      "Veil of Summer",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Underground Sea"
+    ],
+    "library": [
+      "Polluted Delta",
+      "Flooded Strand",
+      "Brainstorm",
+      "Polluted Delta",
+      "Quantum Riddler",
+      "Cabal Ritual",
+      "Gleemox",
+      "Flooded Strand"
+    ],
+    "graveyard": [
+      "Sol Ring"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Gleemox",
+    "Sol Ring",
+    "Brainstorm",
+    "Cabal Ritual"
+  ],
+  "difficulty": "medium"
+}

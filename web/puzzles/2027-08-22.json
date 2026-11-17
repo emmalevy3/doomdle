@@ -1,0 +1,54 @@
+{
+  "id": "2027-08-22",
+  "title": "Puzzle #280",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Badlands",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Swamp",
+      "Swamp"
+    ],
+    "library": [
+      "Flow State",
+      "Thundertrap Trainer",
+      "Lion's Eye Diamond",
+      "Manamorphose",
+      "Mox Jet",
+      "Ancestral Recall",
+      "Street Wraith",
+      "Mishra's Bauble"
+    ],
+    "graveyard": [
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Snare"
+    ],
+    "battlefield": [
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Brainstorm",
+    "Ancestral Recall",
+    "Street Wraith",
+    "Lion's Eye Diamond",
+    "Manamorphose"
+  ],
+  "difficulty": "hard"
+}

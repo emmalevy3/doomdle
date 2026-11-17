@@ -1,0 +1,52 @@
+{
+  "id": "2027-02-17",
+  "title": "Puzzle #94",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Brainstorm",
+      "Ponder"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Cabal Ritual",
+      "Dark Ritual",
+      "Black Lotus",
+      "Aether Spellbomb",
+      "Wizard's Rockets",
+      "Polluted Delta",
+      "Timetwister"
+    ],
+    "graveyard": [
+      "Night's Whisper"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Timetwister",
+    "Black Lotus",
+    "Polluted Delta",
+    "Night's Whisper",
+    "Aether Spellbomb"
+  ],
+  "difficulty": "medium"
+}

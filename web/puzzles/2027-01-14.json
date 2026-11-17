@@ -1,0 +1,47 @@
+{
+  "id": "2027-01-14",
+  "title": "Puzzle #60",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Gitaxian Probe",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Swamp",
+      "Mox Jet",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Brainstorm",
+      "Black Lotus",
+      "Mox Sapphire",
+      "Quantum Riddler",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Black Lotus"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Black Lotus",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Quantum Riddler",
+    "Meditate"
+  ],
+  "difficulty": "easy"
+}

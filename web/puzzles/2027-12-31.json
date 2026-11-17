@@ -1,0 +1,49 @@
+{
+  "id": "2027-12-31",
+  "title": "Puzzle #411",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Dark Ritual",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Quantum Riddler",
+      "Lion's Eye Diamond",
+      "Island",
+      "Undercity Sewers",
+      "Ponder"
+    ],
+    "graveyard": [
+      "Wizard's Rockets",
+      "Manamorphose"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Hydroblast"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Island",
+    "Manamorphose",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

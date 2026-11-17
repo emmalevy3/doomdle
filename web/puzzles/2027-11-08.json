@@ -1,0 +1,47 @@
+{
+  "id": "2027-11-08",
+  "title": "Puzzle #358",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Badlands",
+      "Mox Sapphire",
+      "Underground Sea",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Flooded Strand",
+      "Preordain",
+      "Mox Jet",
+      "Lion's Eye Diamond",
+      "Manamorphose",
+      "Tamiyo, Inquisitive Student",
+      "Sol Ring"
+    ],
+    "graveyard": [
+      "Reckless Impulse",
+      "Gleemox"
+    ],
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Manamorphose",
+    "Sol Ring",
+    "Reckless Impulse",
+    "Gleemox",
+    "Preordain"
+  ],
+  "difficulty": "easy"
+}

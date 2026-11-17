@@ -1,0 +1,49 @@
+{
+  "id": "2027-07-05",
+  "title": "Puzzle #232",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Underground Sea",
+      "Island",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Black Lotus",
+      "Consider",
+      "Polluted Delta",
+      "Night's Whisper",
+      "Wizard's Rockets",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Night's Whisper",
+    "Jace, Wielder of Mysteries",
+    "Manamorphose",
+    "Consider",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "2028-01-28",
+  "title": "Puzzle #439",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Unearth"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Consider",
+      "Brainstorm",
+      "Gush",
+      "Consider",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Ancestral Recall"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Brainstorm",
+    "Preordain"
+  ],
+  "difficulty": "medium"
+}

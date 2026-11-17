@@ -1,0 +1,40 @@
+{
+  "id": "2027-10-30",
+  "title": "Puzzle #349",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Badlands",
+      "Swamp",
+      "Badlands",
+      "Mox Sapphire",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Gleemox",
+      "Sol Ring",
+      "Aether Spellbomb",
+      "Edge of Autumn",
+      "Meticulous Archive",
+      "Timetwister",
+      "Dark Ritual"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Edge of Autumn",
+    "Timetwister",
+    "Doctor Doom, Unrivaled",
+    "Sol Ring",
+    "Gleemox"
+  ],
+  "difficulty": "hard"
+}

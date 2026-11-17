@@ -1,0 +1,45 @@
+{
+  "id": "2027-05-17",
+  "title": "Puzzle #183",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Street Wraith",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Volcanic Island"
+    ],
+    "library": [
+      "Timetwister",
+      "Meditate",
+      "Wizard's Rockets",
+      "Street Wraith",
+      "Undercity Sewers",
+      "Lotus Petal",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Street Wraith",
+    "Edge of Autumn",
+    "Lotus Petal",
+    "Meditate",
+    "Timetwister"
+  ],
+  "difficulty": "easy"
+}

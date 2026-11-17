@@ -1,0 +1,49 @@
+{
+  "id": "2027-04-18",
+  "title": "Puzzle #154",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Laboratory Maniac",
+      "Silence",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Swamp",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Swamp",
+      "Volcanic Island",
+      "Island"
+    ],
+    "library": [
+      "Preordain",
+      "Cabal Ritual",
+      "Reckless Impulse",
+      "Reckless Impulse",
+      "Gush",
+      "Tamiyo, Inquisitive Student",
+      "Thundertrap Trainer",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Gush",
+    "Reckless Impulse",
+    "Cabal Ritual",
+    "Gitaxian Probe",
+    "Mox Sapphire"
+  ],
+  "difficulty": "hard"
+}

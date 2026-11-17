@@ -1,0 +1,39 @@
+{
+  "id": "2027-07-21",
+  "title": "Puzzle #248",
+  "you": {
+    "life": 12,
+    "hand": [
+      "Thoughtseize",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Mox Jet"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mox Sapphire",
+      "Cabal Ritual",
+      "Preordain",
+      "Gleemox"
+    ],
+    "graveyard": [
+      "Ancestral Recall",
+      "Flow State"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Gleemox",
+    "Mox Sapphire",
+    "Preordain"
+  ],
+  "difficulty": "medium"
+}

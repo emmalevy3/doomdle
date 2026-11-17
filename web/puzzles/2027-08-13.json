@@ -1,0 +1,41 @@
+{
+  "id": "2027-08-13",
+  "title": "Puzzle #271",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Brainstorm",
+      "Lotus Petal"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Swamp",
+      "Badlands",
+      "Sol Ring",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Island",
+      "Ancestral Recall",
+      "Mox Sapphire",
+      "Gush",
+      "Manamorphose",
+      "Island",
+      "Cabal Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Jace, Wielder of Mysteries",
+    "Manamorphose",
+    "Ancestral Recall",
+    "Mox Sapphire",
+    "Island"
+  ],
+  "difficulty": "medium"
+}

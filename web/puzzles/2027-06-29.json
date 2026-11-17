@@ -1,0 +1,49 @@
+{
+  "id": "2027-06-29",
+  "title": "Puzzle #226",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Duress",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Badlands",
+      "Swamp",
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Sol Ring",
+      "Reckless Impulse",
+      "Mishra's Bauble",
+      "Gleemox",
+      "Ponder",
+      "Lion's Eye Diamond",
+      "Underground Sea"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Ponder",
+    "Lion's Eye Diamond",
+    "Doctor Doom, Unrivaled",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

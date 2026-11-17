@@ -1,0 +1,44 @@
+{
+  "id": "2027-02-09",
+  "title": "Puzzle #86",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      "Swamp",
+      {
+        "card": "Island",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Black Lotus",
+      "Manamorphose",
+      "Black Lotus",
+      "Ideas Unbound",
+      "Night's Whisper",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Wizard's Rockets"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Black Lotus",
+    "Night's Whisper",
+    "Ideas Unbound"
+  ],
+  "difficulty": "medium"
+}

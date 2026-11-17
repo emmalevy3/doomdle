@@ -1,0 +1,43 @@
+{
+  "id": "2027-07-07",
+  "title": "Puzzle #234",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Ponder",
+      "Duress"
+    ],
+    "battlefield": [
+      {
+        "card": "Island",
+        "tapped": true
+      },
+      "Volcanic Island",
+      "Sol Ring",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Preordain",
+      "Gitaxian Probe",
+      "Gleemox",
+      "Manamorphose",
+      "Lion's Eye Diamond",
+      "Gleemox",
+      "Sol Ring",
+      "Lotus Petal"
+    ],
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Manamorphose",
+    "Gitaxian Probe",
+    "Sol Ring",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

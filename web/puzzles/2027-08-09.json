@@ -1,0 +1,53 @@
+{
+  "id": "2027-08-09",
+  "title": "Puzzle #267",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Thassa's Oracle",
+      "Silence",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Tundra",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Island",
+      "Mox Sapphire",
+      "Badlands"
+    ],
+    "library": [
+      "Ancestral Recall",
+      "Flooded Strand",
+      "Frantic Search",
+      "Gleemox",
+      "Ponder"
+    ],
+    "graveyard": [
+      "Mox Jet",
+      "Reckless Impulse"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Stifle"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Gleemox",
+    "Mox Jet",
+    "Ponder",
+    "Ancestral Recall"
+  ],
+  "difficulty": "easy"
+}

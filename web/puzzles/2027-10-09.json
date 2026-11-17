@@ -1,0 +1,44 @@
+{
+  "id": "2027-10-09",
+  "title": "Puzzle #328",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe",
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Mox Jet",
+      "Badlands",
+      "Swamp",
+      "Swamp",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Sol Ring",
+      "Consider",
+      "Swamp",
+      "Gitaxian Probe",
+      "Reckless Impulse",
+      "Frantic Search",
+      "Underground Sea"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Frantic Search",
+    "Underground Sea",
+    "Sol Ring",
+    "Gitaxian Probe"
+  ],
+  "difficulty": "hard"
+}

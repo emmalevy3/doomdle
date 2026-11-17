@@ -1,0 +1,55 @@
+{
+  "id": "2027-02-27",
+  "title": "Puzzle #104",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Force of Will",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      "Badlands",
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Ideas Unbound",
+      "Gush",
+      "Thundertrap Trainer",
+      "Mox Jet",
+      "Timetwister",
+      "Mox Sapphire",
+      "Mox Jet"
+    ],
+    "graveyard": [
+      "Frantic Search"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Thassa's Oracle",
+    "Mox Sapphire",
+    "Ideas Unbound",
+    "Timetwister"
+  ],
+  "difficulty": "hard"
+}

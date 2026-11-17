@@ -1,0 +1,53 @@
+{
+  "id": "2028-01-20",
+  "title": "Puzzle #431",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Street Wraith",
+      "Silence"
+    ],
+    "battlefield": [
+      "Island",
+      "Tundra",
+      "Tundra",
+      "Sol Ring",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Mox Jet",
+      "Lotus Petal",
+      "Lotus Petal",
+      "Swamp",
+      "Quantum Riddler"
+    ],
+    "graveyard": [
+      "Mox Jet"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Jace, Wielder of Mysteries",
+    "Lotus Petal",
+    "Lotus Petal",
+    "Mox Jet"
+  ],
+  "difficulty": "easy"
+}

@@ -1,0 +1,45 @@
+{
+  "id": "2027-06-11",
+  "title": "Puzzle #208",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth",
+      "Duress"
+    ],
+    "battlefield": [
+      {
+        "card": "Mox Jet",
+        "tapped": true
+      },
+      "Badlands",
+      "Volcanic Island",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Black Lotus",
+      "Ancestral Recall",
+      "Underground Sea",
+      "Reckless Impulse",
+      "Reckless Impulse",
+      "Mox Sapphire",
+      "Swamp",
+      "Sol Ring"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ancestral Recall",
+    "Thassa's Oracle",
+    "Reckless Impulse",
+    "Black Lotus",
+    "Reckless Impulse"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2027-04-27",
+  "title": "Puzzle #163",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Dark Ritual"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Volcanic Island",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      },
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Island",
+      "Wizard's Rockets",
+      "Mox Sapphire",
+      "Lotus Petal",
+      "Meditate"
+    ],
+    "graveyard": [
+      "Mishra's Bauble",
+      "Tamiyo, Inquisitive Student"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Doctor Doom, Unrivaled",
+    "Wizard's Rockets",
+    "Lotus Petal",
+    "Mox Sapphire"
+  ],
+  "difficulty": "medium"
+}
