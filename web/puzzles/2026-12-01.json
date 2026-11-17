@@ -1,0 +1,44 @@
+{
+  "id": "2026-12-01",
+  "title": "Puzzle #16",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Brainstorm",
+      "Silence"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Sapphire",
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Edge of Autumn",
+      "Cabal Ritual",
+      "Thundertrap Trainer",
+      "Ancestral Recall",
+      "Mox Sapphire",
+      "Mishra's Bauble",
+      "Gleemox",
+      "Edge of Autumn"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gleemox",
+    "Ancestral Recall",
+    "Edge of Autumn",
+    "Mox Sapphire"
+  ],
+  "difficulty": "medium"
+}

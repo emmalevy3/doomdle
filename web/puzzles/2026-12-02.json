@@ -1,0 +1,50 @@
+{
+  "id": "2026-12-02",
+  "title": "Puzzle #17",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Brainstorm"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      {
+        "card": "Badlands",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Flooded Strand",
+      "Polluted Delta",
+      "Mox Sapphire",
+      "Polluted Delta",
+      "Underground Sea",
+      "Meticulous Archive"
+    ],
+    "graveyard": [
+      "Consider",
+      "Gush"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Gush",
+    "Mox Sapphire",
+    "Consider",
+    "Underground Sea"
+  ],
+  "difficulty": "medium"
+}

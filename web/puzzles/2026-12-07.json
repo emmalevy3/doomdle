@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-07",
+  "title": "Puzzle #22",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Mox Jet",
+      "Badlands",
+      "Skateboard"
+    ],
+    "library": [
+      "Mox Jet",
+      "Chromatic Star",
+      "Thundertrap Trainer",
+      "Aether Spellbomb",
+      "Black Lotus",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Quantum Riddler",
+      "Gleemox"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Plateau"
+    ]
+  },
+  "solution": [
+    "Quantum Riddler",
+    "Gleemox",
+    "Chromatic Star",
+    "Cabal Ritual",
+    "Black Lotus"
+  ],
+  "difficulty": "easy"
+}

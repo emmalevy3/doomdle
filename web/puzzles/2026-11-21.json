@@ -1,0 +1,44 @@
+{
+  "id": "2026-11-21",
+  "title": "Puzzle #6",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Duress",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Tundra",
+      "Island",
+      {
+        "card": "Sol Ring",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Meticulous Archive",
+      "Mox Jet",
+      "Lion's Eye Diamond",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Ponder",
+      "Sol Ring"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Night's Whisper",
+    "Ponder",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle",
+    "Sol Ring"
+  ],
+  "difficulty": "hard"
+}

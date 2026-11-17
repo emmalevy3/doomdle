@@ -1,0 +1,49 @@
+{
+  "id": "2026-11-16",
+  "title": "Puzzle #1",
+  "you": {
+    "life": 8,
+    "hand": [
+      "Silence",
+      "Street Wraith"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Swamp",
+      "Swamp",
+      "Tundra",
+      "Tundra",
+      "Skateboard"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Gitaxian Probe",
+      "Mox Jet",
+      "Preordain",
+      "Black Lotus",
+      "Edge of Autumn",
+      "Flow State",
+      "Consider"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Snuff Out"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Tundra"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Preordain",
+    "Flow State",
+    "Doctor Doom, Unrivaled",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

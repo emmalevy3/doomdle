@@ -1,0 +1,46 @@
+{
+  "id": "2026-12-04",
+  "title": "Puzzle #19",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Swamp",
+      "Swamp",
+      "Island",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Meditate",
+      "Ancestral Recall",
+      "Gush",
+      "Black Lotus",
+      "Black Lotus",
+      "Flow State"
+    ],
+    "graveyard": [
+      "Cabal Ritual",
+      "Chromatic Star"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Chromatic Star",
+    "Ancestral Recall",
+    "Meditate",
+    "Black Lotus"
+  ],
+  "difficulty": "medium"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "2026-11-26",
+  "title": "Puzzle #11",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Force of Will",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Underground Sea",
+      "Underground Sea"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Undercity Sewers",
+      "Lion's Eye Diamond",
+      "Cabal Ritual",
+      "Edge of Autumn",
+      "Dark Ritual",
+      "Mox Sapphire"
+    ],
+    "graveyard": [
+      "Ideas Unbound",
+      "Dark Ritual"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Thassa's Oracle",
+    "Edge of Autumn",
+    "Dark Ritual",
+    "Mox Sapphire"
+  ],
+  "difficulty": "easy"
+}

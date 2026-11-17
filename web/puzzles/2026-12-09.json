@@ -1,0 +1,44 @@
+{
+  "id": "2026-12-09",
+  "title": "Puzzle #24",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Silence"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island",
+      "Underground Sea",
+      "Tundra"
+    ],
+    "library": [
+      "Edge of Autumn",
+      "Mox Sapphire",
+      "Chromatic Star",
+      "Ideas Unbound",
+      "Street Wraith",
+      "Tamiyo, Inquisitive Student",
+      "Undercity Sewers"
+    ],
+    "graveyard": [
+      "Street Wraith"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Chromatic Star",
+    "Street Wraith",
+    "Street Wraith",
+    "Edge of Autumn"
+  ],
+  "difficulty": "medium"
+}

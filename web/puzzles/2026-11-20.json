@@ -1,0 +1,45 @@
+{
+  "id": "2026-11-20",
+  "title": "Puzzle #5",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Tundra",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Swamp",
+      "Badlands"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Dark Ritual",
+      "Consider",
+      "Lotus Petal",
+      "Chromatic Star",
+      "Swamp",
+      "Consider",
+      "Swamp"
+    ],
+    "graveyard": [
+      "Quantum Riddler"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Quantum Riddler",
+    "Thassa's Oracle",
+    "Lotus Petal",
+    "Consider"
+  ],
+  "difficulty": "medium"
+}

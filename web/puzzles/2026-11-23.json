@@ -1,0 +1,44 @@
+{
+  "id": "2026-11-23",
+  "title": "Puzzle #8",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Tundra",
+      "Volcanic Island",
+      "Badlands",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Gleemox",
+      "Aether Spellbomb",
+      "Aether Spellbomb",
+      "Dark Ritual",
+      "Gleemox",
+      "Street Wraith",
+      "Gush",
+      "Reckless Impulse"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Gush",
+    "Reckless Impulse",
+    "Gleemox",
+    "Street Wraith"
+  ],
+  "difficulty": "easy"
+}

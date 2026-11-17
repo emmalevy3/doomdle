@@ -1,0 +1,44 @@
+{
+  "id": "2026-11-25",
+  "title": "Puzzle #10",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Ponder"
+    ],
+    "battlefield": [
+      "Badlands",
+      "Island",
+      {
+        "card": "Tundra",
+        "tapped": true
+      },
+      "Badlands",
+      "Island"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Mox Sapphire",
+      "Street Wraith",
+      "Reckless Impulse",
+      "Lotus Petal",
+      "Gush",
+      "Mox Jet",
+      "Cabal Ritual",
+      "Frantic Search"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Laboratory Maniac",
+    "Gush",
+    "Frantic Search",
+    "Reckless Impulse",
+    "Street Wraith"
+  ],
+  "difficulty": "medium"
+}

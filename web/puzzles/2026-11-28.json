@@ -1,0 +1,46 @@
+{
+  "id": "2026-11-28",
+  "title": "Puzzle #13",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Island",
+      "Mox Jet",
+      {
+        "card": "Tundra",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Meticulous Archive",
+      "Lion's Eye Diamond",
+      "Manamorphose",
+      "Ponder",
+      "Meditate",
+      "Ancestral Recall"
+    ],
+    "graveyard": [
+      "Edge of Autumn",
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Jace, Wielder of Mysteries",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Meditate"
+  ],
+  "difficulty": "hard"
+}

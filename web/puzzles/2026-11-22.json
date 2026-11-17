@@ -1,0 +1,54 @@
+{
+  "id": "2026-11-22",
+  "title": "Puzzle #7",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Volcanic Island",
+      "Island",
+      "Volcanic Island",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Mox Jet",
+      "Sol Ring",
+      "Lion's Eye Diamond",
+      "Ideas Unbound",
+      "Mox Jet",
+      "Mishra's Bauble",
+      "Flooded Strand"
+    ],
+    "graveyard": [
+      "Edge of Autumn"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Spell Pierce"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Island",
+      "Plateau",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Sol Ring",
+    "Edge of Autumn",
+    "Lion's Eye Diamond",
+    "Thassa's Oracle"
+  ],
+  "difficulty": "hard"
+}

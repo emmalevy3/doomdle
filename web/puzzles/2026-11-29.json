@@ -1,0 +1,48 @@
+{
+  "id": "2026-11-29",
+  "title": "Puzzle #14",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Jace, Wielder of Mysteries",
+      "Dark Ritual",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Badlands",
+      "Island",
+      "Mox Sapphire",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Island",
+      "Cabal Ritual",
+      "Mishra's Bauble",
+      "Swamp",
+      "Reckless Impulse",
+      "Lotus Petal"
+    ],
+    "graveyard": [
+      "Chromatic Star",
+      "Timetwister"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Reckless Impulse",
+    "Timetwister",
+    "Lion's Eye Diamond",
+    "Lotus Petal"
+  ],
+  "difficulty": "hard"
+}

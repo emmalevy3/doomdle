@@ -1,0 +1,43 @@
+{
+  "id": "2026-12-12",
+  "title": "Puzzle #27",
+  "you": {
+    "life": 4,
+    "hand": [
+      "Unearth",
+      "Pyroblast"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Underground Sea",
+      "Mox Jet",
+      "Sol Ring",
+      "Underground Sea"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Undercity Sewers",
+      "Aether Spellbomb",
+      "Lotus Petal",
+      "Mox Sapphire",
+      "Flow State",
+      "Timetwister",
+      "Island"
+    ],
+    "graveyard": [
+      "Wizard's Rockets"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Timetwister",
+    "Jace, Wielder of Mysteries",
+    "Lotus Petal",
+    "Mox Sapphire",
+    "Island"
+  ],
+  "difficulty": "hard"
+}

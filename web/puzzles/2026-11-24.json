@@ -1,0 +1,54 @@
+{
+  "id": "2026-11-24",
+  "title": "Puzzle #9",
+  "you": {
+    "life": 6,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Unearth",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Underground Sea",
+      "Swamp",
+      "Swamp",
+      "Badlands",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Swamp",
+      "Mox Sapphire",
+      "Sol Ring",
+      "Flow State",
+      "Undercity Sewers",
+      "Mox Jet",
+      "Manamorphose"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Dark Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Miscalculation"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Manamorphose",
+    "Sol Ring",
+    "Dark Ritual",
+    "Mox Jet"
+  ],
+  "difficulty": "medium"
+}

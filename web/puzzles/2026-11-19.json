@@ -1,0 +1,41 @@
+{
+  "id": "2026-11-19",
+  "title": "Puzzle #4",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Doctor Doom, Unrivaled",
+      "Unearth",
+      "Silence"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      "Swamp",
+      "Swamp",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Lion's Eye Diamond",
+      "Mox Jet",
+      "Night's Whisper",
+      "Gleemox",
+      "Ideas Unbound",
+      "Ancestral Recall",
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Brainstorm",
+    "Night's Whisper",
+    "Ancestral Recall",
+    "Lion's Eye Diamond",
+    "Gleemox"
+  ],
+  "difficulty": "easy"
+}

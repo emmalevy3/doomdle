@@ -1,0 +1,49 @@
+{
+  "id": "2026-12-11",
+  "title": "Puzzle #26",
+  "you": {
+    "life": 18,
+    "hand": [
+      "Laboratory Maniac",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Tundra",
+      "Mox Jet",
+      {
+        "card": "Swamp",
+        "tapped": true
+      },
+      "Tundra"
+    ],
+    "library": [
+      "Wizard's Rockets",
+      "Gitaxian Probe",
+      "Dark Ritual",
+      "Lotus Petal",
+      "Street Wraith"
+    ],
+    "graveyard": [
+      "Timetwister",
+      "Brainstorm"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 1,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Gitaxian Probe",
+    "Street Wraith",
+    "Brainstorm",
+    "Timetwister",
+    "Wizard's Rockets"
+  ],
+  "difficulty": "medium"
+}

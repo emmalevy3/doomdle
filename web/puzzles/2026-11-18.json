@@ -1,0 +1,42 @@
+{
+  "id": "2026-11-18",
+  "title": "Puzzle #3",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Unearth",
+      "Veil of Summer"
+    ],
+    "battlefield": [
+      "Sol Ring",
+      "Island",
+      "Badlands",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Meticulous Archive",
+      "Ideas Unbound",
+      "Chromatic Star",
+      "Meticulous Archive",
+      "Thundertrap Trainer"
+    ],
+    "graveyard": [
+      "Gleemox",
+      "Street Wraith"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Chromatic Star",
+    "Street Wraith",
+    "Thassa's Oracle",
+    "Ideas Unbound",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

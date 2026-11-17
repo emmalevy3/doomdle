@@ -1,0 +1,47 @@
+{
+  "id": "2026-12-10",
+  "title": "Puzzle #25",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Street Wraith",
+      "Thoughtseize"
+    ],
+    "battlefield": [
+      {
+        "card": "Volcanic Island",
+        "tapped": true
+      },
+      "Badlands",
+      "Badlands",
+      "Mox Sapphire",
+      {
+        "card": "Mox Sapphire",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Ancestral Recall",
+      "Lion's Eye Diamond",
+      "Ponder",
+      "Flow State",
+      "Swamp",
+      "Reckless Impulse",
+      "Dark Ritual"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Thassa's Oracle",
+    "Ponder",
+    "Ancestral Recall",
+    "Lion's Eye Diamond"
+  ],
+  "difficulty": "easy"
+}

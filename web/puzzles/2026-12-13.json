@@ -1,0 +1,56 @@
+{
+  "id": "2026-12-13",
+  "title": "Puzzle #28",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Force of Will",
+      "Unearth"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Swamp",
+      {
+        "card": "Underground Sea",
+        "tapped": true
+      },
+      "Underground Sea",
+      "Swamp",
+      {
+        "card": "Cavern of Souls",
+        "type": "Wizard"
+      }
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Black Lotus",
+      "Quantum Riddler",
+      "Mishra's Bauble",
+      "Mishra's Bauble",
+      "Black Lotus",
+      "Dark Ritual"
+    ],
+    "graveyard": [
+      "Meditate",
+      "Brainstorm"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Meditate",
+    "Laboratory Maniac",
+    "Quantum Riddler",
+    "Black Lotus",
+    "Black Lotus"
+  ],
+  "difficulty": "hard"
+}

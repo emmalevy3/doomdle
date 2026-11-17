@@ -1,0 +1,43 @@
+{
+  "id": "2026-12-06",
+  "title": "Puzzle #21",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Silence",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Volcanic Island",
+      "Island",
+      "Tundra"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Mox Jet",
+      "Chromatic Star",
+      "Ponder",
+      "Black Lotus",
+      "Cabal Ritual",
+      "Wizard's Rockets",
+      "Night's Whisper"
+    ],
+    "graveyard": [
+      "Ideas Unbound"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20
+  },
+  "solution": [
+    "Ideas Unbound",
+    "Laboratory Maniac",
+    "Night's Whisper",
+    "Black Lotus",
+    "Chromatic Star"
+  ],
+  "difficulty": "hard"
+}

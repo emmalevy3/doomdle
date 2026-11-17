@@ -1,0 +1,43 @@
+{
+  "id": "2026-12-08",
+  "title": "Puzzle #23",
+  "you": {
+    "life": 16,
+    "hand": [
+      "Gitaxian Probe",
+      "Force of Will"
+    ],
+    "battlefield": [
+      "Swamp",
+      "Sol Ring",
+      "Badlands",
+      "Mox Sapphire"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Sol Ring",
+      "Manamorphose",
+      "Mishra's Bauble",
+      "Flooded Strand",
+      "Wizard's Rockets",
+      "Aether Spellbomb",
+      "Timetwister"
+    ],
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "battlefield": [
+      "Orcish Bowmasters"
+    ]
+  },
+  "solution": [
+    "Manamorphose",
+    "Aether Spellbomb",
+    "Thassa's Oracle",
+    "Timetwister",
+    "Sol Ring"
+  ],
+  "difficulty": "medium"
+}

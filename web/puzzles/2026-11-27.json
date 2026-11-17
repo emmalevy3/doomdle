@@ -1,0 +1,48 @@
+{
+  "id": "2026-11-27",
+  "title": "Puzzle #12",
+  "you": {
+    "life": 10,
+    "hand": [
+      "Unearth",
+      "Lion's Eye Diamond"
+    ],
+    "battlefield": [
+      "Mox Sapphire",
+      "Swamp",
+      "Underground Sea",
+      "Lightning Greaves"
+    ],
+    "library": [
+      "Doctor Doom, Unrivaled",
+      "Reckless Impulse",
+      "Tamiyo, Inquisitive Student",
+      "Undercity Sewers",
+      "Lion's Eye Diamond",
+      "Mishra's Bauble"
+    ],
+    "graveyard": [
+      "Gitaxian Probe"
+    ],
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Island",
+      "Grafdigger's Cage"
+    ]
+  },
+  "solution": [
+    "Reckless Impulse",
+    "Doctor Doom, Unrivaled",
+    "Gitaxian Probe",
+    "Lion's Eye Diamond",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "medium"
+}

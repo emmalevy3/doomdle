@@ -1,0 +1,49 @@
+{
+  "id": "2026-11-17",
+  "title": "Puzzle #2",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Silence",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Underground Sea",
+      "Island",
+      "Swamp"
+    ],
+    "library": [
+      "Jace, Wielder of Mysteries",
+      "Lotus Petal",
+      "Gleemox",
+      "Gush",
+      "Quantum Riddler",
+      "Flooded Strand",
+      "Swamp",
+      "Street Wraith",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 2,
+    "land_drop": false
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Surgical Extraction",
+      "Flusterstorm"
+    ],
+    "battlefield": [
+      "Plateau",
+      "Leyline of the Void"
+    ]
+  },
+  "solution": [
+    "Gush",
+    "Quantum Riddler",
+    "Lion's Eye Diamond",
+    "Jace, Wielder of Mysteries",
+    "Gleemox"
+  ],
+  "difficulty": "medium"
+}

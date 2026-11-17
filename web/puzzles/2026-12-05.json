@@ -1,0 +1,48 @@
+{
+  "id": "2026-12-05",
+  "title": "Puzzle #20",
+  "you": {
+    "life": 14,
+    "hand": [
+      "Unearth",
+      "Gitaxian Probe"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Underground Sea",
+      "Swamp"
+    ],
+    "library": [
+      "Laboratory Maniac",
+      "Dark Ritual",
+      "Lion's Eye Diamond",
+      "Tamiyo, Inquisitive Student",
+      "Ancestral Recall",
+      "Night's Whisper",
+      "Mishra's Bauble"
+    ],
+    "graveyard": [
+      "Lion's Eye Diamond",
+      "Consider"
+    ],
+    "spells_cast": 2,
+    "cards_drawn": 1
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Counterspell"
+    ],
+    "battlefield": [
+      "Island"
+    ]
+  },
+  "solution": [
+    "Consider",
+    "Laboratory Maniac",
+    "Ancestral Recall",
+    "Night's Whisper",
+    "Mishra's Bauble"
+  ],
+  "difficulty": "hard"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2026-12-03",
+  "title": "Puzzle #18",
+  "you": {
+    "life": 20,
+    "hand": [
+      "Duress",
+      "Ponder"
+    ],
+    "battlefield": [
+      "Island",
+      "Underground Sea",
+      "Badlands",
+      "Island"
+    ],
+    "library": [
+      "Thassa's Oracle",
+      "Cabal Ritual",
+      "Gitaxian Probe",
+      "Ideas Unbound",
+      "Lotus Petal",
+      "Underground Sea",
+      "Mox Jet",
+      "Lion's Eye Diamond"
+    ],
+    "spells_cast": 1,
+    "cards_drawn": 2
+  },
+  "opponent": {
+    "life": 20,
+    "hand": [
+      "Pact of Negation"
+    ],
+    "battlefield": [
+      "Volcanic Island",
+      "Volcanic Island"
+    ]
+  },
+  "solution": [
+    "Thassa's Oracle",
+    "Ideas Unbound",
+    "Gitaxian Probe",
+    "Lotus Petal",
+    "Underground Sea"
+  ],
+  "difficulty": "easy"
+}
