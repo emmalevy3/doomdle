@@ -776,6 +776,36 @@ dialog::backdrop {
   font-family: var(--display);
 }
 
+/* ------------------------------------------------------------ planning taps */
+
+.zone-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.untap-all[hidden] {
+  display: none;
+}
+
+.plan-hint {
+  margin: -2px 0 6px;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+/* The holder steps aside so the card (or its sideways frame) sits in the row. */
+.perm {
+  display: contents;
+}
+
+/* A tap in your plan, not in the puzzle: a dashed outline marks it. */
+.card.planned {
+  outline: 2px dashed var(--accent-glow);
+  outline-offset: 3px;
+}
+
 /* ------------------------------------------------------------ dragging */
 
 .drag-ghost {

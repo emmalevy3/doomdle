@@ -1,6 +1,6 @@
 // The pile builder: pick up to five candidates and order them, top first.
 
-import { cardElement, largeImage } from "./board.js";
+import { cardElement, hidePeek, showPeek } from "./board.js";
 
 /**
  * The cards a pile can be built from: the library candidates, then the
@@ -21,29 +21,6 @@ function el(tag, className, text) {
   return node;
 }
 
-let peek = null;
-
-/** Show `name` large beside `card` (a pick-stack card), without taking the pointer. */
-function showPeek(name, card) {
-  const url = largeImage(name);
-  if (!url) {
-    return;
-  }
-  if (!peek) {
-    peek = el("img", "peek");
-    peek.alt = "";
-    document.body.append(peek);
-  }
-  peek.src = url;
-  peek.hidden = false;
-  const box = card.getBoundingClientRect();
-  const width = peek.getBoundingClientRect().width || 300;
-  const height = width * (88 / 63);
-  const top = Math.min(Math.max(8, box.top), window.innerHeight - height - 8);
-  peek.style.left = `${Math.max(8, Math.min(box.right + 16, window.innerWidth - width - 8))}px`;
-  peek.style.top = `${Math.max(8, top)}px`;
-}
-
 /**
  * True on a touch screen (no hover) wide enough for the stacked layout, e.g.
  * a tablet held sideways: there the first tap on a candidate shows it and a
@@ -51,12 +28,6 @@ function showPeek(name, card) {
  */
 function tapToPreview() {
   return window.matchMedia("(hover: none) and (min-width: 1000px)").matches;
-}
-
-function hidePeek() {
-  if (peek) {
-    peek.hidden = true;
-  }
 }
 
 function slotLabel(i) {

@@ -79,6 +79,45 @@ function showLarge(name) {
   zoom.showModal();
 }
 
+let peek = null;
+
+/**
+ * Shows `name` large beside `card` without taking the pointer: to its right,
+ * or to its left when there is no room.
+ */
+export function showPeek(name, card) {
+  const url = largeImage(name);
+  if (!url) {
+    return;
+  }
+  if (!peek) {
+    peek = el("img", "peek");
+    peek.alt = "";
+    document.body.append(peek);
+  }
+  peek.src = url;
+  peek.hidden = false;
+  const box = card.getBoundingClientRect();
+  const width = peek.getBoundingClientRect().width || 300;
+  const height = width * (88 / 63);
+  const top = Math.min(Math.max(8, box.top), window.innerHeight - height - 8);
+  const right = box.right + 16;
+  const left = right + width + 8 <= window.innerWidth ? right : box.left - width - 16;
+  peek.style.left = `${Math.max(8, Math.min(left, window.innerWidth - width - 8))}px`;
+  peek.style.top = `${Math.max(8, top)}px`;
+}
+
+export function hidePeek() {
+  if (peek) {
+    peek.hidden = true;
+  }
+}
+
+/** True where a mouse can hover: there your permanents can be tapped to plan. */
+function canPlan() {
+  return window.matchMedia("(hover: hover)").matches;
+}
+
 /** A battlefield entry from the puzzle file: a name or { card, ... }. */
 function permanent(entry) {
   if (typeof entry === "string") {
@@ -114,6 +153,80 @@ function permanentCard(p) {
   const frame = el("span", "tapped-frame");
   frame.append(card);
   return frame;
+}
+
+/**
+ * Your battlefield. With a mouse, clicking an untapped permanent taps it in
+ * your plan (and again untaps it), just to help picture a line; it changes
+ * nothing in the puzzle. Hovering shows the card large instead of a click.
+ * Permanents the puzzle has tapped stay tapped.
+ */
+function yourBattlefield(entries) {
+  const section = el("section", "zone");
+  const head = el("div", "zone-head");
+  head.append(el("h3", null, "Battlefield"));
+  const untapAll = el("button", "quiet small untap-all", "Untap all");
+  untapAll.type = "button";
+  untapAll.hidden = true;
+  head.append(untapAll);
+  section.append(head);
+  if (!canPlan()) {
+    section.append(cardRow(entries, permanentCard));
+    return section;
+  }
+
+  const untaps = [];
+  let planned = 0;
+  const changed = (delta) => {
+    planned += delta;
+    untapAll.hidden = planned === 0;
+  };
+  untapAll.addEventListener("click", () => {
+    for (const untap of untaps) {
+      untap();
+    }
+  });
+
+  const plannable = (p) => {
+    if (p.tapped) {
+      return permanentCard(p);
+    }
+    const holder = el("span", "perm");
+    let tapped = false;
+    const card = cardElement(p.card, {
+      badges: permanentBadges(p),
+      onClick: () => set(!tapped),
+    });
+    const set = (value) => {
+      if (value === tapped) {
+        return;
+      }
+      tapped = value;
+      card.classList.toggle("tapped", tapped);
+      card.classList.toggle("planned", tapped);
+      card.title = tapped ? `${p.card} (tapped in your plan; click to untap)` : `${p.card} (click to tap)`;
+      if (tapped) {
+        const frame = el("span", "tapped-frame");
+        frame.append(card);
+        holder.replaceChildren(frame);
+      } else {
+        holder.replaceChildren(card);
+      }
+      changed(tapped ? 1 : -1);
+    };
+    card.title = `${p.card} (click to tap)`;
+    card.addEventListener("mouseenter", () => showPeek(p.card, card));
+    card.addEventListener("mouseleave", hidePeek);
+    card.addEventListener("click", hidePeek);
+    holder.append(card);
+    untaps.push(() => set(false));
+    return holder;
+  };
+  section.append(
+    el("p", "hint plan-hint", "Click your permanents to tap them while you plan."),
+    cardRow(entries, plannable),
+  );
+  return section;
 }
 
 /** Small labelled values: [label, value] pairs, or [label, value, extra class]. */
@@ -172,7 +285,7 @@ export function renderBoard({ you: yourPanel, hand: handPanel, them: theirPanel 
     "Your board",
     lifeBlock,
     stats(yourStats),
-    zone("Battlefield", (you.battlefield ?? []).map(permanent), permanentCard),
+    yourBattlefield((you.battlefield ?? []).map(permanent)),
   );
 
   panel(handPanel, "Your hand", cardRow(you.hand ?? [], (name) => cardElement(name)));
