@@ -15,5 +15,5 @@ routes = [
 # The Pages project's address; confirm it once the project exists (if
 # "doomdle" was taken, Cloudflare adds a suffix such as doomdle-abc.pages.dev).
 DOOMDLE_ORIGIN = "https://doomdle.pages.dev"
-# Emmadle's existing Worker.
-EMMADLE_ORIGIN = "https://emmadle.emmachomsky.workers.dev"
+# Emmadle's Pages project, deployed from its own repo.
+EMMADLE_ORIGIN = "https://emmadle.pages.dev"
