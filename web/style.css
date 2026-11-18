@@ -722,6 +722,71 @@ button.viewer-arrow:not(:disabled):hover {
   gap: 4px;
 }
 
+/* Phones: five equal columns that always fit on one row. The card shrinks to
+   its column, ✕ becomes a badge on the card's corner, and ‹ › share the
+   width below it. */
+@media (max-width: 999px) {
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(var(--slots, 5), minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .slot {
+    position: relative;
+    min-width: 0;
+  }
+
+  .slot .card,
+  .slot-empty {
+    width: min(var(--card-w), 100%);
+  }
+
+  .slot-controls {
+    width: min(var(--card-w), 100%);
+  }
+
+  .slot-controls button.move {
+    flex: 1;
+    min-height: 30px;
+    padding: 0;
+    font-size: 1.1rem;
+  }
+
+  /* A gold ✕ in a black circle on the card's top-left corner, just below
+     the name bar. The card starts below the slot label (0.75rem + 6px). */
+  .slot-controls button.remove {
+    position: absolute;
+    top: calc(0.75rem + 6px + var(--card-h) * 0.055 + 4px);
+    /* The card is centred in its column at min(--card-w, 100%) wide, so its
+       left edge is half the leftover width in from the slot's edge. */
+    left: calc(max(0px, (100% - var(--card-w)) / 2) + 2px);
+    display: grid;
+    place-items: center;
+    width: 17px;
+    height: 17px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--bg-deep);
+    box-shadow: 0 1px 4px var(--shadow);
+    color: var(--gold);
+    font-size: 0.75rem;
+    line-height: 1;
+    /* Buttons get letter-spacing, which adds space after the ✕ and pushes it
+       left of centre. */
+    letter-spacing: 0;
+    transition: color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .slot-controls button.remove:hover,
+  .slot-controls button.remove:focus-visible {
+    color: var(--text);
+    box-shadow: 0 1px 4px var(--shadow), 0 0 10px rgb(198 161 91 / 0.6);
+    outline: none;
+  }
+}
+
 .pile-area.complete {
   border-color: var(--win);
   box-shadow: 0 10px 30px var(--shadow), 0 0 28px rgb(127 176 105 / 0.25);

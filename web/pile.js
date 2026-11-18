@@ -66,6 +66,7 @@ function slotLabel(i) {
 /** A read-only row of slots showing `names`, top first (used to reveal a pile). */
 export function pileRow(names) {
   const slots = el("ol", "slots");
+  slots.style.setProperty("--slots", String(names.length));
   names.forEach((name, i) => {
     const slot = el("li", "slot filled");
     slot.append(el("span", "slot-label", slotLabel(i)), cardElement(name));
@@ -312,7 +313,9 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
     previewed = null;
     renderPool();
 
+    const phone = phoneLayout();
     const list = el("ol", "slots");
+    list.style.setProperty("--slots", String(size));
     for (let i = 0; i < size; i++) {
       const index = slots[i];
       const slot = el("li", index === null ? "slot" : "slot filled");
@@ -329,8 +332,8 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
         );
         slot.append(card);
         const controls = el("span", "slot-controls");
-        const button = (label, title, action, disabled) => {
-          const b = el("button", "small", label);
+        const button = (label, title, action, disabled, kind) => {
+          const b = el("button", `small ${kind}`, label);
           b.type = "button";
           b.title = title;
           b.setAttribute("aria-label", title);
@@ -338,9 +341,10 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
           b.addEventListener("click", action);
           controls.append(b);
         };
-        button("↑", "Move up", () => swap(i, i - 1), i === 0);
-        button("↓", "Move down", () => swap(i, i + 1), i === size - 1);
-        button("✕", "Remove", () => remove(i), false);
+        // Phones lay the pile out left to right, so "up" points left there.
+        button(phone ? "‹" : "↑", "Move up", () => swap(i, i - 1), i === 0, "move");
+        button(phone ? "›" : "↓", "Move down", () => swap(i, i + 1), i === size - 1, "move");
+        button("✕", "Remove", () => remove(i), false, "remove");
         slot.append(controls);
       }
       list.append(slot);
