@@ -1,6 +1,6 @@
 // The pile builder: pick up to five candidates and order them, top first.
 
-import { cardElement, hidePeek, showPeek } from "./board.js";
+import { cardElement, hidePeek, largeImage, showPeek } from "./board.js";
 
 /**
  * The cards a pile can be built from: the library candidates, then the
@@ -24,10 +24,39 @@ function el(tag, className, text) {
 /**
  * True on a touch screen (no hover) wide enough for the stacked layout, e.g.
  * a tablet held sideways: there the first tap on a candidate shows it and a
- * second tap picks it. Phones keep one tap to pick.
+ * second tap picks it. Phones select with a tap and add from the viewer.
  */
 function tapToPreview() {
   return window.matchMedia("(hover: none) and (min-width: 1000px)").matches;
+}
+
+/** The phone layout (one column), where a viewer with arrows shows one candidate large. */
+const PHONE = "(max-width: 999px)";
+
+function phoneLayout() {
+  return window.matchMedia(PHONE).matches;
+}
+
+/**
+ * Calls `step(1)` for a swipe left on `node` and `step(-1)` for a swipe right.
+ * The node's CSS sets `touch-action: pan-y`, so the browser leaves sideways
+ * gestures to us and still scrolls the page vertically.
+ */
+function swipe(node, step) {
+  node.addEventListener("pointerdown", (down) => {
+    const done = (up) => {
+      window.removeEventListener("pointerup", done);
+      window.removeEventListener("pointercancel", done);
+      if (up.type !== "pointerup") return;
+      const dx = up.clientX - down.clientX;
+      const dy = up.clientY - down.clientY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        step(dx < 0 ? 1 : -1);
+      }
+    };
+    window.addEventListener("pointerup", done);
+    window.addEventListener("pointercancel", done);
+  });
 }
 
 function slotLabel(i) {
@@ -145,6 +174,10 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
   let slots = Array(size).fill(null); // an index into pool, or null, top first
   let enabled = true;
   let previewed = null; // the candidate a first tap is showing (tapToPreview)
+  let selected = 0; // the candidate the phone viewer shows
+
+  // Rotating a phone or resizing a window can switch layouts: redraw.
+  window.matchMedia(PHONE).addEventListener("change", render);
 
   // A tap anywhere outside the stack closes a tap preview.
   document.addEventListener("click", (event) => {
@@ -185,7 +218,15 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
    * what can't be picked.
    */
   function renderPool() {
+    const phone = phoneLayout();
     const stack = el("div", "pick-stack");
+    // Phones: one grid column per card, each at most a card wide plus a gap,
+    // the last a full card. The columns share the panel's width, so the cards
+    // spread out to its right edge and overlap only when they must.
+    stack.style.gridTemplateColumns =
+      pool.length > 1
+        ? `repeat(${pool.length - 1}, minmax(0, calc(var(--card-w) + 6px))) var(--card-w)`
+        : "var(--card-w)";
     pool.forEach((card, index) => {
       const used = slots.includes(index);
       const node = cardElement(card.name, { onClick: () => pick(index, node) });
@@ -193,10 +234,15 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
       node.setAttribute("aria-disabled", String(!pickable));
       node.title = used ? `${card.name} (in your pile)` : card.name;
       if (used) node.classList.add("used");
-      node.addEventListener("mouseenter", () => showPeek(card.name, node));
-      node.addEventListener("focus", () => showPeek(card.name, node));
-      node.addEventListener("mouseleave", hidePeek);
-      node.addEventListener("blur", hidePeek);
+      if (phone) {
+        // The viewer shows cards large on phones; a peek would cover it.
+        if (index === selected) node.classList.add("selected");
+      } else {
+        node.addEventListener("mouseenter", () => showPeek(card.name, node));
+        node.addEventListener("focus", () => showPeek(card.name, node));
+        node.addEventListener("mouseleave", hidePeek);
+        node.addEventListener("blur", hidePeek);
+      }
       draggable(
         node,
         () => enabled,
@@ -204,12 +250,61 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
       );
       stack.append(node);
     });
-    const hint = tapToPreview()
-      ? [el("p", "hint", "Tap to read, tap again to add.")]
-      : canHover()
-        ? [el("p", "hint", "Click to add, or drag to any slot.")]
-        : [];
-    poolPanel.replaceChildren(el("h2", null, "Cards to pick from"), ...hint, stack);
+    const hint = phone
+      ? [el("p", "hint", "Tap a card or use the arrows to read it, then add it to your pile.")]
+      : tapToPreview()
+        ? [el("p", "hint", "Tap to read, tap again to add.")]
+        : canHover()
+          ? [el("p", "hint", "Click to add, or drag to any slot.")]
+          : [];
+    const viewer = phone ? renderViewer() : [];
+    poolPanel.replaceChildren(el("h2", null, "Cards to pick from"), ...hint, ...viewer, stack);
+  }
+
+  /**
+   * Phones: the selected candidate large, between arrows that step through
+   * the candidates (a swipe on the card does the same), and a button that
+   * adds it to the pile.
+   */
+  function renderViewer() {
+    const card = pool[selected];
+    const step = (by) => {
+      selected = (selected + by + pool.length) % pool.length;
+      renderPool();
+    };
+    const arrow = (label, title, by) => {
+      const b = el("button", "viewer-arrow", label);
+      b.type = "button";
+      b.title = title;
+      b.setAttribute("aria-label", title);
+      b.addEventListener("click", () => step(by));
+      return b;
+    };
+    const face = el("div", "viewer-card");
+    const url = largeImage(card.name);
+    if (url) {
+      const img = el("img");
+      img.src = url;
+      img.alt = card.name;
+      img.draggable = false;
+      face.append(img);
+    } else {
+      face.classList.add("text-card");
+      face.append(el("span", "card-name", card.name));
+    }
+    swipe(face, step);
+    const row = el("div", "viewer");
+    row.append(arrow("◀", "Previous card", -1), face, arrow("▶", "Next card", 1));
+
+    const used = slots.includes(selected);
+    const addButton = el("button", "primary", used ? "In your pile" : "Add to pile");
+    addButton.type = "button";
+    addButton.disabled = used || !enabled || full();
+    addButton.addEventListener("click", () => add(selected));
+    const where = card.from === "graveyard" ? " · from your graveyard" : "";
+    const actions = el("div", "viewer-actions");
+    actions.append(el("p", "viewer-count", `${selected + 1} of ${pool.length}${where}`), addButton);
+    return [row, actions];
   }
 
   function render() {
@@ -275,8 +370,13 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
     );
   }
 
-  /** A click on a candidate: on a tablet, show it first; otherwise pick it. */
+  /** A click on a candidate: on a phone, select it for the viewer; on a tablet, show it first; otherwise pick it. */
   function pick(index, node) {
+    if (phoneLayout()) {
+      selected = index;
+      renderPool();
+      return;
+    }
     if (tapToPreview() && previewed !== index) {
       previewed = index;
       showPeek(pool[index].name, node);
