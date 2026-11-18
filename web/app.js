@@ -1,8 +1,16 @@
 // Loads today's puzzle, runs the attempts, and shows the feedback.
 
-import { ATTEMPTS, REVEAL_ON_LOSS } from "./config.js";
+import { ATTEMPTS, FIRST_PUZZLE, REVEAL_ON_LOSS } from "./config.js";
 import { hidePeek, renderBoard, setImages, setZoomDialog, showLarge, showPeek } from "./board.js";
-import { discordText, localDate, shareText, verdictSentence } from "./describe.js";
+import {
+  archiveDays,
+  discordText,
+  localDate,
+  recordStatus,
+  shareText,
+  shortDate,
+  verdictSentence,
+} from "./describe.js";
 import { candidates, createPileBuilder, pileRow } from "./pile.js";
 import { loadRecord, loadSetting, saveRecord, saveSetting } from "./storage.js";
 
@@ -60,6 +68,93 @@ async function loadJson(path) {
     return null;
   }
   return { text: await response.text() };
+}
+
+/** "medium" as "Medium". */
+function tierName(difficulty) {
+  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+}
+
+// ---------------------------------------------------------------- the archive
+
+/**
+ * The 🗓 button: a dialog listing every day from the first puzzle to today,
+ * newest first, with each day's difficulty and this browser's result. The
+ * files are fetched the first time it opens, for their difficulty and
+ * attempts; a day whose file is missing is left out.
+ */
+function setUpArchive(current) {
+  const dialog = $("archive");
+  const list = $("archive-list");
+  let filled = false;
+  $("archive-open").addEventListener("click", () => {
+    if (!filled) {
+      filled = true;
+      fillArchive(list, current);
+    }
+    dialog.showModal();
+    list.querySelector(".current")?.scrollIntoView({ block: "nearest" });
+  });
+  $("archive-close").addEventListener("click", () => dialog.close());
+  // A click outside the panel lands on the dialog itself, i.e. the backdrop.
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+}
+
+function fillArchive(list, current) {
+  const today = localDate();
+  const days = archiveDays(FIRST_PUZZLE, today);
+  if (days.length === 0) {
+    list.append(el("li", "archive-empty", "No puzzles yet."));
+    return;
+  }
+  for (const { date, number } of days) {
+    const item = el("li");
+    const row = el("a", "archive-row");
+    row.href = date === today ? "./" : `?puzzle=${date}`;
+    if (date === current) {
+      row.classList.add("current");
+      row.setAttribute("aria-current", "page");
+    }
+    const tier = el("span", "archive-tier");
+    const result = el("span");
+    row.append(
+      el("span", "archive-number", `#${number}`),
+      el("span", "archive-date", shortDate(date)),
+      tier,
+      result,
+    );
+    item.append(row);
+    list.append(item);
+    showResult(result, date, ATTEMPTS);
+    loadJson(`puzzles/${date}.json`)
+      .then((file) => {
+        if (!file) {
+          item.remove();
+          return;
+        }
+        const puzzle = JSON.parse(file.text);
+        if (puzzle.difficulty) {
+          tier.className = `archive-tier badge-difficulty ${puzzle.difficulty}`;
+          tier.textContent = tierName(puzzle.difficulty);
+        }
+        showResult(result, puzzle.id ?? date, puzzle.attempts ?? ATTEMPTS);
+      })
+      .catch(() => item.remove());
+  }
+}
+
+/** This browser's result on a puzzle, e.g. "✓ Solved 2/3". */
+function showResult(node, id, allowed) {
+  const { kind, used } = recordStatus(loadRecord(id), allowed);
+  node.className = `archive-result ${kind}`;
+  node.textContent = {
+    solved: `✓ Solved ${used}/${allowed}`,
+    missed: "✗ Missed",
+    playing: `In progress ${used}/${allowed}`,
+    unplayed: "Not played",
+  }[kind];
 }
 
 // ---------------------------------------------------------------- the game
@@ -128,6 +223,7 @@ async function main() {
   $("zoom").addEventListener("click", () => $("zoom").close());
 
   const name = puzzleName();
+  setUpArchive(name);
   const [file, imageFile] = await Promise.all([
     loadJson(`puzzles/${name}.json`),
     loadJson("card-images.json"),
@@ -150,8 +246,9 @@ async function main() {
   $("title").textContent = puzzle.title ?? "Doomdle";
   $("date").textContent = id;
   if (puzzle.difficulty) {
-    const tier = puzzle.difficulty.charAt(0).toUpperCase() + puzzle.difficulty.slice(1);
-    $("date").append(el("span", `badge-difficulty ${puzzle.difficulty}`, tier));
+    $("date").append(
+      el("span", `badge-difficulty ${puzzle.difficulty}`, tierName(puzzle.difficulty)),
+    );
   }
   renderBoard({ you: $("you"), hand: $("hand"), them: $("them") }, puzzle);
 

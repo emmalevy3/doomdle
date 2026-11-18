@@ -19,6 +19,9 @@ import {
   shareRows,
   shareText,
   discordText,
+  archiveDays,
+  shortDate,
+  recordStatus,
 } from "../web/describe.js";
 
 const { verify_pile, solve_puzzle } = api;
@@ -220,6 +223,60 @@ check(
     hard: "Doomdle 2026-11-16 (Hard) 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/",
   },
 );
+
+// The archive: the days from the first puzzle to today, newest first.
+check(
+  "archive days",
+  {
+    three: archiveDays("2026-11-16", "2026-11-18"),
+    first: archiveDays("2026-11-16", "2026-11-16"),
+    before: archiveDays("2026-11-16", "2026-11-15"),
+    monthEnd: archiveDays("2026-11-29", "2026-12-02").map((d) => d.date),
+    // Clocks change in late March and October; whole days still count.
+    dst: archiveDays("2026-11-16", "2027-03-29")[0],
+    yearOn: archiveDays("2026-11-16", "2027-11-16")[0].number,
+  },
+  {
+    three: [
+      { date: "2026-11-18", number: 3 },
+      { date: "2026-11-17", number: 2 },
+      { date: "2026-11-16", number: 1 },
+    ],
+    first: [{ date: "2026-11-16", number: 1 }],
+    before: [],
+    monthEnd: ["2026-12-02", "2026-12-01", "2026-11-30", "2026-11-29"],
+    dst: { date: "2027-03-29", number: 134 },
+    yearOn: 366,
+  },
+);
+check(
+  "short dates",
+  [shortDate("2026-11-18"), shortDate("2027-01-01"), shortDate("2028-02-29")],
+  ["Wed 18 Nov", "Fri 1 Jan", "Tue 29 Feb"],
+);
+{
+  const attempt = (wins, extra = {}) => ({ result: { ok: true, wins, gave_up: false, ...extra } });
+  const gaveUp = { result: { ok: true, wins: false, gave_up: true } };
+  check(
+    "record status",
+    {
+      none: recordStatus({ attempts: [] }, 3),
+      missing: recordStatus(undefined, 3),
+      playing: recordStatus({ attempts: [attempt(false), gaveUp] }, 3),
+      solved: recordStatus({ attempts: [attempt(false), attempt(true)] }, 3),
+      missed: recordStatus({ attempts: [attempt(false), attempt(false), attempt(false)] }, 3),
+      fewer: recordStatus({ attempts: [attempt(false)] }, 1),
+    },
+    {
+      none: { kind: "unplayed", used: 0 },
+      missing: { kind: "unplayed", used: 0 },
+      playing: { kind: "playing", used: 1 },
+      solved: { kind: "solved", used: 2 },
+      missed: { kind: "missed", used: 3 },
+      fewer: { kind: "missed", used: 1 },
+    },
+  );
+}
 
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);

@@ -72,6 +72,54 @@ export function localDate(now = new Date()) {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
+// ---------------------------------------------------------------- the archive
+
+const DAY_MS = 86_400_000;
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Midnight UTC of a YYYY-MM-DD date: whole days apart, whatever the time zone. */
+function utcDay(date) {
+  const [y, m, d] = date.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+
+/**
+ * Every puzzle day from `first` to `today` (YYYY-MM-DD, both included),
+ * newest first, each with its puzzle number (the first day is #1).
+ */
+export function archiveDays(first, today) {
+  const start = utcDay(first);
+  const days = [];
+  for (let t = utcDay(today); t >= start; t -= DAY_MS) {
+    days.push({
+      date: new Date(t).toISOString().slice(0, 10),
+      number: Math.round((t - start) / DAY_MS) + 1,
+    });
+  }
+  return days;
+}
+
+/** "2026-11-18" as "Wed 18 Nov". */
+export function shortDate(date) {
+  const day = new Date(utcDay(date));
+  return `${WEEKDAYS[day.getUTCDay()]} ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`;
+}
+
+/**
+ * Where a player stands on a puzzle, from its saved record: solved, missed
+ * (out of attempts), still playing, or not played; `used` counts attempts the
+ * way the game does.
+ */
+export function recordStatus(record, allowed) {
+  const attempts = record?.attempts ?? [];
+  const used = counted(attempts).length;
+  if (attempts.some((a) => a.result?.wins)) return { kind: "solved", used };
+  if (used >= allowed) return { kind: "missed", used };
+  if (used > 0) return { kind: "playing", used };
+  return { kind: "unplayed", used };
+}
+
 // ---------------------------------------------------------------- sharing
 
 const SQUARE = { win: "🟩", answered: "🟨", reached: "🟥", unreached: "⬛" };

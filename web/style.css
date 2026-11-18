@@ -62,8 +62,34 @@ footer {
 /* ------------------------------------------------------------ header */
 
 header {
+  position: relative;
   padding: 14px 0 4px;
   text-align: center;
+}
+
+/* The 🗓 button, top left: opens the list of past puzzles. A bare gold
+   symbol, no frame; it brightens and glows on hover. */
+.archive-button {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--gold);
+  /* 🗓 plus U+FE0E asks for the plain text symbol, not the colour emoji. */
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Symbols", sans-serif;
+  font-size: 1.9rem;
+  line-height: 1;
+  transition: color 160ms ease, text-shadow 160ms ease, transform 160ms ease;
+}
+
+.archive-button:hover,
+.archive-button:focus-visible {
+  color: var(--text);
+  text-shadow: 0 0 12px rgb(198 161 91 / 0.6);
+  transform: translateY(-1px);
+  outline: none;
 }
 
 .brandline {
@@ -882,6 +908,97 @@ dialog {
 dialog::backdrop {
   background: rgb(5 4 6 / 0.8);
   backdrop-filter: blur(4px);
+}
+
+/* The past puzzles dialog. */
+.archive-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(92vw, 460px);
+  max-height: 80vh;
+  background: linear-gradient(180deg, var(--surface-raised), var(--surface));
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  box-shadow: 0 20px 60px var(--shadow);
+  color: var(--text);
+}
+
+.archive-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid var(--gold-dim);
+}
+
+.archive-head h2 {
+  margin: 0;
+}
+
+.archive-close {
+  padding: 2px 10px;
+  font-size: 1.1rem;
+}
+
+.archive-list {
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.archive-row {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.archive-row:hover,
+.archive-row:focus-visible {
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.archive-row.current {
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.archive-number {
+  font: 500 0.9rem / 1.3 var(--display);
+  color: var(--gold);
+}
+
+.archive-tier.badge-difficulty {
+  margin-left: 0;
+}
+
+.archive-result {
+  justify-self: end;
+  text-align: right;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.archive-result.solved {
+  color: var(--win);
+  font-style: normal;
+}
+
+.archive-result.missed {
+  color: var(--lose);
+  font-style: normal;
+}
+
+.archive-empty {
+  padding: 12px;
+  color: var(--muted);
+  font-style: italic;
 }
 
 .zoom-body img {

@@ -17,6 +17,7 @@
   </head>
   <body>
     <header>
+      <button id="archive-open" class="archive-button" type="button" title="Past puzzles" aria-label="Past puzzles">🗓︎</button>
       <div class="brandline">
         <p class="wordmark">Doomdle</p>
         <p class="pips" aria-hidden="true">
@@ -56,6 +57,16 @@
       Card images from <a href="https://scryfall.com">Scryfall</a>. Magic: The Gathering is
       © Wizards of the Coast. Doomdle is unofficial fan content.
     </footer>
+
+    <dialog id="archive" class="archive" aria-labelledby="archive-title">
+      <div class="archive-panel">
+        <div class="archive-head">
+          <h2 id="archive-title">Past puzzles</h2>
+          <button id="archive-close" class="quiet archive-close" type="button" aria-label="Close">✕</button>
+        </div>
+        <ol id="archive-list" class="archive-list"></ol>
+      </div>
+    </dialog>
 
     <dialog id="zoom" aria-label="Card">
       <div class="zoom-body"></div>
