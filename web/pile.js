@@ -414,5 +414,16 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
       slots = Array(size).fill(null);
       render();
     },
+    /** Fills the slots with `names`, top first (a saved pile, on reload). */
+    setPile(names) {
+      const taken = new Set();
+      slots = Array.from({ length: size }, (_, i) => {
+        const index = pool.findIndex((c, j) => c.name === names[i] && !taken.has(j));
+        if (index === -1) return null;
+        taken.add(index);
+        return index;
+      });
+      render();
+    },
   };
 }

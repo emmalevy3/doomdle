@@ -253,6 +253,11 @@ async function main() {
   renderBoard({ you: $("you"), hand: $("hand"), them: $("them") }, puzzle);
 
   const builder = createPileBuilder({ pool: $("pool"), pile: $("pile") }, puzzle, submit);
+  // A solved puzzle reopens with its winning pile in place, as it was left.
+  const win = record.attempts.find((a) => a.result.wins);
+  if (win) {
+    builder.setPile(win.pile);
+  }
 
   function solved() {
     return record.attempts.some((a) => a.result.wins);
