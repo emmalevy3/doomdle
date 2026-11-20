@@ -5,40 +5,46 @@
     "life": 20,
     "hand": [
       "Duress",
+      "Street Wraith",
+      "Gitaxian Probe",
       "Gitaxian Probe"
     ],
     "battlefield": [
+      "Mountain",
       "Swamp",
-      "Tundra",
+      "Swamp",
+      "Swamp",
       "Island",
-      {
-        "card": "Sol Ring",
-        "tapped": true
-      }
+      "Island"
     ],
     "library": [
-      "Thassa's Oracle",
-      "Cabal Ritual",
-      "Meticulous Archive",
-      "Mox Jet",
-      "Lion's Eye Diamond",
-      "Night's Whisper"
-    ],
-    "graveyard": [
-      "Ponder",
-      "Sol Ring"
+      "Laboratory Maniac",
+      "Pyroblast",
+      "Gitaxian Probe",
+      "Manamorphose",
+      "Chromatic Star",
+      "Lotus Petal",
+      "Dark Ritual"
     ],
     "cards_drawn": 1
   },
   "opponent": {
-    "life": 20
+    "life": 20,
+    "hand": [
+      "Counterspell",
+      "Swords to Plowshares"
+    ],
+    "battlefield": [
+      "Tundra",
+      "Island"
+    ]
   },
   "solution": [
-    "Night's Whisper",
-    "Ponder",
-    "Lion's Eye Diamond",
-    "Thassa's Oracle",
-    "Sol Ring"
+    "Pyroblast",
+    "Chromatic Star",
+    "Manamorphose",
+    "Gitaxian Probe",
+    "Laboratory Maniac"
   ],
   "difficulty": "hard"
 }
