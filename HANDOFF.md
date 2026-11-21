@@ -2,16 +2,18 @@
 
 Written for whoever (or whichever model) continues this work. Read `CLAUDE.md`
 first (rules and module map), then this file, then `CARDS.md` before touching
-any card logic. Everything here is current as of stage 9 (the site's look and layout).
+any card logic. Everything here is current as of 2026-11-21: stages 1–12 plus
+the post-launch work listed under "Since launch" below.
 
 ## Status in one paragraph
 
-All 79 cards in `CARDS.md` are implemented (94 `Card` variants: basics and
-duals are listed individually, and Tamiyo's back face is its own variant). The
-engine, AND/OR solver and a JSON puzzle format are done. `cargo test` runs 301
-tests: 231 unit, 69 solver pile pairs in `tests/solver_piles.rs`, 1 corpus
-test in `tests/puzzle_files.rs` over `web/puzzles/*.json`. `cargo fmt --check`,
-`cargo clippy --all-targets -- -D warnings` and the tests are all green.
+Every card in `CARDS.md` is implemented, An Offer You Can't Refuse included
+(96 `Card` variants: basics and duals are listed individually, Tamiyo's back
+face is its own variant, and so is the Treasure token). The engine, AND/OR
+solver and a JSON puzzle format are done. `cargo test` runs 351 tests: 278
+unit, 72 solver pile pairs in `tests/solver_piles.rs`, 1 corpus test in
+`tests/puzzle_files.rs` over `web/puzzles/*.json`. `cargo fmt --check`, both
+clippy runs (with and without `--features wasm`) and the tests are all green.
 Dependencies: `serde` (derive), `serde_json`, and `wasm-bindgen` behind the
 `wasm` feature. Stage 7 put the verifier in the browser: `wasm-pack build
 --target web --out-dir web/pkg --features wasm` builds `web/pkg/`, and `node
@@ -19,9 +21,9 @@ wasm/smoke.mjs` checks it. Stage 8 added the site in `web/` and failure
 feedback; stage 9 restyled it (dark blue-black Magic look) and laid it out from
 the user's sketch. Stage 10 added puzzle ratings (`src/quality.rs`) and a
 generator (`src/generate.rs`, the `rate`/`survey`/`generate` CLI commands).
-Open: the user chose to *measure first* before deciding how rare winning piles
-must be ("a few answers" vs "under 1% of piles"); the survey numbers are the
-input for that decision.
+Stage 11 scheduled daily puzzles and stage 12 launched the site on
+emmanems.com/doomdle (CI deploys `main`). Puzzles are mostly generated and
+scheduled; hand-made ones (and guest ones, see below) replace a dated file.
 
 ## How a game is represented
 
@@ -42,7 +44,8 @@ input for that decision.
   `veiled`, `sorceries_have_flash`, `cast_blue_or_black_this_turn`).
 - `Permanent`: `card`, `tapped`, `summoning_sick`, `loyalty`, `loyalty_used`,
   `damage`, equipment flags on the wearer (`greaves` = haste + shroud,
-  `skateboard` = haste), `token` (offspring copy, ceases to exist on leaving),
+  `skateboard` = haste), `token` (offspring copy or Treasure, ceases to exist
+  on leaving; `Permanent::untapped(Card::Treasure)` is always a token),
   `chosen_type` (Cavern of Souls). Constructors: `untapped`, `tapped`,
   `entering`, `cavern(type)`.
 - `StackItem`: `Spell { card, controller, target, mode }`, `Trigger { source,
@@ -96,8 +99,10 @@ input for that decision.
   aimed at your stack items / permanents / graveyard, plus Pass. Their lands
   are tapped *as part of casting* (`reachable_pools`, `tap_plan`, `pay_mana`),
   never on their own; they never float mana, cycle, play lands or cast
-  untargeted spells. Nothing at all while Silenced, under your Teferi, or
-  once Archon's limit is hit. Counters are not even offered against spells
+  untargeted spells. Sacrifice sources count too: Treasures (which they only
+  get when you Offer one of their spells) are sacrificed as part of paying,
+  and `tap_plan` taps lands before sacrificing when both would do. Nothing at
+  all while Silenced, under your Teferi, or once Archon's limit is hit. Counters are not even offered against spells
   that can't be countered (Veil, Cavern): same result, fewer branches.
 - Funnels, so replacement effects apply everywhere:
   `State::put_in_graveyard` (Yawgmoth's Will / the other player's Leyline
@@ -128,11 +133,19 @@ etc., pips plus color indicators for Pact and Tamiyo's back face),
 `target_options`, `alternative_payments`, `warp_cost`, `offspring_cost`,
 `replicate_cost`, `has_storm`, `evoke_pitch`, `castable`, `front_face`,
 `is_equipment`; then `resolve_spell`, `resolve_trigger`, `resolve_ability`,
-`choice_options`, `apply_choice`, and helpers (`counter`, `tax`,
+`choice_options`, `apply_choice`, and helpers (`counter`, `offer` (An Offer
+You Can't Refuse: counter, then two Treasures for the target's controller even
+if the counter fails), `tax`,
 `remove_permanent`, `bounce`, `surgical`, `discard_from`, `push_copies`,
 `permanent_targets`/`find_target` which apply Veil's hexproof and Greaves'
 shroud both when offering and when resolving). `Card::ALL`, `FromStr` and
 manual serde impls make names round-trip for the file format.
+
+Who may target what: counters and removal only ever target the other
+player's things (CARDS.md Decisions §2), with two exceptions, both yours
+only: An Offer You Can't Refuse at your own noncreature spells (even veiled
+ones, for the Treasures), and Pyroblast/Hydroblast at your own blue/red spells
+and permanents (e.g. your Quantum Riddler, as bait for your own Offer).
 
 To add a card: add the variant, the name, the kind, the cost, then whichever
 arms its text needs, tests for each CARDS.md behavior and cost, and a solver
@@ -148,7 +161,11 @@ pair. Never add a card that isn't in CARDS.md; never edit CARDS.md unasked
   replay. `verify(puzzle, pile) -> Verdict::{Wins{start, strategy}, Fails}`;
   `solve_puzzle(puzzle)` tries every legal pile (fresh memo each).
 - `src/puzzle_file.rs`: `PuzzleFile` / `PlayerFile` / `PermanentFile`, cards
-  by printed name, `mana_pool` as a symbol string, optional `solution`.
+  by printed name, `mana_pool` as a symbol string, optional `solution`,
+  `attempts`, `difficulty` (`easy`/`medium`/`hard` from a rating, or
+  `expert`, only ever set by hand) and `guest` (shown as "Idea by …" in the
+  header, the Past puzzles list and the share text). A Treasure may only be
+  on a battlefield; anywhere else is a parse error.
   Fields that can't be true as Doomsday resolves (exile, impulse, Silence,
   Veil, unordered library) deliberately don't exist. `parse`, `to_json`,
   `puzzle`, `from_puzzle`. Example files in `web/puzzles/`.
@@ -199,6 +216,17 @@ pair. Never add a card that isn't in CARDS.md; never edit CARDS.md unasked
 - The `Strategy` printout ends with a blank line.
 - `Choice::Discard`'s doc still mentions Frantic Search only.
 - Timetwister ignores the opponent's side (by CARDS.md decision).
+- Search cost of Treasures and Lotus Petal: each is a five-way colour choice
+  when sacrificed, so a busy puzzle with An Offer You Can't Refuse can leave
+  most piles undecided at the rating's per-pile budget (today's 11/21 puzzle
+  with the Offer added: 2,060 of 2,520 undecided, versus 192 without).
+  Choosing the colour only when the mana is spent would fix it; not started.
+  Keep Offer puzzles lean (a short hand) and run a site check before
+  scheduling one.
+- A Galaxy Z Fold player reported the phone "Add to pile" button sometimes
+  stopped working until a refresh. The mis-taps were fixed with a bigger
+  button; the "until refresh" part is unexplained (maybe the page switching
+  between the phone and wide layouts near 1000 px when the Fold opens).
 
 ## Roadmap (proposed, not yet approved)
 
@@ -265,6 +293,35 @@ preloaded. The proposal, kept in the plan file as well:
     wasm build and smoke test, then the Pages deploy on `main`. Also handle
     browser caching after a deploy (the dev server's stuck "Loading…" came
     from mixed cached and new modules), e.g. versioned file names.
+
+## Since launch (2026-11-20 and 21)
+
+- Hand-made puzzles: 2026-11-21 (Duress must take Swords, not Counterspell;
+  Pyroblast answers the counter; Lab Man wins; one winning set, 10 orders)
+  and 2026-11-22, a guest puzzle from the user's friend Venus (warp Quantum
+  Riddler, Pyroblast your own Riddler and Offer the Pyroblast for two
+  Treasures, then Oracle; Expert, "Idea by Venus"; one winning set, 12 of
+  55,440 piles). The generated puzzles they replaced (`gen-1117-204`,
+  `gen-1117-236`) are back in the scheduling pool.
+- Designing hand-made puzzles, what we learned: `rate` gives the winning
+  sets and orders; for a single pile, checking all 120 orders with the CLI is
+  quick. Before scheduling, run every pile through `api::verify_json` (the
+  site's own call, `DEFAULT_BUDGET`) to be sure none gives up; the rating's
+  "undecided" uses a smaller budget. A scratch crate depending on this one by
+  path did that (keep the thread count low: 28 parallel searches ran out of
+  memory). Exactly one winning order needs every card to draw the next one;
+  cards that draw two at once, outside draws usable any time, and Oracle
+  winning with cards left (devotion) all add orders or filler sets. Two
+  routes that each have one tight answer were tried at length (Oracle vs Lab
+  Man, Jace vs Lab Man, against Counterspell/Swords/Stifle) and never worked:
+  the cheaper route always has spare resources, so filler piles win too.
+- Site: the rules text says Doomsday goes to your graveyard, and a small
+  Doomsday sits under "Graveyard after Doomsday" (players miscounted
+  Timetwister without it; the engine was right). Wide screens show the
+  candidates in two columns; phones got a bigger "Add to pile" button.
+- Engine: An Offer You Can't Refuse and Treasures; Pyroblast/Hydroblast on
+  your own things; the opponent can pay with Treasures; Difficulty::Expert
+  and the `guest` field.
 
 Decisions made for stage 8: the site lives here under `web/`; three attempts
 by default (`web/config.js`, overridable per puzzle); Scryfall images; hiding
