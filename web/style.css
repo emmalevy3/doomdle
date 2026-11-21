@@ -461,16 +461,20 @@ button.viewer-arrow:not(:disabled):hover {
   border-color: var(--gold);
 }
 
+/* The count, then Add to pile across the whole panel: a big target with a
+   clear gap before the stack, since Android snaps a tap near a button's edge
+   to the nearest button (players kept picking the cards underneath). */
 .viewer-actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 10px 0 4px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin: 10px 0 18px;
 }
 
 /* Add to pile: deep wine rather than the blue of Submit. */
 .viewer-actions button.primary {
+  min-height: 48px;
   background: linear-gradient(180deg, var(--wine-light), var(--wine));
   border-color: var(--wine-glow);
 }
@@ -482,6 +486,7 @@ button.viewer-arrow:not(:disabled):hover {
 
 .viewer-count {
   margin: 0;
+  text-align: center;
   color: var(--muted);
   font-style: italic;
 }
