@@ -1038,14 +1038,34 @@ impl Card {
                     .collect(),
             ),
             // "If it's blue/red": only blue/red things are ever offered.
-            Card::Pyroblast => {
-                let mut targets = spell_where(&Card::is_blue);
-                targets.extend(permanents_where(other, &Card::is_blue));
-                Some(targets)
-            }
-            Card::Hydroblast => {
-                let mut targets = spell_where(&Card::is_red);
-                targets.extend(permanents_where(other, &Card::is_red));
+            // You (never the opponent) may also aim them at your own blue
+            // or red spells and permanents, e.g. as bait for your own Offer.
+            Card::Pyroblast | Card::Hydroblast => {
+                let color: fn(Card) -> bool = if self == Card::Pyroblast {
+                    Card::is_blue
+                } else {
+                    Card::is_red
+                };
+                let mut targets = spell_where(&color);
+                targets.extend(permanents_where(other, &color));
+                if player == Player::You {
+                    targets.extend(
+                        state
+                            .stack
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, item)| {
+                                item.controller() == player
+                                    && matches!(item, StackItem::Spell { card, .. } if color(*card))
+                                    && !cant_be_countered(state, item)
+                            })
+                            .map(|(index, item)| Target::Stack {
+                                index,
+                                card: item.card(),
+                            }),
+                    );
+                    targets.extend(permanents_where(player, &color));
+                }
                 Some(targets)
             }
             Card::SwordsToPlowshares => Some(permanents_where(other, &creature)),
@@ -6881,5 +6901,78 @@ mod tests {
         // Archon: no second spell this turn.
         assert!(offer_casts(&base(Card::ArchonOfEmeria, u, 0)) > 0);
         assert_eq!(offer_casts(&base(Card::ArchonOfEmeria, u, 1)), 0);
+    }
+
+    #[test]
+    fn you_may_aim_the_blasts_at_your_own_things() {
+        let mut state = versus(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::QuantumRiddler)],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Narset)],
+                ..PlayerState::default()
+            },
+        );
+        state.stack.push(your_spell(Card::Brainstorm));
+        state.stack.push(your_spell(Card::Manamorphose));
+        let mine = Card::Pyroblast.target_options(&state, Player::You).unwrap();
+        assert!(mine.contains(&on_stack(0, Card::Brainstorm)));
+        assert!(mine.contains(&your_permanent(Card::QuantumRiddler)));
+        assert!(mine.contains(&Target::Permanent {
+            owner: Player::Opponent,
+            card: Card::Narset
+        }));
+        // Hydroblast: your own red spell (Manamorphose is red/green).
+        let mine = Card::Hydroblast
+            .target_options(&state, Player::You)
+            .unwrap();
+        assert!(mine.contains(&on_stack(1, Card::Manamorphose)));
+        // The opponent never aims them at their own things.
+        let theirs = Card::Pyroblast
+            .target_options(&state, Player::Opponent)
+            .unwrap();
+        assert!(!theirs.contains(&Target::Permanent {
+            owner: Player::Opponent,
+            card: Card::Narset
+        }));
+        assert!(theirs.contains(&your_permanent(Card::QuantumRiddler)));
+    }
+
+    #[test]
+    fn your_pyroblast_on_your_riddler_destroys_it_unless_you_offer_it() {
+        let riddler = || {
+            main_phase(PlayerState {
+                battlefield: vec![Permanent::untapped(Card::QuantumRiddler)],
+                ..PlayerState::default()
+            })
+        };
+        let blast = || StackItem::Spell {
+            card: Card::Pyroblast,
+            controller: Player::You,
+            target: Some(your_permanent(Card::QuantumRiddler)),
+            mode: SpellMode::Normal,
+        };
+        // Unanswered, it really destroys your own Riddler.
+        let mut state = riddler();
+        state.stack.push(blast());
+        let after = pass_twice(&state);
+        assert!(after.you.battlefield.is_empty());
+        assert!(after.you.graveyard.contains(&Card::QuantumRiddler));
+        // Offer the Pyroblast: Riddler stays, and you get two Treasures.
+        let mut state = riddler();
+        state.stack.push(blast());
+        let after = resolve_targeting(state, OFFER, Some(on_stack(0, Card::Pyroblast)));
+        assert!(after.stack.is_empty());
+        assert!(
+            after
+                .you
+                .battlefield
+                .iter()
+                .any(|p| p.card == Card::QuantumRiddler)
+        );
+        assert_eq!(treasures(&after.you), 2);
+        assert_eq!(after.you.graveyard, vec![Card::Pyroblast, OFFER]);
     }
 }
