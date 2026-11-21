@@ -159,7 +159,24 @@ impl std::error::Error for FormatError {}
 
 impl PuzzleFile {
     pub fn parse(text: &str) -> Result<PuzzleFile, FormatError> {
-        serde_json::from_str(text).map_err(FormatError)
+        let file: PuzzleFile = serde_json::from_str(text).map_err(FormatError)?;
+        // A Treasure is a token: it only exists on the battlefield.
+        for (who, player) in [("you", &file.you), ("opponent", &file.opponent)] {
+            let zones = [
+                ("hand", &player.hand),
+                ("library", &player.library),
+                ("graveyard", &player.graveyard),
+            ];
+            for (zone, cards) in zones {
+                if cards.contains(&Card::Treasure) {
+                    return Err(FormatError(de::Error::custom(format!(
+                        "Treasure is a token and can only be on the battlefield, \
+                         not in {who}'s {zone}"
+                    ))));
+                }
+            }
+        }
+        Ok(file)
     }
 
     pub fn to_json(&self) -> Result<String, FormatError> {
@@ -497,6 +514,32 @@ mod tests {
             .to_string();
         assert!(bad_mana.contains("'X'"), "{bad_mana}");
         assert!(PuzzleFile::parse("{").is_err());
+    }
+
+    #[test]
+    fn a_treasure_is_a_token_and_only_on_the_battlefield() {
+        let file = PuzzleFile::parse(
+            r#"{"you": {"hand": ["An Offer You Can't Refuse"], "battlefield": ["Treasure"]},
+                "opponent": {"battlefield": ["Treasure"]}}"#,
+        )
+        .unwrap();
+        let puzzle = file.puzzle();
+        assert!(puzzle.you.battlefield[0].token);
+        assert!(puzzle.opponent.battlefield[0].token);
+        assert_eq!(puzzle.you.hand, vec![Card::AnOfferYouCantRefuse]);
+        // Written back as a bare name.
+        let json = PuzzleFile::from_puzzle(&puzzle, None).to_json().unwrap();
+        assert!(json.contains("\"Treasure\""), "{json}");
+        for zone in ["hand", "library", "graveyard"] {
+            let err = PuzzleFile::parse(&format!(r#"{{"you": {{"{zone}": ["Treasure"]}}}}"#))
+                .unwrap_err()
+                .to_string();
+            assert!(err.contains("Treasure") && err.contains(zone), "{err}");
+        }
+        let err = PuzzleFile::parse(r#"{"you": {}, "opponent": {"hand": ["Treasure"]}}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("opponent's hand"), "{err}");
     }
 
     #[test]

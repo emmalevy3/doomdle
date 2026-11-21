@@ -2341,3 +2341,94 @@ fn bowmasters_shoot_jace_between_single_draws() {
         &singles,
     );
 }
+
+// ------------------------------------------- An Offer You Can't Refuse
+
+/// Oracle on top, four lands under it: Ancestral draws Oracle and leaves two
+/// cards, which Oracle's devotion covers.
+const OFFER_PILE: [Card; 5] = [
+    Card::ThassasOracle,
+    Card::Swamp,
+    Card::Swamp,
+    Card::Swamp,
+    Card::Swamp,
+];
+
+/// Pair: Ancestral plus Oracle need three blue from two Islands. Offering
+/// your own Mishra's Bauble turns one Island into two Treasures, which is the
+/// missing mana. Without a spare spell to aim at, or with one land fewer,
+/// it fails.
+#[test]
+fn offer_on_your_own_spare_spell_pays_for_the_win() {
+    let hand = |cards: &[Card]| cards.to_vec();
+    let full = [
+        Card::AnOfferYouCantRefuse,
+        Card::MishrasBauble,
+        Card::AncestralRecall,
+    ];
+    let steps = assert_wins(
+        puzzle(hand(&full), islands(2), OFFER_PILE.to_vec()),
+        &OFFER_PILE,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::AnOfferYouCantRefuse,
+            target: Some(Target::Stack {
+                card: Card::MishrasBauble,
+                ..
+            }),
+            ..
+        }
+    )));
+    // No spare spell: the Offer could only eat Ancestral itself.
+    assert_fails(
+        puzzle(
+            hand(&[Card::AnOfferYouCantRefuse, Card::AncestralRecall]),
+            islands(2),
+            OFFER_PILE.to_vec(),
+        ),
+        &OFFER_PILE,
+    );
+    // One Island: two Treasures pay for Ancestral and half of Oracle.
+    assert_fails(
+        puzzle(hand(&full), islands(1), OFFER_PILE.to_vec()),
+        &OFFER_PILE,
+    );
+}
+
+/// Pair: the opponent's Offer counters Ancestral, and the two Treasures it
+/// hands you don't replace three draws. Veil of Summer plays around it: Offer
+/// the Veil and they're tapped out for Ancestral; let it resolve and Ancestral
+/// can't be countered.
+#[test]
+fn the_opponents_offer_is_beaten_by_veil() {
+    let offer = || opponent(vec![Card::AnOfferYouCantRefuse], 1);
+    let ancestral = || vec![Card::AncestralRecall];
+    assert_wins(
+        puzzle(ancestral(), islands(3), OFFER_PILE.to_vec()),
+        &OFFER_PILE,
+    );
+    assert_fails(
+        puzzle_vs(ancestral(), islands(3), OFFER_PILE.to_vec(), offer()),
+        &OFFER_PILE,
+    );
+    let mut lands = islands(3);
+    lands.push(Permanent::untapped(Card::Forest));
+    let steps = assert_wins_vs(
+        puzzle_vs(
+            vec![Card::AncestralRecall, Card::VeilOfSummer],
+            lands,
+            OFFER_PILE.to_vec(),
+            offer(),
+        ),
+        &OFFER_PILE,
+    );
+    assert!(has_action(&steps, |a| matches!(
+        a,
+        Action::CastSpell {
+            card: Card::AnOfferYouCantRefuse,
+            ..
+        }
+    )));
+}

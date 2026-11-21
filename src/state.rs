@@ -72,7 +72,8 @@ pub struct Permanent {
 
 impl Permanent {
     /// A permanent that has been around since before this turn: untapped, not
-    /// summoning sick, a planeswalker at its starting loyalty, undamaged.
+    /// summoning sick, a planeswalker at its starting loyalty, undamaged. A
+    /// Treasure is always a token: it ceases to exist when it leaves.
     pub fn untapped(card: Card) -> Permanent {
         Permanent {
             card,
@@ -83,7 +84,7 @@ impl Permanent {
             damage: 0,
             greaves: false,
             skateboard: false,
-            token: false,
+            token: card == Card::Treasure,
             chosen_type: None,
         }
     }

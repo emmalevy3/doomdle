@@ -577,14 +577,31 @@ fn extra_generic(state: &State, player: Player, card: Card) -> u8 {
     grid + thalia
 }
 
-/// Takes `mana` out of the pool, first tapping lands for any shortfall (the
-/// opponent pays that way; your own payments are only ever offered from mana
-/// already in the pool). `None` if it can't be paid.
+/// Takes `mana` out of the pool, first tapping lands (or sacrificing
+/// Treasures) for any shortfall (the opponent pays that way; your own
+/// payments are only ever offered from mana already in the pool). `None` if
+/// it can't be paid.
 pub(crate) fn pay_mana(ps: &mut PlayerState, mana: &ManaPool) -> Option<()> {
     if ps.mana_pool.minus(mana).is_none() {
+        let mut sacrificed = Vec::new();
         for (idx, added) in tap_plan(ps, mana)? {
-            ps.battlefield[idx].tapped = true;
+            if matches!(
+                ps.battlefield[idx].card.mana_ability(),
+                Some(ManaAbility::Sacrifice(_))
+            ) {
+                sacrificed.push(idx);
+            } else {
+                ps.battlefield[idx].tapped = true;
+            }
             ps.mana_pool = ps.mana_pool.plus(&added);
+        }
+        // Highest index first, so the others stay valid. A token (Treasure)
+        // just ceases to exist; anything else goes to the graveyard.
+        sacrificed.sort_unstable_by(|a, b| b.cmp(a));
+        for idx in sacrificed {
+            if let Some(card) = ps.take_permanent(idx) {
+                ps.graveyard.push(card);
+            }
         }
     }
     ps.mana_pool = ps.mana_pool.minus(mana)?;
@@ -612,7 +629,9 @@ pub(crate) fn tax_payments(state: &State, player: Player, amount: u8) -> Vec<Man
 }
 
 /// The untapped permanents of `ps` that tap for mana, as (index, the pools
-/// one tap could add).
+/// one tap could add). Sacrifice sources (the Treasures An Offer You Can't
+/// Refuse hands the opponent) count too, for one mana of any color; `pay_mana`
+/// sacrifices them rather than tapping.
 fn tap_sources(ps: &PlayerState) -> Vec<(usize, Vec<ManaPool>)> {
     ps.battlefield
         .iter()
@@ -628,6 +647,10 @@ fn tap_sources(ps: &PlayerState) -> Vec<(usize, Vec<ManaPool>)> {
                     .collect(),
             )),
             Some(ManaAbility::TapColorless(n)) => Some((i, vec![ManaPool::colorless(n)])),
+            Some(ManaAbility::Sacrifice(n)) => Some((
+                i,
+                Color::ALL.into_iter().map(|c| ManaPool::of(c, n)).collect(),
+            )),
             _ => None,
         })
         .collect()
@@ -648,12 +671,26 @@ fn reachable_pools(ps: &PlayerState) -> Vec<ManaPool> {
 }
 
 /// The fewest taps that give `ps` a pool covering `needed`, in the same
-/// enumeration order as [`reachable_pools`] so the two always agree.
+/// enumeration order as [`reachable_pools`] so the two always agree. Among
+/// plans with as few sources, the one sacrificing fewest Treasures: a land
+/// only ever makes its own colors, a Treasure any, so it is kept for later.
 fn tap_plan(ps: &PlayerState, needed: &ManaPool) -> Option<Vec<(usize, ManaPool)>> {
+    let cost = |taps: &[(usize, ManaPool)]| {
+        let sacrifices = taps
+            .iter()
+            .filter(|(idx, _)| {
+                matches!(
+                    ps.battlefield[*idx].card.mana_ability(),
+                    Some(ManaAbility::Sacrifice(_))
+                )
+            })
+            .count();
+        (taps.len(), sacrifices)
+    };
     let mut best: Option<Vec<(usize, ManaPool)>> = None;
     for_each_tap_plan(&tap_sources(ps), &mut |taps| {
         let covers = pool_after(ps, taps).minus(needed).is_some();
-        if covers && best.as_ref().is_none_or(|b| taps.len() < b.len()) {
+        if covers && best.as_ref().is_none_or(|b| cost(taps) < cost(b)) {
             best = Some(taps.to_vec());
         }
     });
@@ -3046,6 +3083,42 @@ mod tests {
             ..ps
         };
         assert_eq!(tap_plan(&floating, &u(2)).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn the_opponent_pays_with_treasures_by_sacrificing_them() {
+        // An Offer You Can't Refuse on their spell hands them two Treasures.
+        let mut ps = PlayerState {
+            battlefield: vec![
+                Permanent::untapped(Card::Island),
+                Permanent::untapped(Card::Treasure),
+                Permanent::untapped(Card::Treasure),
+            ],
+            ..PlayerState::default()
+        };
+        let u = |n| ManaPool::of(Color::U, n);
+        let pools = reachable_pools(&ps);
+        assert!(pools.contains(&u(3)));
+        assert!(pools.contains(&u(1).with(Color::R, 1).with(Color::G, 1)));
+        // Fewest sources: the Island and one Treasure for UU.
+        assert_eq!(tap_plan(&ps, &u(2)).unwrap().len(), 2);
+        assert_eq!(pay_mana(&mut ps, &u(2)), Some(()));
+        // The Island is tapped, one Treasure is gone (a token: no graveyard),
+        // the other is still there.
+        assert!(
+            ps.battlefield
+                .iter()
+                .any(|p| p.card == Card::Island && p.tapped)
+        );
+        assert_eq!(
+            ps.battlefield
+                .iter()
+                .filter(|p| p.card == Card::Treasure)
+                .count(),
+            1
+        );
+        assert!(ps.graveyard.is_empty());
+        assert_eq!(ps.mana_pool, ManaPool::EMPTY);
     }
 
     #[test]

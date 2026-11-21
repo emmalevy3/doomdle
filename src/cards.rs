@@ -94,6 +94,10 @@ pub enum Card {
     TamiyoSeasonedScholar,
     ThundertrapTrainer,
     CavernOfSouls,
+    // An Offer You Can't Refuse and its Treasure tokens. `Treasure` only ever
+    // exists on the battlefield, as a token.
+    AnOfferYouCantRefuse,
+    Treasure,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -425,7 +429,7 @@ impl LoyaltyAbility {
 
 impl Card {
     /// Every card in the pool, in enum order.
-    pub const ALL: [Card; 94] = [
+    pub const ALL: [Card; 96] = [
         Card::ThassasOracle,
         Card::JaceWielderOfMysteries,
         Card::DoctorDoom,
@@ -484,6 +488,8 @@ impl Card {
         Card::TamiyoSeasonedScholar,
         Card::ThundertrapTrainer,
         Card::CavernOfSouls,
+        Card::AnOfferYouCantRefuse,
+        Card::Treasure,
         Card::Brainstorm,
         Card::Ponder,
         Card::Preordain,
@@ -582,6 +588,8 @@ impl Card {
             Card::TamiyoSeasonedScholar => "Tamiyo, Seasoned Scholar",
             Card::ThundertrapTrainer => "Thundertrap Trainer",
             Card::CavernOfSouls => "Cavern of Souls",
+            Card::AnOfferYouCantRefuse => "An Offer You Can't Refuse",
+            Card::Treasure => "Treasure",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -681,7 +689,8 @@ impl Card {
             | Card::VeilOfSummer
             | Card::Meditate
             | Card::Manamorphose
-            | Card::Gush => CardKind::Instant,
+            | Card::Gush
+            | Card::AnOfferYouCantRefuse => CardKind::Instant,
             Card::LionsEyeDiamond
             | Card::BlackLotus
             | Card::LotusPetal
@@ -696,7 +705,8 @@ impl Card {
             | Card::WizardsRockets
             | Card::MishrasBauble
             | Card::LightningGreaves
-            | Card::Skateboard => CardKind::Artifact,
+            | Card::Skateboard
+            | Card::Treasure => CardKind::Artifact,
             Card::Plains
             | Card::Island
             | Card::Swamp
@@ -796,6 +806,7 @@ impl Card {
             }
             Card::MindbreakTrap => ManaCost::colored(Color::U, 2).with_generic(2),
             Card::Pyroblast => ManaCost::colored(Color::R, 1),
+            Card::AnOfferYouCantRefuse => ManaCost::colored(Color::U, 1),
             Card::SwordsToPlowshares => ManaCost::colored(Color::W, 1),
             Card::SnuffOut => ManaCost::colored(Color::B, 1).with_generic(3),
             Card::SurgicalExtraction => ManaCost::phyrexian(Color::B, 1),
@@ -912,18 +923,20 @@ impl Card {
     /// Whether the engine models casting this card at all. Street Wraith is
     /// cycling-only per CARDS.md; Doomsday is only ever the spell the puzzle
     /// starts with (a second Doomsday from the graveyard under Yawgmoth's Will
-    /// is out of scope for now); Tamiyo's back face is never a card in hand.
+    /// is out of scope for now); Tamiyo's back face is never a card in hand,
+    /// and a Treasure is only ever a token on the battlefield.
     pub fn castable(self) -> bool {
         !matches!(
             self,
-            Card::StreetWraith | Card::Doomsday | Card::TamiyoSeasonedScholar
+            Card::StreetWraith | Card::Doomsday | Card::TamiyoSeasonedScholar | Card::Treasure
         )
     }
 
     /// For a targeted spell, every distinct legal target `player` could pick
     /// right now; `None` for spells without targets. A targeted spell with an
     /// empty list can't be cast. Counters only ever target the other player's
-    /// stack items.
+    /// stack items, except that you may aim An Offer You Can't Refuse at your
+    /// own spells for the Treasures.
     pub fn target_options(self, state: &State, player: Player) -> Option<Vec<Target>> {
         let other = player.other();
         let stack_targets = |pred: &dyn Fn(&StackItem) -> bool| -> Vec<Target> {
@@ -978,6 +991,29 @@ impl Card {
             | Card::Miscalculation
             | Card::PactOfNegation => Some(spell_where(&|_| true)),
             Card::SpellPierce | Card::ForceOfNegation => Some(spell_where(&|c| !creature(c))),
+            // The other player's noncreature spells, and (yours only: the
+            // opponent never aims it at their own) your own, even ones that
+            // can't be countered, since the Treasures still come (CARDS.md).
+            Card::AnOfferYouCantRefuse => {
+                let mut targets = spell_where(&|c| !creature(c));
+                if player == Player::You {
+                    targets.extend(
+                        state
+                            .stack
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, item)| {
+                                item.controller() == player
+                                    && matches!(item, StackItem::Spell { card, .. } if !creature(*card))
+                            })
+                            .map(|(index, item)| Target::Stack {
+                                index,
+                                card: item.card(),
+                            }),
+                    );
+                }
+                Some(targets)
+            }
             Card::MentalMisstep => Some(spell_where(&|c| c.mana_cost().mana_value() == 1)),
             Card::SpellSnare => Some(spell_where(&|c| c.mana_cost().mana_value() == 2)),
             Card::Stifle => Some(stack_targets(&|item| {
@@ -1176,7 +1212,7 @@ impl Card {
         match self {
             Card::LionsEyeDiamond => Some(ManaAbility::Led),
             Card::BlackLotus => Some(ManaAbility::Sacrifice(3)),
-            Card::LotusPetal => Some(ManaAbility::Sacrifice(1)),
+            Card::LotusPetal | Card::Treasure => Some(ManaAbility::Sacrifice(1)),
             Card::MoxSapphire | Card::MoxJet | Card::Gleemox => Some(ManaAbility::Tap),
             Card::SolRing => Some(ManaAbility::TapColorless(2)),
             Card::ChromaticStar => Some(ManaAbility::Filter { x: false }),
@@ -1414,6 +1450,7 @@ pub(crate) fn resolve_spell(
         | Card::PactOfNegation
         | Card::ConsignToMemory => counter(state, target, false),
         Card::ForceOfNegation => counter(state, target, true),
+        Card::AnOfferYouCantRefuse => offer(state, target),
         Card::Daze | Card::Flusterstorm => return tax(state, controller, bin, target, 1),
         Card::SpellPierce | Card::Miscalculation => return tax(state, controller, bin, target, 2),
         // Counter mode on a spell, destroy mode on a permanent.
@@ -1793,6 +1830,28 @@ fn counter(state: &mut State, target: Option<Target>, exile: bool) {
         } else {
             state.put_in_graveyard(controller, card);
         }
+    }
+}
+
+/// An Offer You Can't Refuse: "Counter target noncreature spell. Its
+/// controller creates two Treasure tokens." If the target has left the stack,
+/// nothing happens; if it can't be countered, the counter fails but the
+/// Treasures still come (CARDS.md).
+fn offer(state: &mut State, target: Option<Target>) {
+    let Some(Target::Stack { index, card }) = target else {
+        return;
+    };
+    let Some(controller) = state
+        .stack
+        .get(index)
+        .filter(|item| item.card() == card)
+        .map(StackItem::controller)
+    else {
+        return;
+    };
+    counter(state, target, false);
+    for _ in 0..2 {
+        state.enter_token(controller, Card::Treasure);
     }
 }
 
@@ -6599,5 +6658,228 @@ mod tests {
         assert!(actions.contains(&Action::TapForColorless {
             source: Card::CavernOfSouls
         }));
+    }
+
+    // ------------------------------------------------- An Offer You Can't Refuse
+
+    const OFFER: Card = Card::AnOfferYouCantRefuse;
+
+    fn treasures(ps: &PlayerState) -> usize {
+        ps.battlefield
+            .iter()
+            .filter(|p| p.card == Card::Treasure && p.token && !p.tapped)
+            .count()
+    }
+
+    #[test]
+    fn offer_and_treasure_data() {
+        assert_eq!(OFFER.kind(), CardKind::Instant);
+        assert!(OFFER.castable());
+        assert!(OFFER.is_blue());
+        assert_eq!(OFFER.mana_cost().to_string(), "{U}");
+        assert_eq!(OFFER.mana_cost().mana_value(), 1);
+        assert_eq!(OFFER.to_string(), "An Offer You Can't Refuse");
+        assert_eq!(Card::Treasure.kind(), CardKind::Artifact);
+        assert!(!Card::Treasure.castable());
+        assert_eq!(
+            Card::Treasure.mana_ability(),
+            Some(ManaAbility::Sacrifice(1))
+        );
+        // A Treasure is always a token, however it got onto the battlefield.
+        assert!(Permanent::untapped(Card::Treasure).token);
+        assert!(!Permanent::untapped(Card::LotusPetal).token);
+    }
+
+    #[test]
+    fn offer_targets_your_own_noncreature_spells_and_theirs() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack = vec![
+            your_spell(Card::Brainstorm),
+            your_spell(Card::ThassasOracle),
+            their_spell(Card::Counterspell, Some(on_stack(0, Card::Brainstorm))),
+        ];
+        assert_eq!(
+            OFFER.target_options(&state, Player::You),
+            Some(vec![
+                on_stack(2, Card::Counterspell),
+                on_stack(0, Card::Brainstorm),
+            ])
+        );
+        // The opponent never aims it at their own spells.
+        assert_eq!(
+            OFFER.target_options(&state, Player::Opponent),
+            Some(vec![on_stack(0, Card::Brainstorm)])
+        );
+        // Veiled: your spell can't be countered, but you may still aim at it
+        // for the Treasures; the opponent isn't offered it.
+        state.you.veiled = true;
+        assert_eq!(
+            OFFER.target_options(&state, Player::You),
+            Some(vec![
+                on_stack(2, Card::Counterspell),
+                on_stack(0, Card::Brainstorm),
+            ])
+        );
+        assert_eq!(
+            OFFER.target_options(&state, Player::Opponent),
+            Some(Vec::new())
+        );
+    }
+
+    #[test]
+    fn offer_on_your_own_spell_counters_it_and_makes_two_treasures() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack.push(your_spell(Card::Brainstorm));
+        let after = resolve_targeting(state, OFFER, Some(on_stack(0, Card::Brainstorm)));
+        assert!(after.stack.is_empty());
+        // Both in the graveyard (kept sorted, so the Offer comes first).
+        assert_eq!(after.you.graveyard, vec![OFFER, Card::Brainstorm]);
+        assert_eq!(treasures(&after.you), 2);
+        assert_eq!(after.you.battlefield.len(), 2);
+        assert_eq!(treasures(&after.opponent), 0);
+    }
+
+    #[test]
+    fn offer_on_an_uncounterable_spell_still_makes_treasures() {
+        let mut state = main_phase(PlayerState {
+            veiled: true,
+            ..PlayerState::default()
+        });
+        state.stack.push(your_spell(Card::Brainstorm));
+        let after = resolve_targeting(state, OFFER, Some(on_stack(0, Card::Brainstorm)));
+        assert_eq!(after.stack, vec![your_spell(Card::Brainstorm)]);
+        assert_eq!(after.you.graveyard, vec![OFFER]);
+        assert_eq!(treasures(&after.you), 2);
+    }
+
+    #[test]
+    fn offer_whose_target_is_gone_does_nothing() {
+        let state = main_phase(PlayerState::default());
+        let after = resolve_targeting(state, OFFER, Some(on_stack(0, Card::Brainstorm)));
+        assert!(after.you.battlefield.is_empty());
+        assert_eq!(after.you.graveyard, vec![OFFER]);
+    }
+
+    #[test]
+    fn offer_on_a_copy_makes_it_cease_to_exist_and_still_pays() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack.push(StackItem::Spell {
+            card: Card::Brainstorm,
+            controller: Player::You,
+            target: None,
+            mode: SpellMode::Copy,
+        });
+        let after = resolve_targeting(state, OFFER, Some(on_stack(0, Card::Brainstorm)));
+        assert!(after.stack.is_empty());
+        assert_eq!(after.you.graveyard, vec![OFFER]);
+        assert_eq!(treasures(&after.you), 2);
+    }
+
+    #[test]
+    fn offer_on_their_spell_gives_them_the_treasures() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack.push(your_spell(Card::Brainstorm));
+        state.stack.push(their_spell(
+            Card::Counterspell,
+            Some(on_stack(0, Card::Brainstorm)),
+        ));
+        let after = resolve_targeting(state, OFFER, Some(on_stack(1, Card::Counterspell)));
+        assert_eq!(after.stack, vec![your_spell(Card::Brainstorm)]);
+        assert_eq!(after.opponent.graveyard, vec![Card::Counterspell]);
+        assert_eq!(treasures(&after.opponent), 2);
+        assert_eq!(treasures(&after.you), 0);
+    }
+
+    #[test]
+    fn treasures_enter_untapped_under_archon() {
+        let mut state = versus(
+            PlayerState::default(),
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::ArchonOfEmeria)],
+                ..PlayerState::default()
+            },
+        );
+        state.stack.push(your_spell(Card::Brainstorm));
+        let after = resolve_targeting(state, OFFER, Some(on_stack(0, Card::Brainstorm)));
+        assert_eq!(treasures(&after.you), 2);
+    }
+
+    #[test]
+    fn a_sacrificed_treasure_adds_any_color_and_leaves_nothing_behind() {
+        let state = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::Treasure); 2],
+            ..PlayerState::default()
+        });
+        let actions = legal_actions(&state);
+        for color in Color::ALL {
+            assert!(actions.contains(&Action::SacrificeForMana {
+                source: Card::Treasure,
+                color
+            }));
+        }
+        let after = apply(
+            &state,
+            &Action::SacrificeForMana {
+                source: Card::Treasure,
+                color: Color::G,
+            },
+        )
+        .unwrap();
+        assert_eq!(after.you.mana_pool, ManaPool::of(Color::G, 1));
+        assert_eq!(treasures(&after.you), 1);
+        // A token ceases to exist: no graveyard card (no threshold), and
+        // sacrificing for mana uses no stack, so Stifle has nothing to hit.
+        assert!(after.you.graveyard.is_empty());
+        assert!(after.stack.is_empty());
+    }
+
+    #[test]
+    fn misstep_and_pyroblast_can_counter_the_offer() {
+        let mut state = main_phase(PlayerState::default());
+        state.stack.push(your_spell(Card::Brainstorm));
+        state.stack.push(StackItem::Spell {
+            card: OFFER,
+            controller: Player::You,
+            target: Some(on_stack(0, Card::Brainstorm)),
+            mode: SpellMode::Normal,
+        });
+        for counter in [Card::MentalMisstep, Card::Pyroblast] {
+            let options = counter.target_options(&state, Player::Opponent).unwrap();
+            assert!(options.contains(&on_stack(1, OFFER)), "{counter}");
+        }
+    }
+
+    #[test]
+    fn the_offer_is_a_spell_for_archon_and_thalia() {
+        let offer_casts = |state: &State| {
+            legal_actions(state)
+                .into_iter()
+                .filter(|a| matches!(a, Action::CastSpell { card, .. } if *card == OFFER))
+                .count()
+        };
+        let base = |opponent_permanent: Card, pool: ManaPool, spells_cast: u8| {
+            let mut state = versus(
+                PlayerState {
+                    hand: vec![OFFER],
+                    mana_pool: pool,
+                    spells_cast_this_turn: spells_cast,
+                    ..PlayerState::default()
+                },
+                PlayerState {
+                    battlefield: vec![Permanent::untapped(opponent_permanent)],
+                    ..PlayerState::default()
+                },
+            );
+            state.stack.push(your_spell(Card::Brainstorm));
+            state
+        };
+        let u = ManaPool::of(Color::U, 1);
+        let uu = ManaPool::of(Color::U, 2);
+        // Thalia: {1}{U}.
+        assert_eq!(offer_casts(&base(Card::Thalia, u, 0)), 0);
+        assert!(offer_casts(&base(Card::Thalia, uu, 0)) > 0);
+        // Archon: no second spell this turn.
+        assert!(offer_casts(&base(Card::ArchonOfEmeria, u, 0)) > 0);
+        assert_eq!(offer_casts(&base(Card::ArchonOfEmeria, u, 1)), 0);
     }
 }
