@@ -83,10 +83,11 @@ export function showLarge(name) {
 let peek = null;
 
 /**
- * Shows `name` large beside `card` without taking the pointer: to its right,
- * or to its left when there is no room.
+ * Shows `name` large beside `card` without taking the pointer: level with
+ * `card`, to the right of `beside` (the card itself unless given, e.g. the
+ * whole pick stack), or to its left when there is no room.
  */
-export function showPeek(name, card) {
+export function showPeek(name, card, beside = card) {
   const url = largeImage(name);
   if (!url) {
     return;
@@ -99,11 +100,12 @@ export function showPeek(name, card) {
   peek.src = url;
   peek.hidden = false;
   const box = card.getBoundingClientRect();
+  const side = beside.getBoundingClientRect();
   const width = peek.getBoundingClientRect().width || 300;
   const height = width * (88 / 63);
   const top = Math.min(Math.max(8, box.top), window.innerHeight - height - 8);
-  const right = box.right + 16;
-  const left = right + width + 8 <= window.innerWidth ? right : box.left - width - 16;
+  const right = side.right + 16;
+  const left = right + width + 8 <= window.innerWidth ? right : side.left - width - 16;
   peek.style.left = `${Math.max(8, Math.min(left, window.innerWidth - width - 8))}px`;
   peek.style.top = `${Math.max(8, top)}px`;
 }

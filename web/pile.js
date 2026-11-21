@@ -14,6 +14,29 @@ export function candidates(puzzle) {
   ];
 }
 
+/**
+ * Doomsday itself, small, under the candidates: once it resolves it sits in
+ * your graveyard (so Timetwister, Flow State and threshold count it), or in
+ * exile under the same two effects as the engine's `put_in_graveyard`.
+ */
+function afterDoomsday(puzzle, phone) {
+  const you = puzzle.you ?? {};
+  const leyline = (puzzle.opponent?.battlefield ?? []).some(
+    (entry) => (typeof entry === "string" ? entry : entry.card) === "Leyline of the Void",
+  );
+  const exiled = you.yawgmoths_will || leyline;
+  const section = el("section", "after-doomsday");
+  section.append(el("h3", null, exiled ? "Exile after Doomsday" : "Graveyard after Doomsday"));
+  const card = cardElement("Doomsday");
+  card.classList.add("mini");
+  if (!phone) {
+    card.addEventListener("mouseenter", () => showPeek("Doomsday", card));
+    card.addEventListener("mouseleave", hidePeek);
+  }
+  section.append(card);
+  return section;
+}
+
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -239,8 +262,8 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
         // The viewer shows cards large on phones; a peek would cover it.
         if (index === selected) node.classList.add("selected");
       } else {
-        node.addEventListener("mouseenter", () => showPeek(card.name, node));
-        node.addEventListener("focus", () => showPeek(card.name, node));
+        node.addEventListener("mouseenter", () => showPeek(card.name, node, stack));
+        node.addEventListener("focus", () => showPeek(card.name, node, stack));
         node.addEventListener("mouseleave", hidePeek);
         node.addEventListener("blur", hidePeek);
       }
@@ -251,6 +274,16 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
       );
       stack.append(node);
     });
+    if (!phone) {
+      // Wide screens: two overlapping columns, the first half on the left.
+      const cards = [...stack.children];
+      const half = Math.ceil(cards.length / 2);
+      const left = el("div", "pick-col");
+      const right = el("div", "pick-col");
+      left.append(...cards.slice(0, half));
+      right.append(...cards.slice(half));
+      stack.replaceChildren(left, right);
+    }
     const hint = phone
       ? [el("p", "hint", "Tap a card or use the arrows to read it, then add it to your pile.")]
       : tapToPreview()
@@ -259,7 +292,18 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
           ? [el("p", "hint", "Click to add, or drag to any slot.")]
           : [];
     const viewer = phone ? renderViewer() : [];
-    poolPanel.replaceChildren(el("h2", null, "Cards to pick from"), ...hint, ...viewer, stack);
+    // Doomsday's reminder: under the candidates on wide screens, out of the
+    // way in its own panel at the foot of the page on phones.
+    const reminder = afterDoomsday(puzzle, phone);
+    const footPanel = document.getElementById("after-doomsday");
+    footPanel?.replaceChildren(...(phone ? [reminder] : []));
+    poolPanel.replaceChildren(
+      el("h2", null, "Cards to pick from"),
+      ...hint,
+      ...viewer,
+      stack,
+      ...(phone && footPanel ? [] : [reminder]),
+    );
   }
 
   /**
@@ -383,7 +427,7 @@ export function createPileBuilder({ pool: poolPanel, pile: pilePanel }, puzzle, 
     }
     if (tapToPreview() && previewed !== index) {
       previewed = index;
-      showPeek(pool[index].name, node);
+      showPeek(pool[index].name, node, node.closest(".pick-stack") ?? node);
       return;
     }
     add(index);
