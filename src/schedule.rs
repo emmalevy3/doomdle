@@ -123,7 +123,8 @@ pub fn fallbacks(wanted: Difficulty) -> [Difficulty; 3] {
     match wanted {
         Easy => [Easy, Medium, Hard],
         Medium => [Medium, Easy, Hard],
-        Hard => [Hard, Medium, Easy],
+        // Never asked for (no week has an Expert day), but treated as Hard.
+        Hard | Expert => [Hard, Medium, Easy],
     }
 }
 

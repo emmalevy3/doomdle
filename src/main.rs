@@ -213,7 +213,8 @@ fn generate(survey: bool, args: &[String]) -> Result<(), Box<dyn Error>> {
                     Some(Difficulty::Easy) => tiers[0] += 1,
                     Some(Difficulty::Medium) => tiers[1] += 1,
                     Some(Difficulty::Hard) => tiers[2] += 1,
-                    None => {}
+                    // Only ever set by hand in a file, never by a rating.
+                    Some(Difficulty::Expert) | None => {}
                 }
                 let id = file.id.clone().unwrap_or_else(|| format!("gen-{seed}-{n}"));
                 let path = Path::new(OUT_DIR).join(format!("{id}.json"));

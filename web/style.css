@@ -596,6 +596,21 @@ button.viewer-arrow:not(:disabled):hover {
   color: var(--lose);
 }
 
+/* Expert: set by hand (guest puzzles), so it stands apart from the rated tiers. */
+.badge-difficulty.expert {
+  color: var(--wine-glow);
+  border-color: var(--wine-glow);
+}
+
+/* "Idea by …" on a guest puzzle, after the difficulty badge. */
+.guest-credit {
+  display: inline-block;
+  margin-left: 10px;
+  font-style: italic;
+  color: var(--gold);
+  vertical-align: middle;
+}
+
 .stat-label {
   color: var(--muted);
 }
@@ -1067,7 +1082,7 @@ dialog::backdrop {
 
 .archive-row {
   display: grid;
-  grid-template-columns: auto auto auto minmax(0, 1fr);
+  grid-template-columns: auto auto auto auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
@@ -1093,6 +1108,12 @@ dialog::backdrop {
 
 .archive-tier.badge-difficulty {
   margin-left: 0;
+}
+
+.archive-guest {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
 }
 
 .archive-result {

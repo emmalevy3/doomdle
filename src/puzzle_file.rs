@@ -53,9 +53,13 @@ pub struct PuzzleFile {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attempts: Option<u8>,
     /// How hard the puzzle is ("easy", "medium" or "hard"), from its rating;
-    /// stored because the browser can't afford to rate a puzzle.
+    /// stored because the browser can't afford to rate a puzzle. "expert" is
+    /// only ever set by hand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub difficulty: Option<Difficulty>,
+    /// Who had the idea for a guest puzzle, shown as "Idea by …".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub guest: Option<String>,
 }
 
 /// One player's side. Every field has a default: 20 life, empty zones, no
@@ -202,6 +206,7 @@ impl PuzzleFile {
             solution,
             attempts: None,
             difficulty: None,
+            guest: None,
         }
     }
 }
@@ -514,6 +519,24 @@ mod tests {
             .to_string();
         assert!(bad_mana.contains("'X'"), "{bad_mana}");
         assert!(PuzzleFile::parse("{").is_err());
+    }
+
+    #[test]
+    fn a_guest_puzzle_is_expert_and_credits_the_idea() {
+        let file =
+            PuzzleFile::parse(r#"{"you": {}, "difficulty": "expert", "guest": "Venus"}"#).unwrap();
+        assert_eq!(file.difficulty, Some(Difficulty::Expert));
+        assert_eq!(file.guest.as_deref(), Some("Venus"));
+        let text = file.to_json().unwrap();
+        assert!(text.contains("\"difficulty\": \"expert\""), "{text}");
+        assert!(text.contains("\"guest\": \"Venus\""), "{text}");
+        assert_eq!(PuzzleFile::parse(&text).unwrap(), file);
+        // Absent by default, and left out when writing.
+        let plain = PuzzleFile::parse(r#"{"you": {}}"#).unwrap();
+        assert_eq!(plain.guest, None);
+        assert!(!plain.to_json().unwrap().contains("guest"));
+        assert_eq!("Expert".parse::<Difficulty>(), Ok(Difficulty::Expert));
+        assert_eq!(Difficulty::Expert.to_string(), "Expert");
     }
 
     #[test]

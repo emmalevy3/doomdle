@@ -5,6 +5,7 @@ import { hidePeek, renderBoard, setImages, setZoomDialog, showLarge, showPeek } 
 import {
   archiveDays,
   discordText,
+  guestLine,
   localDate,
   recordStatus,
   shareText,
@@ -118,11 +119,13 @@ function fillArchive(list, current) {
       row.setAttribute("aria-current", "page");
     }
     const tier = el("span", "archive-tier");
+    const guest = el("span", "archive-guest");
     const result = el("span");
     row.append(
       el("span", "archive-number", `#${number}`),
       el("span", "archive-date", shortDate(date)),
       tier,
+      guest,
       result,
     );
     item.append(row);
@@ -138,6 +141,9 @@ function fillArchive(list, current) {
         if (puzzle.difficulty) {
           tier.className = `archive-tier badge-difficulty ${puzzle.difficulty}`;
           tier.textContent = tierName(puzzle.difficulty);
+        }
+        if (puzzle.guest) {
+          guest.textContent = guestLine(puzzle.guest);
         }
         showResult(result, puzzle.id ?? date, puzzle.attempts ?? ATTEMPTS);
       })
@@ -250,6 +256,9 @@ async function main() {
       el("span", `badge-difficulty ${puzzle.difficulty}`, tierName(puzzle.difficulty)),
     );
   }
+  if (puzzle.guest) {
+    $("date").append(el("span", "guest-credit", guestLine(puzzle.guest)));
+  }
   renderBoard({ you: $("you"), hand: $("hand"), them: $("them") }, puzzle);
 
   const builder = createPileBuilder({ pool: $("pool"), pile: $("pile") }, puzzle, submit);
@@ -309,6 +318,7 @@ async function main() {
       attempts: record.attempts,
       allowed,
       difficulty: puzzle.difficulty,
+      guest: puzzle.guest,
       pileSize: Math.min(5, candidates(puzzle).length),
       link: `${location.origin}${location.pathname}`,
     };

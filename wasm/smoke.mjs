@@ -214,6 +214,14 @@ check(
     discord: discordText({ ...share, attempts: [won("1. Play Swamp.")] }),
     discordLost: discordText({ ...share, attempts: [miss(5)] }),
     hard: shareText({ ...share, difficulty: "hard", attempts: [won("x")] }),
+    expert: shareText({ ...share, difficulty: "expert", attempts: [won("x")] }),
+    guest: shareText({ ...share, difficulty: "expert", guest: "Venus", attempts: [won("x")] }),
+    guestDiscord: discordText({
+      ...share,
+      difficulty: "expert",
+      guest: "Venus",
+      attempts: [won("1. Play Swamp.")],
+    }),
   },
   {
     won: "Doomdle 2026-11-16 2/3\n🟥🟥🟥⬛⬛\n🟩🟩🟩🟩🟩\nhttps://example.org/",
@@ -221,6 +229,10 @@ check(
     discord: "Doomdle 2026-11-16 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/\nMy pile: ||Swamp → Island||",
     discordLost: "Doomdle 2026-11-16 X/3\n⬛⬛⬛⬛⬛\nhttps://example.org/",
     hard: "Doomdle 2026-11-16 (Hard) 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/",
+    expert: "Doomdle 2026-11-16 (Expert) 1/3\n🟩🟩🟩🟩🟩\nhttps://example.org/",
+    guest: "Doomdle 2026-11-16 (Expert) 1/3\nIdea by Venus\n🟩🟩🟩🟩🟩\nhttps://example.org/",
+    guestDiscord:
+      "Doomdle 2026-11-16 (Expert) 1/3\nIdea by Venus\n🟩🟩🟩🟩🟩\nhttps://example.org/\nMy pile: ||Swamp → Island||",
   },
 );
 

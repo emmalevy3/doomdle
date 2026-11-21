@@ -366,6 +366,7 @@ pub fn deal(rng: &mut Rng) -> PuzzleFile {
         solution: None,
         attempts: None,
         difficulty: None,
+        guest: None,
     }
 }
 

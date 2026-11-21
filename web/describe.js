@@ -160,11 +160,19 @@ function shareHeader(id, attempts, allowed, difficulty) {
   return `Doomdle ${id}${tier} ${winAt === -1 ? "X" : winAt + 1}/${allowed}`;
 }
 
-/** The plain result to paste anywhere. */
-export function shareText({ id, attempts, allowed, difficulty, pileSize, link }) {
-  return [shareHeader(id, attempts, allowed, difficulty), ...shareRows(attempts, pileSize), link].join(
-    "\n",
-  );
+/** The credit for a guest puzzle, e.g. "Idea by Venus". */
+export function guestLine(guest) {
+  return `Idea by ${guest}`;
+}
+
+/** The plain result to paste anywhere; a guest puzzle credits its guest. */
+export function shareText({ id, attempts, allowed, difficulty, guest, pileSize, link }) {
+  return [
+    shareHeader(id, attempts, allowed, difficulty),
+    ...(guest ? [guestLine(guest)] : []),
+    ...shareRows(attempts, pileSize),
+    link,
+  ].join("\n");
 }
 
 /**

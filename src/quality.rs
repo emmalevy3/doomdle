@@ -24,13 +24,15 @@ const MEMO_CAP: usize = 250_000;
 /// How hard a puzzle is, from the share of all piles that win (the chance one
 /// random guess wins): Hard under [`HARD_BELOW`], Medium under
 /// [`MEDIUM_BELOW`], Easy up to [`EASY_UP_TO`]. Above that it is too easy to
-/// generate.
+/// generate. Expert is never rated: a hand-made puzzle file sets it (guest
+/// puzzles, for instance).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Difficulty {
     Easy,
     Medium,
     Hard,
+    Expert,
 }
 
 /// Shares below this are Hard.
@@ -63,6 +65,7 @@ impl fmt::Display for Difficulty {
             Difficulty::Easy => "Easy",
             Difficulty::Medium => "Medium",
             Difficulty::Hard => "Hard",
+            Difficulty::Expert => "Expert",
         })
     }
 }
@@ -76,7 +79,10 @@ impl std::str::FromStr for Difficulty {
             "easy" => Ok(Difficulty::Easy),
             "medium" => Ok(Difficulty::Medium),
             "hard" => Ok(Difficulty::Hard),
-            _ => Err(format!("unknown difficulty {s:?} (easy, medium or hard)")),
+            "expert" => Ok(Difficulty::Expert),
+            _ => Err(format!(
+                "unknown difficulty {s:?} (easy, medium, hard or expert)"
+            )),
         }
     }
 }
