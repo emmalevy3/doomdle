@@ -160,6 +160,23 @@ function shareHeader(id, attempts, allowed, difficulty) {
   return `Doomdle ${id}${tier} ${winAt === -1 ? "X" : winAt + 1}/${allowed}`;
 }
 
+/**
+ * The heading over the piles tried after the game ended: "Exploring", plus
+ * how many winning piles were found that way.
+ */
+export function exploreHeading(explore) {
+  const wins = explore.filter((e) => e.result?.wins).length;
+  if (wins === 0) {
+    return "Exploring";
+  }
+  return `Exploring · ${wins} other winning pile${wins === 1 ? "" : "s"}`;
+}
+
+/** The verdict on an explored pile: a win is another solution. */
+export function exploreVerdict(result) {
+  return result.ok && result.wins ? "Another winning pile." : verdictSentence(result);
+}
+
 /** The credit for a guest puzzle, e.g. "Idea by Venus". */
 export function guestLine(guest) {
   return `Idea by ${guest}`;

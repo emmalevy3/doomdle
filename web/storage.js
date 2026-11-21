@@ -4,18 +4,23 @@
 
 const PREFIX = "doomdle:attempts:";
 
-/** The saved record for a puzzle: { attempts: [{ pile, result }] }. */
+/**
+ * The saved record for a puzzle: { attempts, explore }, each a list of
+ * { pile, result }. `attempts` are the counted tries; `explore` holds piles
+ * tried after the game ended, which never change the result (older records
+ * have none).
+ */
 export function loadRecord(puzzleId) {
   try {
     const raw = localStorage.getItem(PREFIX + puzzleId);
     const record = raw ? JSON.parse(raw) : null;
     if (record && Array.isArray(record.attempts)) {
-      return record;
+      return { ...record, explore: Array.isArray(record.explore) ? record.explore : [] };
     }
   } catch {
     // Fall through to a fresh record.
   }
-  return { attempts: [] };
+  return { attempts: [], explore: [] };
 }
 
 export function saveRecord(puzzleId, record) {

@@ -1008,6 +1008,27 @@ button.quiet:not(:disabled):hover {
   color: var(--text);
 }
 
+/* Piles tried after the game ended: their own list, apart from the attempts. */
+.explore:empty,
+.explore-toggle:empty {
+  display: none;
+}
+
+.explore {
+  margin-top: 8px;
+}
+
+.explore h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.explore-toggle {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+
 .reveal:empty {
   display: none;
 }

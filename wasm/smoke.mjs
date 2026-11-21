@@ -22,6 +22,8 @@ import {
   archiveDays,
   shortDate,
   recordStatus,
+  exploreHeading,
+  exploreVerdict,
 } from "../web/describe.js";
 
 const { verify_pile, solve_puzzle } = api;
@@ -193,6 +195,27 @@ const won = (line) => ({
   result: { ok: true, wins: true, gave_up: false, line },
 });
 const share = { id: "2026-11-16", allowed: 3, pileSize: 5, link: "https://example.org/" };
+
+// Exploring after the game: its own heading and verdicts.
+check(
+  "explore",
+  {
+    none: exploreHeading([]),
+    losses: exploreHeading([miss(2), answered]),
+    one: exploreHeading([miss(2), won("x")]),
+    two: exploreHeading([won("x"), gaveUp, won("y")]),
+    win: exploreVerdict(won("x").result),
+    loss: exploreVerdict(answered.result),
+  },
+  {
+    none: "Exploring",
+    losses: "Exploring",
+    one: "Exploring · 1 other winning pile",
+    two: "Exploring · 2 other winning piles",
+    win: "Another winning pile.",
+    loss: "This pile wins unless they have Daze.",
+  },
+);
 check(
   "share rows",
   {

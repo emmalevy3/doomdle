@@ -5,6 +5,8 @@ import { hidePeek, renderBoard, setImages, setZoomDialog, showLarge, showPeek } 
 import {
   archiveDays,
   discordText,
+  exploreHeading,
+  exploreVerdict,
   guestLine,
   localDate,
   recordStatus,
@@ -276,22 +278,68 @@ async function main() {
     return record.attempts.filter((a) => a.result.ok && !a.result.gave_up).length;
   }
 
+  /** Exploring: trying piles after the game ended, which never counts. */
+  let exploring = false;
+
+  function over() {
+    return solved() || used() >= allowed;
+  }
+
+  /** One tried pile in a list: the pile, the verdict, and the lines. */
+  function attemptItem(attempt, i, verdict) {
+    const item = el("li", attempt.result.wins ? "attempt won" : "attempt");
+    item.append(el("p", "attempt-pile", `${i + 1}. ${attempt.pile.join(", ")}`));
+    item.append(el("p", "attempt-verdict", verdict(attempt.result)));
+    if (attempt.result.wins && attempt.result.line) {
+      item.append(lineDetails("Show the winning line", attempt.result.line));
+    }
+    const closest = attempt.result.feedback?.closest;
+    if (closest?.line) {
+      item.append(lineDetails("Show the closest line", closest.line));
+    }
+    return item;
+  }
+
   function renderHistory() {
     const list = $("history");
-    list.replaceChildren();
-    record.attempts.forEach((attempt, i) => {
-      const item = el("li", attempt.result.wins ? "attempt won" : "attempt");
-      item.append(el("p", "attempt-pile", `${i + 1}. ${attempt.pile.join(", ")}`));
-      item.append(el("p", "attempt-verdict", verdictSentence(attempt.result)));
-      if (attempt.result.wins && attempt.result.line) {
-        item.append(lineDetails("Show the winning line", attempt.result.line));
+    list.replaceChildren(
+      ...record.attempts.map((attempt, i) => attemptItem(attempt, i, verdictSentence)),
+    );
+  }
+
+  /** The piles tried while exploring, under their own heading. */
+  function renderExplore() {
+    const section = $("explore");
+    section.replaceChildren();
+    if (record.explore.length === 0) {
+      return;
+    }
+    const list = el("ol", "history");
+    list.append(...record.explore.map((attempt, i) => attemptItem(attempt, i, exploreVerdict)));
+    section.append(el("h3", null, exploreHeading(record.explore)), list);
+  }
+
+  /** Once the game is over: Keep exploring, or Stop exploring to go back. */
+  function renderExploreToggle() {
+    const slot = $("explore-toggle");
+    slot.replaceChildren();
+    if (!over()) {
+      return;
+    }
+    const button = el("button", "quiet", exploring ? "Stop exploring" : "Keep exploring");
+    button.type = "button";
+    button.addEventListener("click", async () => {
+      exploring = !exploring;
+      const win = record.attempts.find((a) => a.result.wins);
+      if (!exploring && win) {
+        // Back to the finished view, the winning pile in place as on reload.
+        builder.setPile(win.pile);
+      } else {
+        builder.clear();
       }
-      const closest = attempt.result.feedback?.closest;
-      if (closest?.line) {
-        item.append(lineDetails("Show the closest line", closest.line));
-      }
-      list.append(item);
+      await renderStatus();
     });
+    slot.append(button);
   }
 
   /** One mark per allowed attempt: ✦ won, ✕ failed, ○ unused. */
@@ -356,8 +404,12 @@ async function main() {
     const left = allowed - used();
     renderMarks();
     renderShare(solved() || left <= 0);
-    $("pile-area").classList.toggle("complete", solved());
-    if (solved()) {
+    renderExploreToggle();
+    $("pile-area").classList.toggle("complete", solved() && !exploring);
+    if (exploring) {
+      $("status").textContent = "Exploring: these tries don't change your result.";
+      builder.setEnabled(true);
+    } else if (solved()) {
       $("status").textContent = `You win — solved in ${used()} of ${allowed}.`;
       builder.setEnabled(false);
     } else if (left <= 0) {
@@ -389,8 +441,23 @@ async function main() {
   }
 
   async function submit(pile) {
-    if (record.attempts.some((a) => a.pile.join("|") === pile.join("|") && !a.result.gave_up)) {
+    const key = pile.join("|");
+    const tried = (list) => list.some((a) => a.pile.join("|") === key && !a.result.gave_up);
+    if (tried(record.attempts) || (exploring && tried(record.explore))) {
       $("status").textContent = "You already tried that pile.";
+      return;
+    }
+    if (exploring) {
+      // Saved apart from the attempts: the result, marks and share text stay.
+      builder.setEnabled(false);
+      $("status").textContent = "Resolving the pile…";
+      const result = await ask({ kind: "verify", puzzle: puzzleText, pile });
+      record.explore.push({ pile, result });
+      saveRecord(id, record);
+      renderExplore();
+      await renderStatus();
+      // The pile stays in the slots, easy to tweak and try again.
+      $("status").textContent = `${exploreVerdict(result)} (Exploring doesn't change your result.)`;
       return;
     }
     builder.setEnabled(false);
@@ -406,6 +473,7 @@ async function main() {
   }
 
   renderHistory();
+  renderExplore();
   await renderStatus();
 }
 
