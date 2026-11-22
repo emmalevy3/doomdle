@@ -216,6 +216,9 @@ pair. Never add a card that isn't in CARDS.md; never edit CARDS.md unasked
 - The `Strategy` printout ends with a blank line.
 - `Choice::Discard`'s doc still mentions Frantic Search only.
 - Timetwister ignores the opponent's side (by CARDS.md decision).
+- Pyroblast only offers blue targets; the real card can target anything and
+  checks "if it's blue" on resolution (CARDS.md known gap). Red Elemental
+  Blast, which really is blue-only, shares its code; 2026-11-22 uses it.
 - Search cost of Treasures and Lotus Petal: each is a five-way colour choice
   when sacrificed, so a busy puzzle with An Offer You Can't Refuse can leave
   most piles undecided at the rating's per-pile budget (today's 11/21 puzzle

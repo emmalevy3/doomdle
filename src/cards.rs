@@ -98,6 +98,9 @@ pub enum Card {
     // exists on the battlefield, as a token.
     AnOfferYouCantRefuse,
     Treasure,
+    // Red Elemental Blast: Pyroblast as the engine plays it (blue targets
+    // only), which is what the card really says.
+    RedElementalBlast,
     // Draw and selection
     Brainstorm,
     Ponder,
@@ -429,7 +432,7 @@ impl LoyaltyAbility {
 
 impl Card {
     /// Every card in the pool, in enum order.
-    pub const ALL: [Card; 96] = [
+    pub const ALL: [Card; 97] = [
         Card::ThassasOracle,
         Card::JaceWielderOfMysteries,
         Card::DoctorDoom,
@@ -490,6 +493,7 @@ impl Card {
         Card::CavernOfSouls,
         Card::AnOfferYouCantRefuse,
         Card::Treasure,
+        Card::RedElementalBlast,
         Card::Brainstorm,
         Card::Ponder,
         Card::Preordain,
@@ -590,6 +594,7 @@ impl Card {
             Card::CavernOfSouls => "Cavern of Souls",
             Card::AnOfferYouCantRefuse => "An Offer You Can't Refuse",
             Card::Treasure => "Treasure",
+            Card::RedElementalBlast => "Red Elemental Blast",
             Card::Brainstorm => "Brainstorm",
             Card::Ponder => "Ponder",
             Card::Preordain => "Preordain",
@@ -690,7 +695,8 @@ impl Card {
             | Card::Meditate
             | Card::Manamorphose
             | Card::Gush
-            | Card::AnOfferYouCantRefuse => CardKind::Instant,
+            | Card::AnOfferYouCantRefuse
+            | Card::RedElementalBlast => CardKind::Instant,
             Card::LionsEyeDiamond
             | Card::BlackLotus
             | Card::LotusPetal
@@ -805,7 +811,7 @@ impl Card {
                 ManaCost::colored(Color::U, 1)
             }
             Card::MindbreakTrap => ManaCost::colored(Color::U, 2).with_generic(2),
-            Card::Pyroblast => ManaCost::colored(Color::R, 1),
+            Card::Pyroblast | Card::RedElementalBlast => ManaCost::colored(Color::R, 1),
             Card::AnOfferYouCantRefuse => ManaCost::colored(Color::U, 1),
             Card::SwordsToPlowshares => ManaCost::colored(Color::W, 1),
             Card::SnuffOut => ManaCost::colored(Color::B, 1).with_generic(3),
@@ -1040,8 +1046,8 @@ impl Card {
             // "If it's blue/red": only blue/red things are ever offered.
             // You (never the opponent) may also aim them at your own blue
             // or red spells and permanents, e.g. as bait for your own Offer.
-            Card::Pyroblast | Card::Hydroblast => {
-                let color: fn(Card) -> bool = if self == Card::Pyroblast {
+            Card::Pyroblast | Card::RedElementalBlast | Card::Hydroblast => {
+                let color: fn(Card) -> bool = if self != Card::Hydroblast {
                     Card::is_blue
                 } else {
                     Card::is_red
@@ -1474,7 +1480,7 @@ pub(crate) fn resolve_spell(
         Card::Daze | Card::Flusterstorm => return tax(state, controller, bin, target, 1),
         Card::SpellPierce | Card::Miscalculation => return tax(state, controller, bin, target, 2),
         // Counter mode on a spell, destroy mode on a permanent.
-        Card::Pyroblast | Card::Hydroblast => match target {
+        Card::Pyroblast | Card::RedElementalBlast | Card::Hydroblast => match target {
             Some(Target::Permanent { .. }) => {
                 remove_permanent(state, controller, card, target, false)
             }
@@ -6974,5 +6980,57 @@ mod tests {
         );
         assert_eq!(treasures(&after.you), 2);
         assert_eq!(after.you.graveyard, vec![Card::Pyroblast, OFFER]);
+    }
+
+    #[test]
+    fn red_elemental_blast_plays_like_the_engines_pyroblast() {
+        const REB: Card = Card::RedElementalBlast;
+        assert_eq!(REB.kind(), CardKind::Instant);
+        assert!(REB.castable());
+        assert_eq!(REB.mana_cost().to_string(), "{R}");
+        assert!(REB.is_red() && !REB.is_blue());
+        assert_eq!(REB.to_string(), "Red Elemental Blast");
+        // The same blue targets as Pyroblast, for both players, your own
+        // things included for you.
+        let mut state = versus(
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::QuantumRiddler)],
+                ..PlayerState::default()
+            },
+            PlayerState {
+                battlefield: vec![Permanent::untapped(Card::Narset)],
+                ..PlayerState::default()
+            },
+        );
+        state.stack.push(your_spell(Card::Brainstorm));
+        state.stack.push(your_spell(Card::DarkRitual));
+        for player in [Player::You, Player::Opponent] {
+            assert_eq!(
+                REB.target_options(&state, player),
+                Card::Pyroblast.target_options(&state, player),
+                "{player:?}"
+            );
+        }
+        let mine = REB.target_options(&state, Player::You).unwrap();
+        assert!(mine.contains(&your_permanent(Card::QuantumRiddler)));
+        assert!(!mine.contains(&on_stack(1, Card::DarkRitual)));
+        // It destroys a blue permanent; Hydroblast can counter it (red).
+        let mut state = main_phase(PlayerState {
+            battlefield: vec![Permanent::untapped(Card::QuantumRiddler)],
+            ..PlayerState::default()
+        });
+        state.stack.push(StackItem::Spell {
+            card: REB,
+            controller: Player::You,
+            target: Some(your_permanent(Card::QuantumRiddler)),
+            mode: SpellMode::Normal,
+        });
+        let hydro = Card::Hydroblast
+            .target_options(&state, Player::Opponent)
+            .unwrap();
+        assert!(hydro.contains(&on_stack(0, REB)));
+        let after = pass_twice(&state);
+        assert!(after.you.battlefield.is_empty());
+        assert!(after.you.graveyard.contains(&Card::QuantumRiddler));
     }
 }
